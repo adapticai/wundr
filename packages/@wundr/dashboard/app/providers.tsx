@@ -1,23 +1,26 @@
-'use client'
+'use client';
 
-import * as React from 'react'
-import { ThemeProvider } from 'next-themes'
-import { Toaster } from '@/components/ui/toaster'
+import * as React from 'react';
+import { ThemeProvider } from 'next-themes';
+import { Toaster } from '@/components/ui/toaster';
+import { UserProvider, NotificationsProvider } from '@/lib/user-context';
 
 interface ProvidersProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export function Providers({ children }: ProvidersProps) {
   return (
     <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
+      attribute='class'
+      defaultTheme='system'
       enableSystem
       disableTransitionOnChange
     >
-      {children}
+      <UserProvider>
+        <NotificationsProvider>{children}</NotificationsProvider>
+      </UserProvider>
       <Toaster />
     </ThemeProvider>
-  )
+  );
 }

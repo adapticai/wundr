@@ -1,14 +1,16 @@
 # Comprehensive UI Testing Suite
 
-This directory contains a comprehensive end-to-end testing suite for both dashboard applications in the Wundr project.
+This directory contains a comprehensive end-to-end testing suite for both dashboard applications in
+the Wundr project.
 
 ## Overview
 
 The test suite is designed to systematically validate:
-- ✅ Broken links detection  
+
+- ✅ Broken links detection
 - ✅ Runtime error monitoring
 - ✅ Missing component validation
-- ✅ Navigation functionality  
+- ✅ Navigation functionality
 - ✅ API endpoint health checks
 - ✅ Cross-dashboard integration testing
 
@@ -51,7 +53,7 @@ The test suite is designed to systematically validate:
    - Accessibility component validation
 
 6. **`navigation-issues-detection.spec.ts`** - Navigation system testing
-   - Route accessibility validation  
+   - Route accessibility validation
    - Navigation menu functionality
    - Breadcrumb navigation
    - Deep linking validation
@@ -79,11 +81,13 @@ The test suite is designed to systematically validate:
 ## Dashboard Configuration
 
 ### Web Client Dashboard (Port 3000)
+
 - **Purpose**: Intelligent Monorepo Analysis Dashboard
 - **Routes**: 30+ routes including analysis, files, performance, quality, reports
 - **Features**: Comprehensive code analysis tools, visualizations, file browser
 
-### Wundr Dashboard (Port 3001)  
+### Wundr Dashboard (Port 3001)
+
 - **Purpose**: Real-time Monitoring Dashboard
 - **Routes**: 3 routes focused on real-time overview
 - **Features**: WebSocket integration, real-time metrics, live data visualization
@@ -91,6 +95,7 @@ The test suite is designed to systematically validate:
 ## Running Tests
 
 ### Prerequisites
+
 ```bash
 # Install dependencies (if not already installed)
 npm install
@@ -117,7 +122,7 @@ npm run test:e2e -- runtime-errors-detection.spec.ts
 # Missing components validation
 npm run test:e2e -- missing-components-validation.spec.ts
 
-# Navigation issues detection  
+# Navigation issues detection
 npm run test:e2e -- navigation-issues-detection.spec.ts
 
 # API endpoint validation
@@ -153,6 +158,7 @@ npm run playwright:report
 ## Test Configuration
 
 ### Browser Support
+
 - ✅ Chromium (Desktop)
 - ✅ Firefox (Desktop)
 - ✅ WebKit/Safari (Desktop)
@@ -160,6 +166,7 @@ npm run playwright:report
 - ✅ Mobile Safari (iPhone 12)
 
 ### Timeouts and Retries
+
 - **Navigation**: 30 seconds
 - **API Response**: 10 seconds
 - **WebSocket**: 5 seconds
@@ -169,6 +176,7 @@ npm run playwright:report
 ## Expected Test Results
 
 ### Passing Criteria
+
 - **Route Accessibility**: >70% routes accessible
 - **Broken Links**: <20 broken links total
 - **JavaScript Errors**: <15 total errors
@@ -177,6 +185,7 @@ npm run playwright:report
 - **Critical Failures**: <3 critical failures
 
 ### Common Expected Issues
+
 - Some API endpoints may return 404 (not implemented yet)
 - External links may occasionally be slow/timeout
 - Some routes may have placeholder content
@@ -185,23 +194,26 @@ npm run playwright:report
 ## Troubleshooting
 
 ### Dashboard Not Running
+
 ```bash
 # Start Web Client Dashboard (Port 3000)
 cd /Users/lucas/wundr/tools/web-client
 npm run dev
 
-# Start Wundr Dashboard (Port 3001) 
+# Start Wundr Dashboard (Port 3001)
 cd /Users/lucas/wundr/packages/@wundr/dashboard
 npm run dev
 ```
 
 ### Test Failures
+
 1. Check if both dashboards are running
 2. Verify ports 3000 and 3001 are accessible
 3. Run smoke tests first to identify basic issues
 4. Check browser console for JavaScript errors
 
 ### Performance Issues
+
 - Tests may be slow on first run (browser installation)
 - Large number of routes may cause timeouts
 - Adjust timeout values in `playwright.config.ts` if needed
@@ -209,11 +221,13 @@ npm run dev
 ## Integration with CI/CD
 
 The test suite generates multiple report formats suitable for CI/CD integration:
+
 - **HTML Report**: Visual test results with screenshots
 - **JSON Report**: Structured data for processing
 - **JUnit XML**: Compatible with most CI systems
 
 ### Recommended CI Pipeline
+
 1. Start both dashboard servers
 2. Run smoke tests first
 3. Run comprehensive test suite
@@ -223,26 +237,32 @@ The test suite generates multiple report formats suitable for CI/CD integration:
 ## Customization
 
 ### Adding New Routes
+
 Update `TEST_CONFIG.routes.webClient` in `helpers/test-config.ts`
 
 ### Adding New API Endpoints
+
 Update endpoint arrays in `api-endpoint-validation.spec.ts`
 
 ### Adjusting Thresholds
+
 Modify expect statements in individual test files to adjust pass/fail criteria
 
 ### Custom Assertions
+
 Add new utility functions in `helpers/test-utilities.ts`
 
 ## Maintenance
 
 ### Regular Updates Needed
+
 - Update route configurations as new pages are added
-- Add new API endpoints as backend evolves  
+- Add new API endpoints as backend evolves
 - Adjust performance thresholds based on infrastructure
 - Update browser versions and Playwright regularly
 
 ### Monitoring Trends
+
 - Track test execution times
 - Monitor failure rates over time
 - Identify consistently failing tests for investigation
@@ -250,4 +270,5 @@ Add new utility functions in `helpers/test-utilities.ts`
 
 ---
 
-This testing suite provides comprehensive coverage of both dashboards while being maintainable and suitable for continuous integration workflows.
+This testing suite provides comprehensive coverage of both dashboards while being maintainable and
+suitable for continuous integration workflows.

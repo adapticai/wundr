@@ -24,25 +24,63 @@ import { DEFAULT_STORE_CONFIG } from './types.js';
 // ============================================================================
 
 export const StoreConfigSchema = z.object({
-  chunkSize: z.number().int().positive().optional().describe('Chunk size for text splitting'),
-  chunkOverlap: z.number().int().nonnegative().optional().describe('Overlap between chunks'),
-  includePatterns: z.array(z.string()).optional().describe('File patterns to include'),
-  excludePatterns: z.array(z.string()).optional().describe('File patterns to exclude'),
-  maxFileSize: z.number().int().positive().optional().describe('Maximum file size in bytes'),
+  chunkSize: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .describe('Chunk size for text splitting'),
+  chunkOverlap: z
+    .number()
+    .int()
+    .nonnegative()
+    .optional()
+    .describe('Overlap between chunks'),
+  includePatterns: z
+    .array(z.string())
+    .optional()
+    .describe('File patterns to include'),
+  excludePatterns: z
+    .array(z.string())
+    .optional()
+    .describe('File patterns to exclude'),
+  maxFileSize: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .describe('Maximum file size in bytes'),
   embeddingModel: z.string().optional().describe('Embedding model to use'),
 });
 
 export const RagStoreManageInputSchema = z.object({
-  action: z.enum(['create', 'list', 'get', 'delete', 'sync', 'status'] as const).describe('Store operation to perform'),
-  storeId: z.string().optional().describe('Store identifier (for get, delete, sync, status)'),
+  action: z
+    .enum(['create', 'list', 'get', 'delete', 'sync', 'status'] as const)
+    .describe('Store operation to perform'),
+  storeId: z
+    .string()
+    .optional()
+    .describe('Store identifier (for get, delete, sync, status)'),
   displayName: z.string().optional().describe('Display name (for create)'),
   sourcePath: z.string().optional().describe('Source path (for create, sync)'),
-  config: StoreConfigSchema.optional().describe('Store configuration (for create)'),
-  forceReindex: z.boolean().optional().default(false).describe('Force reindex (for sync)'),
-  format: z.enum(['json', 'table', 'text']).optional().default('json').describe('Output format'),
+  config: StoreConfigSchema.optional().describe(
+    'Store configuration (for create)'
+  ),
+  forceReindex: z
+    .boolean()
+    .optional()
+    .default(false)
+    .describe('Force reindex (for sync)'),
+  format: z
+    .enum(['json', 'table', 'text'])
+    .optional()
+    .default('json')
+    .describe('Output format'),
 });
 
-export type RagStoreManageInputValidated = z.infer<typeof RagStoreManageInputSchema>;
+export type RagStoreManageInputValidated = z.infer<
+  typeof RagStoreManageInputSchema
+>;
 
 // ============================================================================
 // Output Types
@@ -136,7 +174,7 @@ const storeRegistry = RAGStoreRegistry.getInstance();
 export async function createStore(
   storeId: string,
   displayName?: string,
-  config?: StoreConfig,
+  config?: StoreConfig
 ): Promise<McpToolResult<RagStoreManageOutput>> {
   try {
     if (!storeId || typeof storeId !== 'string') {
@@ -213,7 +251,9 @@ export async function createStore(
 /**
  * List all RAG stores with metadata
  */
-export async function listStores(): Promise<McpToolResult<RagStoreManageOutput>> {
+export async function listStores(): Promise<
+  McpToolResult<RagStoreManageOutput>
+> {
   try {
     const stores = storeRegistry.getAllStores();
 
@@ -242,7 +282,7 @@ export async function listStores(): Promise<McpToolResult<RagStoreManageOutput>>
  * Get store details and statistics
  */
 export async function getStore(
-  storeId: string,
+  storeId: string
 ): Promise<McpToolResult<RagStoreManageOutput>> {
   try {
     if (!storeId) {
@@ -305,7 +345,7 @@ export async function getStore(
  * Delete store and all indexed data
  */
 export async function deleteStore(
-  storeId: string,
+  storeId: string
 ): Promise<McpToolResult<RagStoreManageOutput>> {
   try {
     if (!storeId) {
@@ -359,7 +399,7 @@ export async function deleteStore(
 export async function syncStore(
   storeId: string,
   sourcePath: string,
-  forceReindex: boolean = false,
+  forceReindex: boolean = false
 ): Promise<McpToolResult<RagStoreManageOutput>> {
   try {
     if (!storeId) {
@@ -440,7 +480,7 @@ export async function syncStore(
  * Check indexing status and health
  */
 export async function getStoreStatus(
-  storeId: string,
+  storeId: string
 ): Promise<McpToolResult<RagStoreManageOutput>> {
   try {
     if (!storeId) {
@@ -449,7 +489,8 @@ export async function getStoreStatus(
         error: 'Store ID is required',
         errorDetails: {
           code: 'MISSING_PARAM',
-          message: 'The storeId parameter is required when checking store status',
+          message:
+            'The storeId parameter is required when checking store status',
         },
       };
     }
@@ -510,7 +551,7 @@ export async function getStoreStatus(
  * Main RAG store management handler - routes to appropriate operation
  */
 export async function ragStoreManageHandler(
-  args: Record<string, unknown>,
+  args: Record<string, unknown>
 ): Promise<McpToolResult<RagStoreManageOutput>> {
   try {
     // Validate input
@@ -531,15 +572,19 @@ export async function ragStoreManageHandler(
 
     switch (validInput.action) {
       case 'create': {
-        const storeId = validInput.storeId ||
-          (validInput.displayName ? validInput.displayName.toLowerCase().replace(/[^a-z0-9-]/g, '-') : undefined);
+        const storeId =
+          validInput.storeId ||
+          (validInput.displayName
+            ? validInput.displayName.toLowerCase().replace(/[^a-z0-9-]/g, '-')
+            : undefined);
         if (!storeId) {
           return {
             success: false,
             error: 'storeId or displayName is required for create action',
             errorDetails: {
               code: 'MISSING_PARAM',
-              message: 'Either storeId or displayName must be provided when creating a store',
+              message:
+                'Either storeId or displayName must be provided when creating a store',
             },
           };
         }
@@ -569,7 +614,8 @@ export async function ragStoreManageHandler(
             error: 'storeId is required for delete action',
             errorDetails: {
               code: 'MISSING_PARAM',
-              message: 'The storeId parameter is required when deleting a store',
+              message:
+                'The storeId parameter is required when deleting a store',
             },
           };
         }
@@ -592,11 +638,16 @@ export async function ragStoreManageHandler(
             error: 'sourcePath is required for sync action',
             errorDetails: {
               code: 'MISSING_PARAM',
-              message: 'The sourcePath parameter is required when syncing a store',
+              message:
+                'The sourcePath parameter is required when syncing a store',
             },
           };
         }
-        return syncStore(validInput.storeId, validInput.sourcePath, validInput.forceReindex);
+        return syncStore(
+          validInput.storeId,
+          validInput.sourcePath,
+          validInput.forceReindex
+        );
 
       case 'status':
         if (!validInput.storeId) {
@@ -605,7 +656,8 @@ export async function ragStoreManageHandler(
             error: 'storeId is required for status action',
             errorDetails: {
               code: 'MISSING_PARAM',
-              message: 'The storeId parameter is required when checking store status',
+              message:
+                'The storeId parameter is required when checking store status',
             },
           };
         }
@@ -639,7 +691,10 @@ export async function ragStoreManageHandler(
  * RAG service interface for dependency injection
  */
 export interface RAGServiceInterface {
-  search?: (query: string, options?: Record<string, unknown>) => Promise<unknown>;
+  search?: (
+    query: string,
+    options?: Record<string, unknown>
+  ) => Promise<unknown>;
   index?: (path: string, options?: Record<string, unknown>) => Promise<unknown>;
 }
 
@@ -672,40 +727,27 @@ export function createRagStoreManageHandler(ragService?: RAGServiceInterface) {
 // ============================================================================
 
 /**
- * Perform file sync operation (mock implementation)
+ * Perform file sync operation
+ *
+ * NOTE: A real vector-store backend is required to perform actual indexing.
+ * The in-memory RAGStoreRegistry only tracks metadata; it does not embed or
+ * persist document chunks. Callers must integrate an external embedding/indexing
+ * service to populate content before sync results will reflect real file counts.
+ *
+ * Until a real backend is wired in, this function throws an explicit error so
+ * that callers are aware the operation cannot be completed rather than silently
+ * returning fabricated statistics.
  */
 async function performSync(
   store: StoreMetadata,
   sourcePath: string,
-  forceReindex: boolean,
+  forceReindex: boolean
 ): Promise<SyncResult> {
-  const startTime = Date.now();
-
-  // In production, this would:
-  // 1. Scan the source directory for files matching include patterns
-  // 2. Compare file hashes to detect changes
-  // 3. Index new/changed files using the RAG service
-  // 4. Remove deleted files from the index
-
-  // Mock sync results for demonstration
-  const mockAdded = forceReindex ? 5 : 2;
-  const mockUpdated = forceReindex ? 0 : 1;
-  const mockDeleted = 0;
-  const mockUnchanged = forceReindex ? 0 : 10;
-
-  // Update store statistics
-  store.fileCount = mockAdded + mockUnchanged;
-  store.chunkCount = store.fileCount * 10; // Assume ~10 chunks per file
-  store.sizeBytes = store.fileCount * 5000; // Assume ~5KB per file
-
-  return {
-    added: mockAdded,
-    updated: mockUpdated,
-    deleted: mockDeleted,
-    unchanged: mockUnchanged,
-    totalChunks: store.chunkCount,
-    durationMs: Date.now() - startTime + 100, // Add simulated processing time
-  };
+  throw new Error(
+    `Sync operation for store '${store.id}' requires a real vector-store backend. ` +
+      `No embedding or indexing service is configured. ` +
+      `Integrate an external RAG service before calling sync on path: ${sourcePath}`
+  );
 }
 
 /**
@@ -714,18 +756,12 @@ async function performSync(
 function computeStoreStats(store: StoreMetadata): StoreStats {
   const fileTypes: Record<string, number> = {};
 
-  // Count file types from tracked files
+  // Count file types from tracked files only.
+  // If no files are tracked in the registry the map remains empty; callers
+  // should not assume a non-empty map when no files have been indexed.
   for (const file of store.files.values()) {
     const ext = getFileExtension(file.path);
     fileTypes[ext] = (fileTypes[ext] || 0) + 1;
-  }
-
-  // If no files tracked but fileCount > 0, add mock data
-  if (store.files.size === 0 && store.fileCount > 0) {
-    fileTypes['.ts'] = Math.floor(store.fileCount * 0.5);
-    fileTypes['.js'] = Math.floor(store.fileCount * 0.2);
-    fileTypes['.md'] = Math.floor(store.fileCount * 0.2);
-    fileTypes['.json'] = Math.floor(store.fileCount * 0.1);
   }
 
   const health = computeStoreHealth(store);
@@ -735,7 +771,8 @@ function computeStoreStats(store: StoreMetadata): StoreStats {
     totalFiles: store.fileCount,
     totalChunks: store.chunkCount,
     totalSizeBytes: store.sizeBytes,
-    avgChunkSize: store.chunkCount > 0 ? Math.round(store.sizeBytes / store.chunkCount) : 0,
+    avgChunkSize:
+      store.chunkCount > 0 ? Math.round(store.sizeBytes / store.chunkCount) : 0,
     fileTypes,
     health,
   };
@@ -751,17 +788,24 @@ function computeStoreHealth(store: StoreMetadata): StoreHealthStatus {
   // Check store status
   checks.push({
     name: 'store_status',
-    status: store.status === 'active' ? 'pass' : store.status === 'syncing' ? 'warn' : 'fail',
+    status:
+      store.status === 'active'
+        ? 'pass'
+        : store.status === 'syncing'
+          ? 'warn'
+          : 'fail',
     message: `Store status is ${store.status}`,
   });
 
   // Check last sync time
   if (store.lastSyncAt) {
     const lastSync = new Date(store.lastSyncAt);
-    const hoursSinceSync = (now.getTime() - lastSync.getTime()) / (1000 * 60 * 60);
+    const hoursSinceSync =
+      (now.getTime() - lastSync.getTime()) / (1000 * 60 * 60);
     checks.push({
       name: 'sync_freshness',
-      status: hoursSinceSync < 24 ? 'pass' : hoursSinceSync < 72 ? 'warn' : 'fail',
+      status:
+        hoursSinceSync < 24 ? 'pass' : hoursSinceSync < 72 ? 'warn' : 'fail',
       message: `Last synced ${Math.round(hoursSinceSync)} hours ago`,
     });
   } else {
@@ -829,22 +873,32 @@ export function getDefaultStoreConfig(): Required<StoreConfig> {
 /**
  * Merge custom config with defaults
  */
-export function mergeStoreConfig(custom?: Partial<StoreConfig>): Required<StoreConfig> {
+export function mergeStoreConfig(
+  custom?: Partial<StoreConfig>
+): Required<StoreConfig> {
   return {
     ...DEFAULT_STORE_CONFIG,
     ...custom,
-    includePatterns: custom?.includePatterns || DEFAULT_STORE_CONFIG.includePatterns,
-    excludePatterns: custom?.excludePatterns || DEFAULT_STORE_CONFIG.excludePatterns,
+    includePatterns:
+      custom?.includePatterns || DEFAULT_STORE_CONFIG.includePatterns,
+    excludePatterns:
+      custom?.excludePatterns || DEFAULT_STORE_CONFIG.excludePatterns,
   };
 }
 
 /**
  * Validate store configuration
  */
-export function validateStoreConfig(config: StoreConfig): { valid: boolean; errors: string[] } {
+export function validateStoreConfig(config: StoreConfig): {
+  valid: boolean;
+  errors: string[];
+} {
   const errors: string[] = [];
 
-  if (config.chunkSize !== undefined && (config.chunkSize < 100 || config.chunkSize > 10000)) {
+  if (
+    config.chunkSize !== undefined &&
+    (config.chunkSize < 100 || config.chunkSize > 10000)
+  ) {
     errors.push('chunkSize must be between 100 and 10000');
   }
 
@@ -852,7 +906,10 @@ export function validateStoreConfig(config: StoreConfig): { valid: boolean; erro
     if (config.chunkOverlap < 0) {
       errors.push('chunkOverlap must be non-negative');
     }
-    if (config.chunkSize !== undefined && config.chunkOverlap >= config.chunkSize) {
+    if (
+      config.chunkSize !== undefined &&
+      config.chunkOverlap >= config.chunkSize
+    ) {
       errors.push('chunkOverlap must be less than chunkSize');
     }
   }
@@ -878,7 +935,8 @@ export { RAGStoreRegistry, storeRegistry };
  */
 export const ragStoreManageTool = {
   name: 'rag-store-manage',
-  description: 'Manage RAG vector stores - create, list, get, delete, sync, and check status',
+  description:
+    'Manage RAG vector stores - create, list, get, delete, sync, and check status',
   inputSchema: {
     type: 'object',
     properties: {

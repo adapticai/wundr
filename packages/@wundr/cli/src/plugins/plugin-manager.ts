@@ -314,28 +314,46 @@ export class PluginManager {
   }
 
   /**
-   * Get available plugins from registry
+   * Get available plugins by scanning the plugins directory on the filesystem.
+   * Returns an empty array if the directory does not exist or contains no valid plugins.
    */
   async getAvailablePlugins(): Promise<any[]> {
     try {
-      // This would query a plugin registry
-      // For now, return mock data
-      return [
-        {
-          name: '@wundr/plugin-git',
-          version: '1.0.0',
-          description: 'Git integration plugin',
-          downloads: 1000,
-          updated: new Date().toISOString(),
-        },
-        {
-          name: '@wundr/plugin-docker',
-          version: '1.2.0',
-          description: 'Docker integration plugin',
-          downloads: 800,
-          updated: new Date().toISOString(),
-        },
-      ];
+      if (!(await fs.pathExists(this.pluginsDir))) {
+        logger.debug(`Plugin directory not found: ${this.pluginsDir}`);
+        return [];
+      }
+
+      const entries = await fs.readdir(this.pluginsDir);
+      const plugins: any[] = [];
+
+      for (const entry of entries) {
+        const entryPath = path.join(this.pluginsDir, entry);
+        const packageJsonPath = path.join(entryPath, 'package.json');
+
+        if (!(await fs.pathExists(packageJsonPath))) {
+          continue;
+        }
+
+        try {
+          const packageJson = await fs.readJson(packageJsonPath);
+          const stat = await fs.stat(entryPath);
+          plugins.push({
+            name: packageJson.name || entry,
+            version: packageJson.version || 'unknown',
+            description: packageJson.description || '',
+            author: packageJson.author || '',
+            updated: stat.mtime.toISOString(),
+          });
+        } catch (parseError) {
+          logger.debug(
+            `Failed to read package.json for plugin ${entry}:`,
+            parseError
+          );
+        }
+      }
+
+      return plugins;
     } catch (error) {
       logger.debug('Failed to get available plugins:', error);
       return [];

@@ -1,35 +1,39 @@
 // Learn more: https://github.com/testing-library/jest-dom
-import '@testing-library/jest-dom'
-import { TestSetup, TestIsolation, customMatchers } from './__tests__/setup/test-environment'
+import '@testing-library/jest-dom';
+import {
+  TestSetup,
+  TestIsolation,
+  customMatchers,
+} from './__tests__/setup/test-environment';
 
 // Extend Jest with custom matchers
-expect.extend(customMatchers)
+expect.extend(customMatchers);
 
 // Global setup
 beforeAll(async () => {
-  await TestSetup.setupBeforeAll()
-  TestIsolation.setup()
-})
+  await TestSetup.setupBeforeAll();
+  TestIsolation.setup();
+});
 
 afterAll(async () => {
-  await TestSetup.teardownAfterAll()
-  TestIsolation.teardown()
-})
+  await TestSetup.teardownAfterAll();
+  TestIsolation.teardown();
+});
 
 beforeEach(() => {
-  TestSetup.setupBeforeEach()
-})
+  TestSetup.setupBeforeEach();
+});
 
 afterEach(() => {
-  TestSetup.teardownAfterEach()
-})
+  TestSetup.teardownAfterEach();
+});
 
 // Mock Chart.js - Keep minimal mocking for charts
 jest.mock('chart.js', () => ({
   Chart: jest.fn().mockImplementation(() => ({
     destroy: jest.fn(),
     update: jest.fn(),
-    render: jest.fn()
+    render: jest.fn(),
   })),
   CategoryScale: jest.fn(),
   LinearScale: jest.fn(),
@@ -44,57 +48,57 @@ jest.mock('chart.js', () => ({
   Legend: jest.fn(),
   Filler: jest.fn(),
   register: jest.fn(),
-}))
+}));
 
 // Mock react-chartjs-2 with simple DOM elements
 jest.mock('react-chartjs-2', () => ({
-  Line: (props) => {
+  Line: props => {
     return {
       type: 'canvas',
       props: {
         'data-testid': 'line-chart',
         'data-chart-type': 'line',
-        'data-datasets': props.data?.datasets?.length || 0
-      }
-    }
+        'data-datasets': props.data?.datasets?.length || 0,
+      },
+    };
   },
-  Bar: (props) => {
+  Bar: props => {
     return {
       type: 'canvas',
       props: {
         'data-testid': 'bar-chart',
         'data-chart-type': 'bar',
-        'data-datasets': props.data?.datasets?.length || 0
-      }
-    }
+        'data-datasets': props.data?.datasets?.length || 0,
+      },
+    };
   },
-  Doughnut: (props) => {
+  Doughnut: props => {
     return {
       type: 'canvas',
       props: {
         'data-testid': 'doughnut-chart',
         'data-chart-type': 'doughnut',
-        'data-datasets': props.data?.datasets?.length || 0
-      }
-    }
+        'data-datasets': props.data?.datasets?.length || 0,
+      },
+    };
   },
-  Radar: (props) => {
+  Radar: props => {
     return {
       type: 'canvas',
       props: {
         'data-testid': 'radar-chart',
         'data-chart-type': 'radar',
-        'data-datasets': props.data?.datasets?.length || 0
-      }
-    }
+        'data-datasets': props.data?.datasets?.length || 0,
+      },
+    };
   },
-}))
+}));
 
 // Mock next/navigation with more realistic router behavior
-const mockPush = jest.fn()
-const mockReplace = jest.fn()
-const mockBack = jest.fn()
-const mockPrefetch = jest.fn()
+const mockPush = jest.fn();
+const mockReplace = jest.fn();
+const mockBack = jest.fn();
+const mockPrefetch = jest.fn();
 
 jest.mock('next/navigation', () => ({
   useRouter() {
@@ -105,16 +109,16 @@ jest.mock('next/navigation', () => ({
       back: mockBack,
       pathname: '/',
       query: {},
-      asPath: '/'
-    }
+      asPath: '/',
+    };
   },
   usePathname() {
-    return '/'
+    return '/';
   },
   useSearchParams() {
-    return new URLSearchParams()
+    return new URLSearchParams();
   },
-}))
+}));
 
 // Mock next-themes
 jest.mock('next-themes', () => ({
@@ -122,22 +126,21 @@ jest.mock('next-themes', () => ({
     theme: 'light',
     setTheme: jest.fn(),
     systemTheme: 'light',
-    themes: ['light', 'dark', 'system']
+    themes: ['light', 'dark', 'system'],
   }),
   ThemeProvider: ({ children }) => children,
-}))
+}));
 
 // Mock lucide-react icons with simple objects
 jest.mock('lucide-react', () => {
-  const createMockIcon = (name) => 
-    (props) => ({
-      type: 'svg',
-      props: {
-        'data-testid': `${name.toLowerCase()}-icon`,
-        'data-icon': name.toLowerCase(),
-        ...props
-      }
-    })
+  const createMockIcon = name => props => ({
+    type: 'svg',
+    props: {
+      'data-testid': `${name.toLowerCase()}-icon`,
+      'data-icon': name.toLowerCase(),
+      ...props,
+    },
+  });
 
   return {
     __esModule: true,
@@ -162,8 +165,8 @@ jest.mock('lucide-react', () => {
     ZoomIn: createMockIcon('ZoomIn'),
     ZoomOut: createMockIcon('ZoomOut'),
     Maximize2: createMockIcon('Maximize2'),
-  }
-})
+  };
+});
 
 // Enhanced window.matchMedia mock
 Object.defineProperty(window, 'matchMedia', {
@@ -178,7 +181,7 @@ Object.defineProperty(window, 'matchMedia', {
     removeEventListener: jest.fn(),
     dispatchEvent: jest.fn(),
   })),
-})
+});
 
 // Enhanced Canvas API mock
 const createCanvasContext = () => ({
@@ -207,10 +210,10 @@ const createCanvasContext = () => ({
   rect: jest.fn(),
   clip: jest.fn(),
   createLinearGradient: jest.fn(() => ({
-    addColorStop: jest.fn()
+    addColorStop: jest.fn(),
   })),
   createRadialGradient: jest.fn(() => ({
-    addColorStop: jest.fn()
+    addColorStop: jest.fn(),
   })),
   getTransform: jest.fn(() => ({ a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 })),
   setLineDash: jest.fn(),
@@ -221,7 +224,7 @@ const createCanvasContext = () => ({
     height: 600,
     style: {},
     toDataURL: jest.fn(() => 'data:image/png;base64,mock'),
-    toBlob: jest.fn()
+    toBlob: jest.fn(),
   },
   globalAlpha: 1,
   globalCompositeOperation: 'source-over',
@@ -239,33 +242,33 @@ const createCanvasContext = () => ({
   font: '10px sans-serif',
   textAlign: 'start',
   textBaseline: 'alphabetic',
-  direction: 'ltr'
-})
+  direction: 'ltr',
+});
 
-HTMLCanvasElement.prototype.getContext = jest.fn((contextType) => {
+HTMLCanvasElement.prototype.getContext = jest.fn(contextType => {
   if (contextType === '2d') {
-    return createCanvasContext()
+    return createCanvasContext();
   }
-  return null
-})
+  return null;
+});
 
 // Mock ResizeObserver
 global.ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn(),
-}))
+}));
 
 // Mock IntersectionObserver
 global.IntersectionObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn(),
-}))
+}));
 
 // Enhanced URL mocks
-global.URL.createObjectURL = jest.fn(() => 'mock-object-url')
-global.URL.revokeObjectURL = jest.fn()
+global.URL.createObjectURL = jest.fn(() => 'mock-object-url');
+global.URL.revokeObjectURL = jest.fn();
 
 // Mock FileReader
 global.FileReader = jest.fn().mockImplementation(() => ({
@@ -278,8 +281,8 @@ global.FileReader = jest.fn().mockImplementation(() => ({
   readyState: 0,
   EMPTY: 0,
   LOADING: 1,
-  DONE: 2
-}))
+  DONE: 2,
+}));
 
 // Performance API mock
 Object.defineProperty(window, 'performance', {
@@ -288,52 +291,49 @@ Object.defineProperty(window, 'performance', {
     memory: {
       usedJSHeapSize: 1000000,
       totalJSHeapSize: 2000000,
-      jsHeapSizeLimit: 4000000000
+      jsHeapSizeLimit: 4000000000,
     },
     mark: jest.fn(),
     measure: jest.fn(),
     getEntriesByName: jest.fn(() => []),
     getEntriesByType: jest.fn(() => []),
     clearMarks: jest.fn(),
-    clearMeasures: jest.fn()
-  }
-})
+    clearMeasures: jest.fn(),
+  },
+});
 
 // Suppress specific console warnings during tests
-const originalError = console.error
-const originalWarn = console.warn
+const originalError = console.error;
+const originalWarn = console.warn;
 
 beforeAll(() => {
   console.error = (...args) => {
-    const message = args[0]?.toString() || ''
+    const message = args[0]?.toString() || '';
     const suppressedMessages = [
       'Warning: ReactDOM.render',
       'Warning: componentWillMount',
       'Warning: componentWillReceiveProps',
       'Warning: componentWillUpdate',
       'act(...) is not supported',
-      'You are using the simple (heuristic) fragment matcher'
-    ]
-    
+      'You are using the simple (heuristic) fragment matcher',
+    ];
+
     if (!suppressedMessages.some(msg => message.includes(msg))) {
-      originalError.apply(console, args)
+      originalError.apply(console, args);
     }
-  }
-  
+  };
+
   console.warn = (...args) => {
-    const message = args[0]?.toString() || ''
-    const suppressedMessages = [
-      'Failed prop type',
-      'deprecated'
-    ]
-    
+    const message = args[0]?.toString() || '';
+    const suppressedMessages = ['Failed prop type', 'deprecated'];
+
     if (!suppressedMessages.some(msg => message.includes(msg))) {
-      originalWarn.apply(console, args)
+      originalWarn.apply(console, args);
     }
-  }
-})
+  };
+});
 
 afterAll(() => {
-  console.error = originalError
-  console.warn = originalWarn
-})
+  console.error = originalError;
+  console.warn = originalWarn;
+});

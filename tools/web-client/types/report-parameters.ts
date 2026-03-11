@@ -66,11 +66,19 @@ export interface ExtendedReportParameter extends ReportParameter {
     showWhen?: {
       parameter: string;
       value: ParameterValue;
-      operator?: 'equals' | 'not-equals' | 'contains' | 'greater-than' | 'less-than';
+      operator?:
+        | 'equals'
+        | 'not-equals'
+        | 'contains'
+        | 'greater-than'
+        | 'less-than';
     };
   };
   /** Custom validation function */
-  customValidation?: (value: ParameterValue, allParams: ReportParameters) => ParameterValidationResult;
+  customValidation?: (
+    value: ParameterValue,
+    allParams: ReportParameters
+  ) => ParameterValidationResult;
   /** Parameter formatting options */
   formatting?: {
     /** Display format for numbers */
@@ -195,11 +203,25 @@ export interface ParameterFormField {
   /** Field label */
   label: string;
   /** Field type */
-  type: 'text' | 'number' | 'boolean' | 'select' | 'multiselect' | 'date' | 'daterange' | 'file' | 'textarea' | 'color';
+  type:
+    | 'text'
+    | 'number'
+    | 'boolean'
+    | 'select'
+    | 'multiselect'
+    | 'date'
+    | 'daterange'
+    | 'file'
+    | 'textarea'
+    | 'color';
   /** Field value */
   value: ParameterValue;
   /** Field options for select types */
-  options?: Array<{ value: ParameterValue; label: string; description?: string }>;
+  options?: Array<{
+    value: ParameterValue;
+    label: string;
+    description?: string;
+  }>;
   /** Field validation */
   validation: {
     /** Required field */
@@ -406,12 +428,18 @@ export interface FormValidationResult {
 /**
  * Parameter change event handler
  */
-export type ParameterChangeHandler = (key: string, value: ParameterValue) => void;
+export type ParameterChangeHandler = (
+  key: string,
+  value: ParameterValue
+) => void;
 
 /**
  * Step navigation event handler
  */
-export type StepNavigationHandler = (step: number, direction: 'next' | 'previous' | 'jump') => void;
+export type StepNavigationHandler = (
+  step: number,
+  direction: 'next' | 'previous' | 'jump'
+) => void;
 
 /**
  * Template selection event handler

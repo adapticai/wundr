@@ -56,17 +56,21 @@ export interface AnalyzerConfig {
 }
 
 export class CodeAnalyzer {
-  constructor(_config?: Record<string, AnalyzerConfig>) {
+  private readonly maxFiles: number;
+
+  constructor(_config?: Record<string, AnalyzerConfig>, maxFiles = 1000) {
     // Initialize analyzer with optional configuration
+    this.maxFiles = maxFiles;
   }
 
   async analyze(projectPath: string): Promise<AnalysisReport> {
     const startTime = Date.now();
     const filePaths = await this.getFileList(projectPath);
+    const filesToAnalyze = filePaths.slice(0, this.maxFiles);
     const results: AnalysisResult[] = [];
 
     // Simple analysis implementation
-    for (const filePath of filePaths.slice(0, 5)) { // Limit for demo
+    for (const filePath of filesToAnalyze) {
       if (filePath.includes('.test.') || filePath.includes('.spec.')) {
         results.push({
           id: `test-file-${Date.now()}`,
@@ -87,7 +91,7 @@ export class CodeAnalyzer {
       timestamp: new Date(),
       projectPath,
       totalFiles: filePaths.length,
-      analyzedFiles: Math.min(5, filePaths.length),
+      analyzedFiles: filesToAnalyze.length,
       results,
       summary: {
         totalIssues: results.length,
@@ -125,11 +129,7 @@ export class CodeAnalyzer {
     for (const pattern of patterns) {
       try {
         const files = await glob(pattern, {
-          ignore: [
-            '**/node_modules/**',
-            '**/dist/**',
-            '**/build/**',
-          ],
+          ignore: ['**/node_modules/**', '**/dist/**', '**/build/**'],
         });
         allFiles.push(...files);
       } catch (error) {

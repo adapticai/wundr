@@ -1,15 +1,15 @@
 'use client';
 
 import React from 'react';
-import { 
-  FileText, 
-  CheckCircle, 
-  AlertCircle, 
-  Clock, 
-  X, 
-  Eye, 
+import {
+  FileText,
+  CheckCircle,
+  AlertCircle,
+  Clock,
+  X,
+  Eye,
   RotateCcw,
-  Loader2
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -24,12 +24,12 @@ interface FileUploadItemProps {
   showPreview?: boolean;
 }
 
-export function FileUploadItem({ 
-  upload, 
-  onRemove, 
-  onPreview, 
+export function FileUploadItem({
+  upload,
+  onRemove,
+  onPreview,
   onRetry,
-  showPreview = true 
+  showPreview = true,
 }: FileUploadItemProps) {
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -42,15 +42,15 @@ export function FileUploadItem({
   const getStatusIcon = () => {
     switch (upload.status) {
       case 'completed':
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
+        return <CheckCircle className='h-5 w-5 text-green-500' />;
       case 'uploading':
-        return <Loader2 className="h-5 w-5 text-blue-500 animate-spin" />;
+        return <Loader2 className='h-5 w-5 text-blue-500 animate-spin' />;
       case 'processing':
-        return <Clock className="h-5 w-5 text-blue-500" />;
+        return <Clock className='h-5 w-5 text-blue-500' />;
       case 'error':
-        return <AlertCircle className="h-5 w-5 text-red-500" />;
+        return <AlertCircle className='h-5 w-5 text-red-500' />;
       default:
-        return <FileText className="h-5 w-5 text-gray-500" />;
+        return <FileText className='h-5 w-5 text-gray-500' />;
     }
   };
 
@@ -60,7 +60,7 @@ export function FileUploadItem({
       processing: 'secondary',
       uploading: 'secondary',
       error: 'destructive',
-      pending: 'outline'
+      pending: 'outline',
     } as const;
 
     const labels = {
@@ -68,7 +68,7 @@ export function FileUploadItem({
       processing: 'Processing',
       uploading: 'Uploading',
       error: 'Failed',
-      pending: 'Pending'
+      pending: 'Pending',
     };
 
     return (
@@ -94,16 +94,16 @@ export function FileUploadItem({
   };
 
   return (
-    <div className="border rounded-lg p-4 space-y-3 transition-all duration-200 hover:shadow-sm">
+    <div className='border rounded-lg p-4 space-y-3 transition-all duration-200 hover:shadow-sm'>
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-start space-x-3 flex-1 min-w-0">
+      <div className='flex items-start justify-between'>
+        <div className='flex items-start space-x-3 flex-1 min-w-0'>
           {getStatusIcon()}
-          <div className="flex-1 min-w-0">
-            <p className="font-medium truncate" title={upload.file.name}>
+          <div className='flex-1 min-w-0'>
+            <p className='font-medium truncate' title={upload.file.name}>
               {upload.file.name}
             </p>
-            <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
+            <div className='flex items-center space-x-2 text-sm text-muted-foreground mt-1'>
               <span>{formatFileSize(upload.file.size)}</span>
               <span>•</span>
               <span>{getFileTypeFromName(upload.file.name)}</span>
@@ -116,48 +116,48 @@ export function FileUploadItem({
             </div>
           </div>
         </div>
-        
-        <div className="flex items-center space-x-2 ml-4">
+
+        <div className='flex items-center space-x-2 ml-4'>
           {getStatusBadge()}
-          
+
           {showPreview && upload.preview && onPreview && (
             <Button
-              variant="outline"
-              size="sm"
+              variant='outline'
+              size='sm'
               onClick={() => onPreview(upload)}
-              title="Preview file content"
+              title='Preview file content'
             >
-              <Eye className="h-4 w-4" />
+              <Eye className='h-4 w-4' />
             </Button>
           )}
-          
+
           {upload.status === 'error' && onRetry && (
             <Button
-              variant="outline"
-              size="sm"
+              variant='outline'
+              size='sm'
               onClick={() => onRetry(upload.id)}
-              title="Retry upload"
+              title='Retry upload'
             >
-              <RotateCcw className="h-4 w-4" />
+              <RotateCcw className='h-4 w-4' />
             </Button>
           )}
-          
+
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={() => onRemove(upload.id)}
-            title="Remove file"
+            title='Remove file'
           >
-            <X className="h-4 w-4" />
+            <X className='h-4 w-4' />
           </Button>
         </div>
       </div>
 
       {/* Progress Bar */}
       {upload.status === 'uploading' && (
-        <div className="space-y-2">
-          <Progress value={upload.progress} className="w-full" />
-          <p className="text-sm text-muted-foreground">
+        <div className='space-y-2'>
+          <Progress value={upload.progress} className='w-full' />
+          <p className='text-sm text-muted-foreground'>
             Uploading... {Math.round(upload.progress)}%
           </p>
         </div>
@@ -165,14 +165,20 @@ export function FileUploadItem({
 
       {/* Processing Indicator */}
       {upload.status === 'processing' && (
-        <div className="space-y-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex space-x-1">
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+        <div className='space-y-2'>
+          <div className='flex items-center space-x-2'>
+            <div className='flex space-x-1'>
+              <div className='w-2 h-2 bg-blue-500 rounded-full animate-pulse'></div>
+              <div
+                className='w-2 h-2 bg-blue-500 rounded-full animate-pulse'
+                style={{ animationDelay: '0.2s' }}
+              ></div>
+              <div
+                className='w-2 h-2 bg-blue-500 rounded-full animate-pulse'
+                style={{ animationDelay: '0.4s' }}
+              ></div>
             </div>
-            <span className="text-sm text-muted-foreground">
+            <span className='text-sm text-muted-foreground'>
               Processing file content...
             </span>
           </div>
@@ -181,43 +187,46 @@ export function FileUploadItem({
 
       {/* Error Message */}
       {upload.error && (
-        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
-          <p className="text-sm text-destructive font-medium">Error</p>
-          <p className="text-sm text-destructive/80 mt-1">{upload.error}</p>
+        <div className='p-3 bg-destructive/10 border border-destructive/20 rounded-md'>
+          <p className='text-sm text-destructive font-medium'>Error</p>
+          <p className='text-sm text-destructive/80 mt-1'>{upload.error}</p>
         </div>
       )}
 
       {/* Success Message */}
       {upload.status === 'completed' && (
-        <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
-          <p className="text-sm text-green-700 dark:text-green-300">
+        <div className='p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md'>
+          <p className='text-sm text-green-700 dark:text-green-300'>
             ✓ Upload completed successfully
-            {upload.uploadedAt && ` at ${upload.uploadedAt.toLocaleTimeString()}`}
+            {upload.uploadedAt &&
+              ` at ${upload.uploadedAt.toLocaleTimeString()}`}
           </p>
         </div>
       )}
 
       {/* Preview Summary */}
-      {upload.preview && (upload.status === 'completed' || upload.status === 'pending') && (
-        <div className="p-3 bg-muted/50 rounded-md">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <FileText className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Preview Available</span>
+      {upload.preview &&
+        (upload.status === 'completed' || upload.status === 'pending') && (
+          <div className='p-3 bg-muted/50 rounded-md'>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center space-x-2'>
+                <FileText className='h-4 w-4 text-muted-foreground' />
+                <span className='text-sm font-medium'>Preview Available</span>
+              </div>
+              {upload.preview.type === 'json' && (
+                <span className='text-xs text-muted-foreground'>
+                  {upload.preview.size} properties
+                </span>
+              )}
+              {upload.preview.type === 'csv' && (
+                <span className='text-xs text-muted-foreground'>
+                  {upload.preview.rows} rows, {upload.preview.headers?.length}{' '}
+                  columns
+                </span>
+              )}
             </div>
-            {upload.preview.type === 'json' && (
-              <span className="text-xs text-muted-foreground">
-                {upload.preview.size} properties
-              </span>
-            )}
-            {upload.preview.type === 'csv' && (
-              <span className="text-xs text-muted-foreground">
-                {upload.preview.rows} rows, {upload.preview.headers?.length} columns
-              </span>
-            )}
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 }

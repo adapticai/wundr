@@ -141,10 +141,11 @@ Ready to transform your codebase? Let's get started! 🎉
 `,
     frontmatter: {
       title: 'Getting Started',
-      description: 'Quick setup and first steps with the monorepo refactoring toolkit',
+      description:
+        'Quick setup and first steps with the monorepo refactoring toolkit',
       category: 'guides',
-      tags: ['setup', 'guide', 'quick-start']
-    }
+      tags: ['setup', 'guide', 'quick-start'],
+    },
   };
 };
 
@@ -156,18 +157,17 @@ export default function GettingStartedPage() {
     slug: 'getting-started',
     path: '/dashboard/docs/getting-started',
     category: 'guides',
-    description: 'Quick setup and first steps with the monorepo refactoring toolkit',
+    description:
+      'Quick setup and first steps with the monorepo refactoring toolkit',
     tags: ['setup', 'guide', 'quick-start'],
-    order: 1
+    order: 1,
   };
 
   return (
     <DocsLayout currentPage={currentPage}>
-      <div className="max-w-4xl space-y-6">
+      <div className='max-w-4xl space-y-6'>
         {/* Search functionality */}
-        <SearchableContent
-          content={content}
-        />
+        <SearchableContent content={content} />
 
         {/* Main content */}
         <MarkdownRenderer

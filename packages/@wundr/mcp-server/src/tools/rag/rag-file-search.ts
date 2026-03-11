@@ -18,7 +18,10 @@ import * as path from 'path';
 import { z } from 'zod';
 import type { McpToolResult } from '../registry.js';
 import { successResult, errorResult } from '../registry.js';
-import { GeminiRAGService, getDefaultRAGService } from '../../services/gemini/index.js';
+import {
+  GeminiRAGService,
+  getDefaultRAGService,
+} from '../../services/gemini/index.js';
 import type {
   RAGStore,
   QueryResult,
@@ -26,9 +29,7 @@ import type {
   RAGSearchOptions,
   RAGChunk,
 } from './types.js';
-import {
-  RagFileSearchInputSchema as ZodRagFileSearchInputSchema,
-} from './types.js';
+import { RagFileSearchInputSchema as ZodRagFileSearchInputSchema } from './types.js';
 
 // ============================================================================
 // Default Configuration Constants
@@ -62,33 +63,68 @@ export const MAX_FILE_SIZE = 1024 * 1024; // 1MB
 /**
  * Supported file type categories
  */
-export type FileTypeCategory = 'code' | 'documentation' | 'config' | 'data' | 'all';
+export type FileTypeCategory =
+  | 'code'
+  | 'documentation'
+  | 'config'
+  | 'data'
+  | 'all';
 
 /**
  * Mapping of file type categories to extensions
  */
 export const FILE_TYPE_EXTENSIONS: Record<FileTypeCategory, string[]> = {
   code: [
-    '.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs',
-    '.py', '.pyi',
-    '.java', '.kt', '.scala',
-    '.go', '.rs',
-    '.c', '.cpp', '.cc', '.h', '.hpp',
-    '.cs', '.rb', '.php', '.swift',
-    '.vue', '.svelte',
+    '.ts',
+    '.tsx',
+    '.js',
+    '.jsx',
+    '.mjs',
+    '.cjs',
+    '.py',
+    '.pyi',
+    '.java',
+    '.kt',
+    '.scala',
+    '.go',
+    '.rs',
+    '.c',
+    '.cpp',
+    '.cc',
+    '.h',
+    '.hpp',
+    '.cs',
+    '.rb',
+    '.php',
+    '.swift',
+    '.vue',
+    '.svelte',
   ],
   documentation: [
-    '.md', '.mdx', '.markdown',
-    '.txt', '.text',
-    '.rst', '.adoc',
-    '.html', '.htm',
+    '.md',
+    '.mdx',
+    '.markdown',
+    '.txt',
+    '.text',
+    '.rst',
+    '.adoc',
+    '.html',
+    '.htm',
   ],
   config: [
-    '.json', '.jsonc', '.json5',
-    '.yaml', '.yml',
-    '.toml', '.ini', '.cfg',
-    '.env', '.env.local', '.env.example',
-    '.xml', '.properties',
+    '.json',
+    '.jsonc',
+    '.json5',
+    '.yaml',
+    '.yml',
+    '.toml',
+    '.ini',
+    '.cfg',
+    '.env',
+    '.env.local',
+    '.env.example',
+    '.xml',
+    '.properties',
   ],
   data: ['.csv', '.tsv', '.sql', '.graphql', '.gql'],
   all: [], // Empty means all files
@@ -127,7 +163,7 @@ export const DEFAULT_EXCLUDE_PATTERNS: string[] = [
  */
 export function filterByFileType(
   filePath: string,
-  fileTypes?: FileTypeCategory[],
+  fileTypes?: FileTypeCategory[]
 ): boolean {
   if (!fileTypes || fileTypes.length === 0 || fileTypes.includes('all')) {
     return true;
@@ -152,7 +188,7 @@ export function filterByFileType(
  * @returns Array of file extensions (with dots)
  */
 export function getExtensionsForFileTypes(
-  fileTypes?: FileTypeCategory[],
+  fileTypes?: FileTypeCategory[]
 ): string[] {
   if (!fileTypes || fileTypes.length === 0 || fileTypes.includes('all')) {
     return [];
@@ -178,7 +214,7 @@ export function getExtensionsForFileTypes(
  * @returns Array of glob patterns
  */
 export function fileTypesToIncludePatterns(
-  fileTypes?: FileTypeCategory[],
+  fileTypes?: FileTypeCategory[]
 ): string[] {
   const extensions = getExtensionsForFileTypes(fileTypes);
 
@@ -186,7 +222,7 @@ export function fileTypesToIncludePatterns(
     return ['**/*'];
   }
 
-  return extensions.map((ext) => `**/*${ext}`);
+  return extensions.map(ext => `**/*${ext}`);
 }
 
 /**
@@ -251,7 +287,10 @@ export function generateStoreName(targetPath: string): string {
 
 export const RagFileSearchInputSchema = z.object({
   targetPath: z.string().describe('Target path to search (directory or file)'),
-  query: z.string().min(1, 'Query cannot be empty').describe('Natural language search query'),
+  query: z
+    .string()
+    .min(1, 'Query cannot be empty')
+    .describe('Natural language search query'),
   includePatterns: z
     .array(z.string())
     .optional()
@@ -264,26 +303,39 @@ export const RagFileSearchInputSchema = z.object({
     .array(z.enum(['code', 'documentation', 'config', 'data', 'all']))
     .optional()
     .describe('File type categories to include'),
-  storeName: z.string().optional().describe('Name for the RAG store (for caching/reuse)'),
+  storeName: z
+    .string()
+    .optional()
+    .describe('Name for the RAG store (for caching/reuse)'),
   forceReindex: z
     .boolean()
     .optional()
     .default(false)
     .describe('Force reindexing even if store exists'),
-  chunkingConfig: z.object({
-    strategy: z.enum(['fixed', 'semantic', 'paragraph', 'sentence']).optional(),
-    chunkSize: z.number().optional(),
-    chunkOverlap: z.number().optional(),
-    minChunkSize: z.number().optional(),
-    maxChunksPerFile: z.number().optional(),
-  }).optional().describe('Chunking configuration'),
-  metadataFilter: z.object({
-    pathContains: z.string().optional(),
-    extension: z.union([z.string(), z.array(z.string())]).optional(),
-    modifiedAfter: z.string().optional(),
-    modifiedBefore: z.string().optional(),
-    custom: z.record(z.union([z.string(), z.number(), z.boolean()])).optional(),
-  }).optional().describe('Metadata filters for search'),
+  chunkingConfig: z
+    .object({
+      strategy: z
+        .enum(['fixed', 'semantic', 'paragraph', 'sentence'])
+        .optional(),
+      chunkSize: z.number().optional(),
+      chunkOverlap: z.number().optional(),
+      minChunkSize: z.number().optional(),
+      maxChunksPerFile: z.number().optional(),
+    })
+    .optional()
+    .describe('Chunking configuration'),
+  metadataFilter: z
+    .object({
+      pathContains: z.string().optional(),
+      extension: z.union([z.string(), z.array(z.string())]).optional(),
+      modifiedAfter: z.string().optional(),
+      modifiedBefore: z.string().optional(),
+      custom: z
+        .record(z.union([z.string(), z.number(), z.boolean()]))
+        .optional(),
+    })
+    .optional()
+    .describe('Metadata filters for search'),
   maxResults: z
     .number()
     .int()
@@ -409,7 +461,7 @@ export interface RagFileSearchOutput {
 export function applyMetadataFilter(
   filePath: string,
   stats: fs.Stats,
-  filter?: RagFileSearchInput['metadataFilter'],
+  filter?: RagFileSearchInput['metadataFilter']
 ): boolean {
   if (!filter) {
     return true;
@@ -427,7 +479,7 @@ export function applyMetadataFilter(
       ? filter.extension
       : [filter.extension];
 
-    if (!allowedExtensions.some((e) => ext === e || ext === `.${e}`)) {
+    if (!allowedExtensions.some(e => ext === e || ext === `.${e}`)) {
       return false;
     }
   }
@@ -467,7 +519,7 @@ export function applyMetadataFilter(
  */
 function generateSearchSummary(
   query: string,
-  results: FileSearchResult[],
+  results: FileSearchResult[]
 ): string {
   if (results.length === 0) {
     return `No relevant files found for query: "${query}"`;
@@ -475,15 +527,24 @@ function generateSearchSummary(
 
   const topFiles = results.slice(0, 3);
   const fileList = topFiles
-    .map((r) => `- ${r.relativePath} (score: ${(r.relevanceScore * 100).toFixed(1)}%)`)
+    .map(
+      r =>
+        `- ${r.relativePath} (score: ${(r.relevanceScore * 100).toFixed(1)}%)`
+    )
     .join('\n');
 
-  const totalChunks = results.reduce((sum, r) => sum + r.matchedChunks.length, 0);
-  const avgScore = results.reduce((sum, r) => sum + r.relevanceScore, 0) / results.length;
+  const totalChunks = results.reduce(
+    (sum, r) => sum + r.matchedChunks.length,
+    0
+  );
+  const avgScore =
+    results.reduce((sum, r) => sum + r.relevanceScore, 0) / results.length;
 
-  return `Found ${results.length} relevant file(s) with ${totalChunks} matching section(s) for query: "${query}"\n\n` +
+  return (
+    `Found ${results.length} relevant file(s) with ${totalChunks} matching section(s) for query: "${query}"\n\n` +
     `Top matches:\n${fileList}\n\n` +
-    `Average relevance: ${(avgScore * 100).toFixed(1)}%`;
+    `Average relevance: ${(avgScore * 100).toFixed(1)}%`
+  );
 }
 
 // ============================================================================
@@ -499,7 +560,7 @@ function generateSearchSummary(
  * @returns Search results with relevance scores, citations, and AI summary
  */
 export async function ragFileSearchHandler(
-  input: RagFileSearchInput,
+  input: RagFileSearchInput
 ): Promise<McpToolResult<RagFileSearchOutput>> {
   const startTime = Date.now();
 
@@ -507,22 +568,18 @@ export async function ragFileSearchHandler(
     // Validate input
     const validationResult = RagFileSearchInputSchema.safeParse(input);
     if (!validationResult.success) {
-      return errorResult(
-        'Input validation failed',
-        'VALIDATION_ERROR',
-        { issues: validationResult.error.issues },
-      );
+      return errorResult('Input validation failed', 'VALIDATION_ERROR', {
+        issues: validationResult.error.issues,
+      });
     }
 
     const validInput = validationResult.data;
 
     // Validate target path
     if (!validInput.targetPath) {
-      return errorResult(
-        'targetPath is required',
-        'INVALID_INPUT',
-        { field: 'targetPath' },
-      );
+      return errorResult('targetPath is required', 'INVALID_INPUT', {
+        field: 'targetPath',
+      });
     }
 
     // Resolve and validate target path
@@ -532,7 +589,7 @@ export async function ragFileSearchHandler(
       return errorResult(
         `Target path does not exist: ${resolvedPath}`,
         'PATH_NOT_FOUND',
-        { path: resolvedPath },
+        { path: resolvedPath }
       );
     }
 
@@ -541,7 +598,7 @@ export async function ragFileSearchHandler(
       return errorResult(
         `Target path is neither a file nor directory: ${resolvedPath}`,
         'INVALID_PATH_TYPE',
-        { path: resolvedPath },
+        { path: resolvedPath }
       );
     }
 
@@ -550,7 +607,9 @@ export async function ragFileSearchHandler(
     const maxResults = validInput.maxResults ?? DEFAULT_MAX_RESULTS;
 
     // Prepare include patterns from file types
-    const fileTypePatterns = fileTypesToIncludePatterns(validInput.fileTypes as FileTypeCategory[] | undefined);
+    const fileTypePatterns = fileTypesToIncludePatterns(
+      validInput.fileTypes as FileTypeCategory[] | undefined
+    );
     const includePatterns = validInput.includePatterns?.length
       ? validInput.includePatterns
       : fileTypePatterns;
@@ -579,9 +638,10 @@ export async function ragFileSearchHandler(
       await ragService.indexDirectory(resolvedPath);
 
       indexingDuration = Date.now() - indexStartTime;
-      // These would be actual values from the indexing operation
-      filesIndexed = 5; // Mock value
-      chunksCreated = 25; // Mock value
+      // These values are not returned by the indexing operation.
+      // Leave them at 0 rather than returning fabricated counts.
+      filesIndexed = 0;
+      chunksCreated = 0;
     }
 
     // Build search options
@@ -597,7 +657,7 @@ export async function ragFileSearchHandler(
     const searchResult = await ragService.search(
       validInput.query,
       resolvedPath,
-      searchOptions,
+      searchOptions
     );
 
     // Check for search errors
@@ -605,7 +665,7 @@ export async function ragFileSearchHandler(
       return errorResult(
         `Search failed: ${searchResult.error}`,
         'SEARCH_ERROR',
-        { query: validInput.query, targetPath: resolvedPath },
+        { query: validInput.query, targetPath: resolvedPath }
       );
     }
 
@@ -621,7 +681,9 @@ export async function ragFileSearchHandler(
       if (validInput.metadataFilter) {
         try {
           const fileStats = fs.statSync(filePath);
-          if (!applyMetadataFilter(filePath, fileStats, validInput.metadataFilter)) {
+          if (
+            !applyMetadataFilter(filePath, fileStats, validInput.metadataFilter)
+          ) {
             continue;
           }
         } catch {
@@ -634,7 +696,9 @@ export async function ragFileSearchHandler(
         filePath,
         startLine: chunk.lineRange?.start ?? 1,
         endLine: chunk.lineRange?.end ?? 1,
-        snippet: chunk.content.substring(0, 200) + (chunk.content.length > 200 ? '...' : ''),
+        snippet:
+          chunk.content.substring(0, 200) +
+          (chunk.content.length > 200 ? '...' : ''),
       };
 
       // Create matched chunk
@@ -650,7 +714,10 @@ export async function ragFileSearchHandler(
         const existing = fileResultsMap.get(filePath)!;
         existing.matchedChunks.push(matchedChunk);
         // Update relevance score to max of all chunks
-        existing.relevanceScore = Math.max(existing.relevanceScore, chunk.score);
+        existing.relevanceScore = Math.max(
+          existing.relevanceScore,
+          chunk.score
+        );
       } else {
         // Try to get file stats
         let fileSize = 0;
@@ -725,7 +792,7 @@ export async function ragFileSearchHandler(
         targetPath: input.targetPath,
         query: input.query,
         stack: errorStack,
-      },
+      }
     );
   }
 }
@@ -751,7 +818,8 @@ export const ragFileSearchTool = {
       includePatterns: {
         type: 'array',
         items: { type: 'string' },
-        description: 'Glob patterns to include files (e.g., ["**/*.ts", "**/*.js"])',
+        description:
+          'Glob patterns to include files (e.g., ["**/*.ts", "**/*.js"])',
       },
       excludePatterns: {
         type: 'array',

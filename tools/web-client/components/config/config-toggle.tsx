@@ -23,13 +23,13 @@ export function ConfigToggle({
 }: ConfigToggleProps) {
   return (
     <ConfigField label={label} description={description} error={error}>
-      <div className="flex items-center space-x-2">
+      <div className='flex items-center space-x-2'>
         <Switch
           checked={checked}
           onCheckedChange={onChange}
           disabled={disabled}
         />
-        <span className="text-sm text-muted-foreground">
+        <span className='text-sm text-muted-foreground'>
           {checked ? 'Enabled' : 'Disabled'}
         </span>
       </div>

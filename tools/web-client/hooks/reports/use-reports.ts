@@ -20,7 +20,8 @@ const REPORT_TEMPLATES: ReportTemplate[] = [
   {
     id: 'comprehensive-analysis',
     name: 'Comprehensive Code Analysis',
-    description: 'Complete analysis including quality metrics, dependencies, security, and recommendations',
+    description:
+      'Complete analysis including quality metrics, dependencies, security, and recommendations',
     type: 'code-quality',
     category: 'standard',
     parameters: [
@@ -51,7 +52,8 @@ const REPORT_TEMPLATES: ReportTemplate[] = [
         type: 'boolean',
         required: false,
         defaultValue: true,
-        description: 'Include dependency analysis and circular dependency detection',
+        description:
+          'Include dependency analysis and circular dependency detection',
       },
       {
         key: 'securityScan',
@@ -207,15 +209,17 @@ const REPORT_TEMPLATES: ReportTemplate[] = [
   },
 ];
 
-
 export function useReports() {
   const [reports, setReports] = useState<Report[]>([]);
-  const [templates, setTemplates] = useState<ReportTemplate[]>(REPORT_TEMPLATES);
+  const [templates, setTemplates] =
+    useState<ReportTemplate[]>(REPORT_TEMPLATES);
   const [schedules, setSchedules] = useState<ReportSchedule[]>([]);
   const [stats, setStats] = useState<ReportDashboardStats | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [analysisCache, setAnalysisCache] = useState<Map<string, CompleteAnalysisData>>(new Map());
+  const [analysisCache, setAnalysisCache] = useState<
+    Map<string, CompleteAnalysisData>
+  >(new Map());
 
   // Initialize with persisted data
   useEffect(() => {
@@ -225,12 +229,14 @@ export function useReports() {
         const savedReports = localStorage.getItem('wundr-reports');
         if (savedReports) {
           const parsedReports = JSON.parse(savedReports);
-          setReports(parsedReports.map((r: any) => ({
-            ...r,
-            createdAt: new Date(r.createdAt),
-            updatedAt: new Date(r.updatedAt),
-            completedAt: r.completedAt ? new Date(r.completedAt) : undefined,
-          })));
+          setReports(
+            parsedReports.map((r: any) => ({
+              ...r,
+              createdAt: new Date(r.createdAt),
+              updatedAt: new Date(r.updatedAt),
+              completedAt: r.completedAt ? new Date(r.completedAt) : undefined,
+            }))
+          );
         }
 
         // Load schedules from localStorage
@@ -243,9 +249,15 @@ export function useReports() {
         const currentReports = savedReports ? JSON.parse(savedReports) : [];
         setStats({
           totalReports: currentReports.length,
-          runningReports: currentReports.filter((r: any) => r.status === 'running').length,
-          scheduledReports: savedSchedules ? JSON.parse(savedSchedules).length : 0,
-          failedReports: currentReports.filter((r: any) => r.status === 'failed').length,
+          runningReports: currentReports.filter(
+            (r: any) => r.status === 'running'
+          ).length,
+          scheduledReports: savedSchedules
+            ? JSON.parse(savedSchedules).length
+            : 0,
+          failedReports: currentReports.filter(
+            (r: any) => r.status === 'failed'
+          ).length,
           recentActivity: currentReports
             .map((r: any) => ({
               id: r.id,
@@ -258,21 +270,43 @@ export function useReports() {
             .slice(0, 10),
           popularTemplates: REPORT_TEMPLATES.slice(0, 5).map(template => ({
             template,
-            usageCount: currentReports.filter((r: any) => 
-              r.metadata?.templateId === template.id
+            usageCount: currentReports.filter(
+              (r: any) => r.metadata?.templateId === template.id
             ).length,
           })),
           storageUsage: {
             total: 1000000000, // 1GB
-            used: currentReports.reduce((acc: number, r: any) => acc + (r.size || 0), 0),
-            available: 1000000000 - currentReports.reduce((acc: number, r: any) => acc + (r.size || 0), 0),
+            used: currentReports.reduce(
+              (acc: number, r: any) => acc + (r.size || 0),
+              0
+            ),
+            available:
+              1000000000 -
+              currentReports.reduce(
+                (acc: number, r: any) => acc + (r.size || 0),
+                0
+              ),
           },
           performanceMetrics: {
-            averageGenerationTime: currentReports.reduce((acc: number, r: any) => acc + (r.duration || 0), 0) / Math.max(currentReports.length, 1),
-            successRate: currentReports.length > 0 ? 
-              (currentReports.filter((r: any) => r.status === 'completed').length / currentReports.length) * 100 : 0,
-            errorRate: currentReports.length > 0 ?
-              (currentReports.filter((r: any) => r.status === 'failed').length / currentReports.length) * 100 : 0,
+            averageGenerationTime:
+              currentReports.reduce(
+                (acc: number, r: any) => acc + (r.duration || 0),
+                0
+              ) / Math.max(currentReports.length, 1),
+            successRate:
+              currentReports.length > 0
+                ? (currentReports.filter((r: any) => r.status === 'completed')
+                    .length /
+                    currentReports.length) *
+                  100
+                : 0,
+            errorRate:
+              currentReports.length > 0
+                ? (currentReports.filter((r: any) => r.status === 'failed')
+                    .length /
+                    currentReports.length) *
+                  100
+                : 0,
           },
         });
       } catch (err) {
@@ -284,93 +318,498 @@ export function useReports() {
     loadPersistedData();
   }, []);
 
-  const generateReport = useCallback(async (request: GenerateReportRequest): Promise<string> => {
-    try {
-      const template = templates.find(t => t.id === request.templateId);
-      if (!template) {
-        throw new Error('Template not found');
+  const generateReport = useCallback(
+    async (request: GenerateReportRequest): Promise<string> => {
+      try {
+        const template = templates.find(t => t.id === request.templateId);
+        if (!template) {
+          throw new Error('Template not found');
+        }
+
+        const newReport: Report = {
+          id: `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          name: request.name,
+          type: template.type,
+          status: 'pending',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: 'current-user@wundr.io',
+          description: request.description,
+          tags: request.tags || [],
+          metadata: {
+            parameters: request.parameters,
+            filters: request.filters,
+            outputFormat: request.outputFormats,
+            analysisEngine: 'Wundr Analysis Engine v2.0.0',
+            version: '2.0.0',
+          },
+          schedule: request.schedule
+            ? {
+                ...request.schedule,
+                id: `schedule-${Date.now()}`,
+                nextRun: new Date(),
+              }
+            : undefined,
+        };
+
+        // Add to reports immediately
+        setReports(prev => {
+          const updated = [newReport, ...prev];
+          localStorage.setItem('wundr-reports', JSON.stringify(updated));
+          return updated;
+        });
+
+        // Simulate report processing with realistic timing
+        setTimeout(() => {
+          setReports(prev => {
+            const updated = prev.map(r =>
+              r.id === newReport.id
+                ? { ...r, status: 'running' as const, updatedAt: new Date() }
+                : r
+            );
+            localStorage.setItem('wundr-reports', JSON.stringify(updated));
+            return updated;
+          });
+        }, 1000);
+
+        // Complete report after estimated duration
+        const duration = (template.estimatedDuration || 300) * 1000;
+        setTimeout(() => {
+          setReports(prev => {
+            const updated = prev.map(r =>
+              r.id === newReport.id
+                ? {
+                    ...r,
+                    status: 'completed' as const,
+                    completedAt: new Date(),
+                    updatedAt: new Date(),
+                    size: Math.floor(Math.random() * 5000000) + 1000000,
+                    duration: template.estimatedDuration || 300,
+                  }
+                : r
+            );
+            localStorage.setItem('wundr-reports', JSON.stringify(updated));
+            return updated;
+          });
+        }, duration + 2000);
+
+        return newReport.id;
+      } catch (err) {
+        throw new Error(
+          err instanceof Error ? err.message : 'Failed to generate report'
+        );
       }
+    },
+    [templates]
+  );
 
-      const newReport: Report = {
-        id: `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        name: request.name,
-        type: template.type,
-        status: 'pending',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        createdBy: 'current-user@wundr.io',
-        description: request.description,
-        tags: request.tags || [],
-        metadata: {
-          parameters: request.parameters,
-          filters: request.filters,
-          outputFormat: request.outputFormats,
-          analysisEngine: 'Wundr Analysis Engine v2.0.0',
-          version: '2.0.0',
-        },
-        schedule: request.schedule ? {
-          ...request.schedule,
-          id: `schedule-${Date.now()}`,
-          nextRun: new Date(),
-        } : undefined,
-      };
+  const exportReport = useCallback(
+    async (reportId: string, format: ExportFormat): Promise<void> => {
+      try {
+        // Simulate export process
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Add to reports immediately
-      setReports(prev => {
-        const updated = [newReport, ...prev];
-        localStorage.setItem('wundr-reports', JSON.stringify(updated));
-        return updated;
-      });
+        // In a real implementation, this would trigger a download
+        const report = reports.find(r => r.id === reportId);
+        if (report) {
+          const blob = new Blob(['Mock report data'], {
+            type: 'application/octet-stream',
+          });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${report.name}.${format}`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }
+      } catch (err) {
+        throw new Error(
+          err instanceof Error ? err.message : 'Failed to export report'
+        );
+      }
+    },
+    [reports]
+  );
 
-      // Simulate report processing with realistic timing
-      setTimeout(() => {
-        setReports(prev => {
-          const updated = prev.map(r => 
-            r.id === newReport.id 
-              ? { ...r, status: 'running' as const, updatedAt: new Date() }
-              : r
-          );
-          localStorage.setItem('wundr-reports', JSON.stringify(updated));
-          return updated;
-        });
-      }, 1000);
-
-      // Complete report after estimated duration
-      const duration = (template.estimatedDuration || 300) * 1000;
-      setTimeout(() => {
-        setReports(prev => {
-          const updated = prev.map(r => 
-            r.id === newReport.id 
-              ? { 
-                  ...r, 
-                  status: 'completed' as const, 
-                  completedAt: new Date(),
-                  updatedAt: new Date(),
-                  size: Math.floor(Math.random() * 5000000) + 1000000,
-                  duration: template.estimatedDuration || 300,
-                }
-              : r
-          );
-          localStorage.setItem('wundr-reports', JSON.stringify(updated));
-          return updated;
-        });
-      }, duration + 2000);
-
-      return newReport.id;
-    } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to generate report');
-    }
-  }, [templates]);
-
-  const exportReport = useCallback(async (reportId: string, format: ExportFormat): Promise<void> => {
+  const deleteReport = useCallback(async (reportId: string): Promise<void> => {
     try {
-      // Simulate export process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // In a real implementation, this would trigger a download
-      const report = reports.find(r => r.id === reportId);
-      if (report) {
-        const blob = new Blob(['Mock report data'], { type: 'application/octet-stream' });
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setReports(prev => prev.filter(r => r.id !== reportId));
+    } catch (err) {
+      throw new Error(
+        err instanceof Error ? err.message : 'Failed to delete report'
+      );
+    }
+  }, []);
+
+  const scheduleReport = useCallback(
+    async (
+      schedule: Omit<ReportSchedule, 'id' | 'lastRun' | 'nextRun'>
+    ): Promise<string> => {
+      try {
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const newSchedule: ReportSchedule = {
+          ...schedule,
+          id: Math.random().toString(36).substr(2, 9),
+          nextRun: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
+        };
+
+        setSchedules(prev => [...prev, newSchedule]);
+        return newSchedule.id;
+      } catch (err) {
+        throw new Error(
+          err instanceof Error ? err.message : 'Failed to schedule report'
+        );
+      }
+    },
+    []
+  );
+
+  const getHistoricalReports = useCallback(
+    async (reportId: string): Promise<HistoricalReport> => {
+      try {
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const report = reports.find(r => r.id === reportId);
+        if (!report) {
+          throw new Error('Report not found');
+        }
+
+        return {
+          report,
+          versions: [
+            {
+              version: 1,
+              createdAt: report.createdAt,
+              changes: ['Initial version'],
+              size: report.size || 0,
+              downloadUrl: `/api/reports/${reportId}/versions/1`,
+            },
+          ],
+          analytics: {
+            totalDownloads: 0,
+            lastAccessed: report.createdAt,
+          },
+        };
+      } catch (err) {
+        throw new Error(
+          err instanceof Error
+            ? err.message
+            : 'Failed to get historical reports'
+        );
+      }
+    },
+    [reports]
+  );
+
+  // Process analysis file and generate report
+  const processAnalysisFile = useCallback(
+    async (
+      file: File,
+      templateId: string,
+      reportName?: string
+    ): Promise<string> => {
+      try {
+        setLoading(true);
+
+        // Parse analysis data using ReportService
+        const normalizedData = await ReportService.parseAnalysisFile(
+          file,
+          'auto',
+          'analysis'
+        );
+
+        // Convert to CompleteAnalysisData format
+        const issuesArray = (normalizedData as any).issues || [];
+        const recommendationsArray =
+          (normalizedData as any).recommendations || [];
+        const summaryData = (normalizedData as any).summary || {
+          totalItems: 0,
+          successCount: 0,
+          errorCount: 0,
+        };
+
+        const analysisData: CompleteAnalysisData = {
+          metadata: {
+            version: '1.0.0',
+            generator: 'Report Analysis Engine',
+            timestamp: new Date(),
+            configuration: {},
+            projectInfo: {
+              name: file.name.replace(/\.[^/.]+$/, ''), // Remove file extension
+              path: '/',
+              language: 'javascript',
+              framework: 'unknown',
+              packageManager: 'npm',
+            },
+          },
+          entities: [],
+          duplicates: [],
+          circularDependencies: [],
+          securityIssues: [],
+          issues: issuesArray,
+          summary: summaryData,
+          metrics: {
+            overview: {
+              totalFiles: 1,
+              totalLines: 0,
+              totalEntities: 0,
+              analysisTime: 0,
+              timestamp: new Date(),
+            },
+            quality: {
+              maintainabilityIndex: 80,
+              technicalDebt: {
+                minutes: 0,
+                rating: 'A',
+              },
+              duplicateLines: 0,
+              duplicateRatio: 0,
+              testCoverage: {
+                lines: 0,
+                functions: 0,
+                branches: 0,
+                statements: 0,
+              },
+            },
+            complexity: {
+              average: 1,
+              highest: 1,
+              distribution: {
+                low: 1,
+                medium: 0,
+                high: 0,
+                veryHigh: 0,
+              },
+            },
+            issues: {
+              total: issuesArray.length,
+              byType: issuesArray.reduce(
+                (acc: Record<string, number>, issue: any) => {
+                  acc[issue.category] = (acc[issue.category] || 0) + 1;
+                  return acc;
+                },
+                {} as Record<string, number>
+              ),
+              bySeverity: {
+                critical: issuesArray.filter(
+                  (i: any) => i.severity === 'critical'
+                ).length,
+                high: issuesArray.filter((i: any) => i.severity === 'high')
+                  .length,
+                medium: issuesArray.filter((i: any) => i.severity === 'medium')
+                  .length,
+                low: issuesArray.filter((i: any) => i.severity === 'low')
+                  .length,
+              },
+            },
+            dependencies: {
+              total: 0,
+              circular: 0,
+              unused: 0,
+              outdated: 0,
+              vulnerable: 0,
+            },
+          },
+          recommendations: recommendationsArray.map(
+            (rec: any, index: number) => ({
+              id: rec.id || `rec-${index}`,
+              title: rec.title,
+              description: rec.description,
+              type: rec.type || 'general',
+              category: 'Maintainability' as const,
+              priority: 'medium' as const,
+              impact: rec.impact || 'Expected impact on code quality',
+              estimatedEffort: rec.estimatedEffort || '2 hours',
+              suggestion: rec.suggestion,
+              entities: rec.entities || [],
+              status: 'pending' as const,
+              assignedTo: rec.assignedTo,
+              dueDate: rec.dueDate,
+              dependencies: rec.dependencies || [],
+              autoFixAvailable: rec.autoFixAvailable || false,
+              actionItems: rec.actionItems || ['Review and implement'],
+              quickFix: rec.quickFix,
+            })
+          ),
+          rawData: {
+            dependencies: {},
+            fileTree: {},
+          },
+        };
+
+        // Cache the analysis data
+        const analysisId = `analysis_${Date.now()}`;
+        setAnalysisCache(prev => new Map(prev.set(analysisId, analysisData)));
+
+        // Find template
+        const template = templates.find(t => t.id === templateId);
+        if (!template) {
+          throw new Error('Template not found');
+        }
+
+        // Generate report content using a placeholder implementation
+        const reportContent: ReportContent = {
+          summary: {
+            executiveSummary: `Analysis report for ${analysisData.metadata.projectInfo.name || 'project'}`,
+            keyFindings: ['Analysis completed successfully'],
+            recommendations: ['Review generated insights'],
+            metrics: [
+              { label: 'Total Items', value: summaryData.totalItems || 0 },
+              {
+                label: 'Success Rate',
+                value: `${(((summaryData.successCount || 0) / Math.max(summaryData.totalItems || 1, 1)) * 100).toFixed(1)}%`,
+              },
+            ],
+            riskAssessment: {
+              level: (summaryData.errorCount || 0) > 0 ? 'medium' : 'low',
+              factors: issuesArray.map((i: any) => i.message) || [],
+              mitigation: recommendationsArray.map((r: any) => r.title) || [],
+            },
+          },
+          sections: [
+            {
+              id: 'overview',
+              title: 'Overview',
+              content: [
+                {
+                  type: 'text',
+                  content: `This report contains analysis results with ${summaryData.totalItems || 0} total items analyzed.`,
+                },
+              ],
+              order: 1,
+            },
+          ],
+        };
+
+        // Create report record
+        const newReport: Report = {
+          id: `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          name:
+            reportName ||
+            `${analysisData.metadata.projectInfo.name} - ${template.name}`,
+          type: template.type,
+          status: 'completed',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          completedAt: new Date(),
+          createdBy: 'current-user@wundr.io',
+          description: `Analysis report for ${analysisData.metadata.projectInfo.name}`,
+          tags: ['analysis', template.type],
+          size: JSON.stringify(analysisData).length,
+          duration: Math.floor(
+            (Date.now() - analysisData.metadata.timestamp.getTime()) / 1000
+          ),
+          metadata: {
+            parameters: {},
+            analysisEngine: analysisData.metadata.generator,
+            processingTime:
+              Date.now() - analysisData.metadata.timestamp.getTime(),
+            dataSource: file.name,
+            version: analysisData.metadata.version,
+            outputFormat: ['html', 'json'],
+          },
+        };
+
+        // Store report content in localStorage for retrieval
+        localStorage.setItem(
+          `report-content-${newReport.id}`,
+          JSON.stringify(reportContent)
+        );
+        localStorage.setItem(
+          `analysis-data-${newReport.id}`,
+          JSON.stringify(analysisData)
+        );
+
+        setReports(prev => {
+          const updated = [newReport, ...prev];
+          localStorage.setItem('wundr-reports', JSON.stringify(updated));
+          return updated;
+        });
+
+        return newReport.id;
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : 'Failed to process analysis file'
+        );
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [templates]
+  );
+
+  // Get report content
+  const getReportContent = useCallback(
+    async (reportId: string): Promise<ReportContent | null> => {
+      try {
+        const contentStr = localStorage.getItem(`report-content-${reportId}`);
+        if (!contentStr) return null;
+
+        return JSON.parse(contentStr);
+      } catch (err) {
+        console.error('Failed to load report content:', err);
+        return null;
+      }
+    },
+    []
+  );
+
+  // Get analysis data for a report
+  const getAnalysisData = useCallback(
+    async (reportId: string): Promise<CompleteAnalysisData | null> => {
+      try {
+        const dataStr = localStorage.getItem(`analysis-data-${reportId}`);
+        if (!dataStr) return null;
+
+        const data = JSON.parse(dataStr);
+        // Convert date strings back to Date objects
+        data.metadata.timestamp = new Date(data.metadata.timestamp);
+        data.entities = data.entities.map((e: any) => ({
+          ...e,
+          lastModified: new Date(e.lastModified),
+        }));
+        data.metrics.overview.timestamp = new Date(
+          data.metrics.overview.timestamp
+        );
+
+        return data;
+      } catch (err) {
+        console.error('Failed to load analysis data:', err);
+        return null;
+      }
+    },
+    []
+  );
+
+  // Enhanced export with ReportService
+  const exportReportEnhanced = useCallback(
+    async (reportId: string, format: ExportFormat): Promise<void> => {
+      try {
+        const report = reports.find(r => r.id === reportId);
+        const reportContent = await getReportContent(reportId);
+
+        if (!report || !reportContent) {
+          throw new Error('Report or content not found');
+        }
+
+        // Use instance method instead of static method
+        const reportService = new ReportService();
+        const exportOptions = {
+          format: format as 'json' | 'csv' | 'pdf' | 'markdown',
+          includeCharts: true,
+          includeDetails: true,
+        };
+        await reportService.exportReport(report.id, exportOptions);
+
+        // Also create a simple download for the content
+        const blob = new Blob([JSON.stringify(reportContent, null, 2)], {
+          type: format === 'json' ? 'application/json' : 'text/plain',
+        });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -379,345 +818,14 @@ export function useReports() {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+      } catch (err) {
+        throw new Error(
+          err instanceof Error ? err.message : 'Failed to export report'
+        );
       }
-    } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to export report');
-    }
-  }, [reports]);
-
-  const deleteReport = useCallback(async (reportId: string): Promise<void> => {
-    try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setReports(prev => prev.filter(r => r.id !== reportId));
-    } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to delete report');
-    }
-  }, []);
-
-  const scheduleReport = useCallback(async (schedule: Omit<ReportSchedule, 'id' | 'lastRun' | 'nextRun'>): Promise<string> => {
-    try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const newSchedule: ReportSchedule = {
-        ...schedule,
-        id: Math.random().toString(36).substr(2, 9),
-        nextRun: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
-      };
-
-      setSchedules(prev => [...prev, newSchedule]);
-      return newSchedule.id;
-    } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to schedule report');
-    }
-  }, []);
-
-  const getHistoricalReports = useCallback(async (reportId: string): Promise<HistoricalReport> => {
-    try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const report = reports.find(r => r.id === reportId);
-      if (!report) {
-        throw new Error('Report not found');
-      }
-
-      return {
-        report,
-        versions: [
-          {
-            version: 1,
-            createdAt: report.createdAt,
-            changes: ['Initial version'],
-            size: report.size || 0,
-            downloadUrl: `/api/reports/${reportId}/versions/1`,
-          },
-        ],
-        analytics: {
-          totalDownloads: 0,
-          lastAccessed: report.createdAt,
-        },
-      };
-    } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to get historical reports');
-    }
-  }, [reports]);
-
-  // Process analysis file and generate report
-  const processAnalysisFile = useCallback(async (
-    file: File, 
-    templateId: string, 
-    reportName?: string
-  ): Promise<string> => {
-    try {
-      setLoading(true);
-      
-      // Parse analysis data using ReportService
-      const normalizedData = await ReportService.parseAnalysisFile(file, 'auto', 'analysis');
-
-      // Convert to CompleteAnalysisData format
-      const issuesArray = (normalizedData as any).issues || [];
-      const recommendationsArray = (normalizedData as any).recommendations || [];
-      const summaryData = (normalizedData as any).summary || {
-        totalItems: 0,
-        successCount: 0,
-        errorCount: 0
-      };
-
-      const analysisData: CompleteAnalysisData = {
-        metadata: {
-          version: '1.0.0',
-          generator: 'Report Analysis Engine',
-          timestamp: new Date(),
-          configuration: {},
-          projectInfo: {
-            name: file.name.replace(/\.[^/.]+$/, ''), // Remove file extension
-            path: '/',
-            language: 'javascript',
-            framework: 'unknown',
-            packageManager: 'npm'
-          }
-        },
-        entities: [],
-        duplicates: [],
-        circularDependencies: [],
-        securityIssues: [],
-        issues: issuesArray,
-        summary: summaryData,
-        metrics: {
-          overview: {
-            totalFiles: 1,
-            totalLines: 0,
-            totalEntities: 0,
-            analysisTime: 0,
-            timestamp: new Date()
-          },
-          quality: {
-            maintainabilityIndex: 80,
-            technicalDebt: {
-              minutes: 0,
-              rating: 'A'
-            },
-            duplicateLines: 0,
-            duplicateRatio: 0,
-            testCoverage: {
-              lines: 0,
-              functions: 0,
-              branches: 0,
-              statements: 0
-            }
-          },
-          complexity: {
-            average: 1,
-            highest: 1,
-            distribution: {
-              low: 1,
-              medium: 0,
-              high: 0,
-              veryHigh: 0
-            }
-          },
-          issues: {
-            total: issuesArray.length,
-            byType: issuesArray.reduce((acc: Record<string, number>, issue: any) => {
-              acc[issue.category] = (acc[issue.category] || 0) + 1;
-              return acc;
-            }, {} as Record<string, number>),
-            bySeverity: {
-              critical: issuesArray.filter((i: any) => i.severity === 'critical').length,
-              high: issuesArray.filter((i: any) => i.severity === 'high').length,
-              medium: issuesArray.filter((i: any) => i.severity === 'medium').length,
-              low: issuesArray.filter((i: any) => i.severity === 'low').length
-            }
-          },
-          dependencies: {
-            total: 0,
-            circular: 0,
-            unused: 0,
-            outdated: 0,
-            vulnerable: 0
-          }
-        },
-        recommendations: recommendationsArray.map((rec: any, index: number) => ({
-          id: rec.id || `rec-${index}`,
-          title: rec.title,
-          description: rec.description,
-          type: rec.type || 'general',
-          category: 'Maintainability' as const,
-          priority: 'medium' as const,
-          impact: rec.impact || 'Expected impact on code quality',
-          estimatedEffort: rec.estimatedEffort || '2 hours',
-          suggestion: rec.suggestion,
-          entities: rec.entities || [],
-          status: 'pending' as const,
-          assignedTo: rec.assignedTo,
-          dueDate: rec.dueDate,
-          dependencies: rec.dependencies || [],
-          autoFixAvailable: rec.autoFixAvailable || false,
-          actionItems: rec.actionItems || ['Review and implement'],
-          quickFix: rec.quickFix
-        })),
-        rawData: {
-          dependencies: {},
-          fileTree: {}
-        }
-      };
-      
-      // Cache the analysis data
-      const analysisId = `analysis_${Date.now()}`;
-      setAnalysisCache(prev => new Map(prev.set(analysisId, analysisData)));
-      
-      // Find template
-      const template = templates.find(t => t.id === templateId);
-      if (!template) {
-        throw new Error('Template not found');
-      }
-      
-      // Generate report content using a placeholder implementation
-      const reportContent: ReportContent = {
-        summary: {
-          executiveSummary: `Analysis report for ${analysisData.metadata.projectInfo.name || 'project'}`,
-          keyFindings: ['Analysis completed successfully'],
-          recommendations: ['Review generated insights'],
-          metrics: [
-            { label: 'Total Items', value: summaryData.totalItems || 0 },
-            { label: 'Success Rate', value: `${((summaryData.successCount || 0) / Math.max(summaryData.totalItems || 1, 1) * 100).toFixed(1)}%` }
-          ],
-          riskAssessment: {
-            level: (summaryData.errorCount || 0) > 0 ? 'medium' : 'low',
-            factors: issuesArray.map((i: any) => i.message) || [],
-            mitigation: recommendationsArray.map((r: any) => r.title) || []
-          }
-        },
-        sections: [
-          {
-            id: 'overview',
-            title: 'Overview',
-            content: [
-              {
-                type: 'text',
-                content: `This report contains analysis results with ${summaryData.totalItems || 0} total items analyzed.`
-              }
-            ],
-            order: 1
-          }
-        ]
-      };
-      
-      // Create report record
-      const newReport: Report = {
-        id: `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        name: reportName || `${analysisData.metadata.projectInfo.name} - ${template.name}`,
-        type: template.type,
-        status: 'completed',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        completedAt: new Date(),
-        createdBy: 'current-user@wundr.io',
-        description: `Analysis report for ${analysisData.metadata.projectInfo.name}`,
-        tags: ['analysis', template.type],
-        size: JSON.stringify(analysisData).length,
-        duration: Math.floor((Date.now() - analysisData.metadata.timestamp.getTime()) / 1000),
-        metadata: {
-          parameters: {},
-          analysisEngine: analysisData.metadata.generator,
-          processingTime: Date.now() - analysisData.metadata.timestamp.getTime(),
-          dataSource: file.name,
-          version: analysisData.metadata.version,
-          outputFormat: ['html', 'json'],
-        },
-      };
-      
-      // Store report content in localStorage for retrieval
-      localStorage.setItem(`report-content-${newReport.id}`, JSON.stringify(reportContent));
-      localStorage.setItem(`analysis-data-${newReport.id}`, JSON.stringify(analysisData));
-      
-      setReports(prev => {
-        const updated = [newReport, ...prev];
-        localStorage.setItem('wundr-reports', JSON.stringify(updated));
-        return updated;
-      });
-      
-      return newReport.id;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to process analysis file');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [templates]);
-
-  // Get report content
-  const getReportContent = useCallback(async (reportId: string): Promise<ReportContent | null> => {
-    try {
-      const contentStr = localStorage.getItem(`report-content-${reportId}`);
-      if (!contentStr) return null;
-      
-      return JSON.parse(contentStr);
-    } catch (err) {
-      console.error('Failed to load report content:', err);
-      return null;
-    }
-  }, []);
-
-  // Get analysis data for a report
-  const getAnalysisData = useCallback(async (reportId: string): Promise<CompleteAnalysisData | null> => {
-    try {
-      const dataStr = localStorage.getItem(`analysis-data-${reportId}`);
-      if (!dataStr) return null;
-      
-      const data = JSON.parse(dataStr);
-      // Convert date strings back to Date objects
-      data.metadata.timestamp = new Date(data.metadata.timestamp);
-      data.entities = data.entities.map((e: any) => ({
-        ...e,
-        lastModified: new Date(e.lastModified),
-      }));
-      data.metrics.overview.timestamp = new Date(data.metrics.overview.timestamp);
-      
-      return data;
-    } catch (err) {
-      console.error('Failed to load analysis data:', err);
-      return null;
-    }
-  }, []);
-
-  // Enhanced export with ReportService
-  const exportReportEnhanced = useCallback(async (
-    reportId: string, 
-    format: ExportFormat
-  ): Promise<void> => {
-    try {
-      const report = reports.find(r => r.id === reportId);
-      const reportContent = await getReportContent(reportId);
-      
-      if (!report || !reportContent) {
-        throw new Error('Report or content not found');
-      }
-      
-      // Use instance method instead of static method
-      const reportService = new ReportService();
-      const exportOptions = {
-        format: format as 'json' | 'csv' | 'pdf' | 'markdown',
-        includeCharts: true,
-        includeDetails: true
-      };
-      await reportService.exportReport(report.id, exportOptions);
-      
-      // Also create a simple download for the content
-      const blob = new Blob([JSON.stringify(reportContent, null, 2)], { 
-        type: format === 'json' ? 'application/json' : 'text/plain'
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${report.name}.${format}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to export report');
-    }
-  }, [reports, getReportContent]);
+    },
+    [reports, getReportContent]
+  );
 
   return {
     reports,

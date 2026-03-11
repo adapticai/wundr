@@ -1,4 +1,4 @@
-import type { NextConfig } from "next"
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   // Enable React strict mode for better development experience
@@ -13,14 +13,14 @@ const nextConfig: NextConfig = {
   // Optimize production builds
   compiler: {
     // Remove console logs in production
-    removeConsole: process.env.NODE_ENV === "production",
+    removeConsole: process.env.NODE_ENV === 'production',
   },
 
   // Configure webpack to handle Node.js modules properly
   webpack: (config, { isServer }) => {
     // Disable cache to fix webpack errors
     config.cache = false;
-    
+
     // Handle Node.js modules for browser environment
     if (!isServer) {
       // Set fallbacks for Node.js built-ins used in browser
@@ -148,16 +148,19 @@ const nextConfig: NextConfig = {
       const webpack = require('webpack');
       config.plugins.push(
         new webpack.IgnorePlugin({
-          resourceRegExp: /^(fs|path|child_process|os|crypto|stream|http|https|zlib|url|util|buffer|events|querystring|cluster|dns|dgram|net|tls|readline|repl|vm)$/,
+          resourceRegExp:
+            /^(fs|path|child_process|os|crypto|stream|http|https|zlib|url|util|buffer|events|querystring|cluster|dns|dgram|net|tls|readline|repl|vm)$/,
           contextRegExp: /client/,
         })
       );
     } catch (_error) {
       // webpack not available in this context, skip the plugin
-      console.warn('Webpack IgnorePlugin not configured - webpack not available');
+      console.warn(
+        'Webpack IgnorePlugin not configured - webpack not available'
+      );
     }
 
-    return config
+    return config;
   },
 
   // Configure image optimization
@@ -186,7 +189,7 @@ const nextConfig: NextConfig = {
   serverRuntimeConfig: {
     // Server-only configuration
   },
-  
+
   // Public runtime config (accessible on both server and client)
   publicRuntimeConfig: {
     // Public configuration
@@ -230,7 +233,7 @@ const nextConfig: NextConfig = {
           },
         ],
       },
-    ]
+    ];
   },
 
   // Configure redirects
@@ -241,7 +244,7 @@ const nextConfig: NextConfig = {
         destination: '/dashboard/docs',
         permanent: true,
       },
-    ]
+    ];
   },
 
   // Output configuration
@@ -249,6 +252,6 @@ const nextConfig: NextConfig = {
 
   // Server external packages (Next.js 15+)
   serverExternalPackages: ['canvas', 'sharp', 'ws'],
-}
+};
 
-export default nextConfig
+export default nextConfig;

@@ -7,13 +7,7 @@ This guide demonstrates how to use the centralized type definitions provided in 
 ### Import Individual Types
 
 ```typescript
-import type { 
-  ApiResponse, 
-  FileInfo, 
-  AnalysisEntity, 
-  Report,
-  ConfigurationState 
-} from '@/types';
+import type { ApiResponse, FileInfo, AnalysisEntity, Report, ConfigurationState } from '@/types';
 ```
 
 ### Import All Types
@@ -58,7 +52,7 @@ const fileOperations: FileOperations = {
     await fetch('/api/files/write', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path, content })
+      body: JSON.stringify({ path, content }),
     });
   },
   // ... implement other operations
@@ -73,7 +67,7 @@ const fileInfo: FileInfo = {
   type: 'file',
   modifiedAt: new Date(),
   extension: 'tsx',
-  mimeType: 'text/typescript'
+  mimeType: 'text/typescript',
 };
 ```
 
@@ -92,8 +86,8 @@ const summaryProps: SummaryCardProps = {
   trend: {
     value: 5,
     direction: 'up',
-    label: '+5% from last month'
-  }
+    label: '+5% from last month',
+  },
 };
 
 // Table props
@@ -109,27 +103,22 @@ const tableProps: TableProps<UserData> = {
   columns: [
     { key: 'name', label: 'Name', sortable: true },
     { key: 'email', label: 'Email', sortable: true },
-    { key: 'role', label: 'Role', width: '100px' }
+    { key: 'role', label: 'Role', width: '100px' },
   ],
   onSort: (key, direction) => console.log(`Sort by ${key} ${direction}`),
   pagination: {
     page: 1,
     pageSize: 10,
     total: 100,
-    onPageChange: (page) => console.log(`Go to page ${page}`)
-  }
+    onPageChange: page => console.log(`Go to page ${page}`),
+  },
 };
 ```
 
 ### 4. Analysis Data
 
 ```typescript
-import type { 
-  AnalysisEntity, 
-  AnalysisIssue, 
-  AnalysisDuplicate,
-  CircularDependency 
-} from '@/types';
+import type { AnalysisEntity, AnalysisIssue, AnalysisDuplicate, CircularDependency } from '@/types';
 
 // Creating analysis entities
 const entity: AnalysisEntity = {
@@ -144,17 +133,17 @@ const entity: AnalysisEntity = {
     halstead: {
       volume: 120.5,
       difficulty: 8.2,
-      effort: 988.1
-    }
+      effort: 988.1,
+    },
   },
   metrics: {
     linesOfCode: 85,
     maintainabilityIndex: 78,
-    testCoverage: 85.5
+    testCoverage: 85.5,
   },
   issues: [],
   tags: ['component', 'user-interface'],
-  lastModified: new Date()
+  lastModified: new Date(),
 };
 
 // Handling analysis issues
@@ -169,10 +158,7 @@ const issue: AnalysisIssue = {
   effort: 'medium',
   impact: 'medium',
   tags: ['refactoring', 'complexity'],
-  suggestions: [
-    'Break down into smaller functions',
-    'Extract common logic'
-  ]
+  suggestions: ['Break down into smaller functions', 'Extract common logic'],
 };
 ```
 
@@ -188,7 +174,7 @@ const defaultConfig: ConfigurationState = {
     autoSave: true,
     notifications: true,
     compactMode: false,
-    sidebarCollapsed: false
+    sidebarCollapsed: false,
   },
   analysis: {
     patternsToIgnore: ['*.test.ts', '*.spec.ts'],
@@ -198,24 +184,24 @@ const defaultConfig: ConfigurationState = {
     excludeDirectories: ['node_modules', 'dist', '.git'],
     includeFileTypes: ['ts', 'tsx', 'js', 'jsx'],
     enableSmartAnalysis: true,
-    analysisDepth: 'medium'
+    analysisDepth: 'medium',
   },
   integration: {
     webhookUrls: {
       onAnalysisComplete: '',
       onReportGenerated: '',
-      onError: ''
+      onError: '',
     },
     apiKeys: {
       github: '',
       slack: '',
-      jira: ''
+      jira: '',
     },
     automations: {
       autoUpload: false,
       scheduleAnalysis: true,
-      notifyOnCompletion: true
-    }
+      notifyOnCompletion: true,
+    },
   },
   export: {
     defaultFormats: ['json', 'pdf'],
@@ -223,15 +209,15 @@ const defaultConfig: ConfigurationState = {
     includeMetadata: true,
     compressionEnabled: false,
     timestampFiles: true,
-    maxFileSize: 104857600 // 100MB
-  }
+    maxFileSize: 104857600, // 100MB
+  },
 };
 
 // Update analysis settings
 function updateAnalysisSettings(updates: Partial<AnalysisSettings>) {
   return {
     ...defaultConfig.analysis,
-    ...updates
+    ...updates,
   };
 }
 ```
@@ -239,12 +225,7 @@ function updateAnalysisSettings(updates: Partial<AnalysisSettings>) {
 ### 6. Report Generation
 
 ```typescript
-import type { 
-  Report, 
-  ReportTemplate, 
-  ReportSection,
-  ReportChart 
-} from '@/types';
+import type { Report, ReportTemplate, ReportSection, ReportChart } from '@/types';
 
 const reportTemplate: ReportTemplate = {
   id: 'code-quality-template',
@@ -258,15 +239,15 @@ const reportTemplate: ReportTemplate = {
       label: 'Date Range',
       type: 'daterange',
       required: true,
-      description: 'Analysis period'
+      description: 'Analysis period',
     },
     {
       key: 'includeTests',
       label: 'Include Test Files',
       type: 'boolean',
       required: false,
-      defaultValue: false
-    }
+      defaultValue: false,
+    },
   ],
   sections: [
     {
@@ -275,9 +256,9 @@ const reportTemplate: ReportTemplate = {
       content: [],
       charts: [],
       tables: [],
-      order: 1
-    }
-  ]
+      order: 1,
+    },
+  ],
 };
 
 // Chart configuration
@@ -287,12 +268,14 @@ const complexityChart: ReportChart = {
   type: 'bar',
   data: {
     labels: ['Low', 'Medium', 'High', 'Very High'],
-    datasets: [{
-      label: 'Number of Files',
-      data: [45, 23, 12, 3],
-      backgroundColor: ['#22c55e', '#eab308', '#f97316', '#ef4444']
-    }]
-  }
+    datasets: [
+      {
+        label: 'Number of Files',
+        data: [45, 23, 12, 3],
+        backgroundColor: ['#22c55e', '#eab308', '#f97316', '#ef4444'],
+      },
+    ],
+  },
 };
 ```
 
@@ -320,8 +303,8 @@ const batchJob: BatchJob = {
     conflictResolution: 'interactive',
     maxConcurrentJobs: 3,
     retryAttempts: 2,
-    rollbackOnFailure: true
-  }
+    rollbackOnFailure: true,
+  },
 };
 ```
 
@@ -336,8 +319,8 @@ const message: WebSocketMessage = {
   channel: 'analysis-updates',
   timestamp: new Date().toISOString(),
   payload: {
-    filters: ['code-quality', 'security']
-  }
+    filters: ['code-quality', 'security'],
+  },
 };
 
 // Real-time update handler
@@ -360,12 +343,7 @@ function handleUpdate(update: RealtimeUpdate) {
 The type definitions also include utility types for common patterns:
 
 ```typescript
-import type { 
-  TimeRange, 
-  SeverityLevel, 
-  PriorityLevel, 
-  StatusType 
-} from '@/types';
+import type { TimeRange, SeverityLevel, PriorityLevel, StatusType } from '@/types';
 
 // Time range selection
 const timeRange: TimeRange = '24h'; // '1h' | '6h' | '24h' | '7d' | '30d' | '90d' | '1y'
@@ -373,7 +351,7 @@ const timeRange: TimeRange = '24h'; // '1h' | '6h' | '24h' | '7d' | '30d' | '90d
 // Severity levels
 const severity: SeverityLevel = 'high'; // 'low' | 'medium' | 'high' | 'critical'
 
-// Priority levels  
+// Priority levels
 const priority: PriorityLevel = 'medium'; // 'low' | 'medium' | 'high' | 'critical'
 
 // Status types
@@ -394,13 +372,14 @@ The types are available through the following import paths:
 
 - `@/types` - Main type definitions
 - `@/types/data` - Legacy data types (re-exported from main)
-- `@/types/reports` - Legacy report types (re-exported from main)  
+- `@/types/reports` - Legacy report types (re-exported from main)
 - `@/types/config` - Legacy config types (re-exported from main)
 
 ## IDE Support
 
 Most modern IDEs will provide:
+
 - Auto-completion for type properties
-- Type checking and error highlighting  
+- Type checking and error highlighting
 - Go-to-definition for type definitions
 - Hover documentation from JSDoc comments

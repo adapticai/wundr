@@ -11,7 +11,10 @@ export class TestUtilities {
   /**
    * Check if a URL is accessible and returns expected status
    */
-  async checkUrlAccessibility(url: string, expectedStatus: number = 200): Promise<boolean> {
+  async checkUrlAccessibility(
+    url: string,
+    expectedStatus: number = 200
+  ): Promise<boolean> {
     try {
       const response = await this.page.request.get(url);
       return response.status() === expectedStatus;
@@ -29,19 +32,19 @@ export class TestUtilities {
     redirectLinks: string[];
   }> {
     await this.page.goto(baseUrl);
-    
+
     const links = await this.page.locator('a[href]').all();
     const results = {
       workingLinks: [] as string[],
       brokenLinks: [] as string[],
-      redirectLinks: [] as string[]
+      redirectLinks: [] as string[],
     };
 
     for (const link of links) {
       const href = await link.getAttribute('href');
       if (href && !href.startsWith('#') && !href.startsWith('mailto:')) {
         const fullUrl = href.startsWith('http') ? href : `${baseUrl}${href}`;
-        
+
         try {
           const response = await this.page.request.get(fullUrl);
           if (response.ok()) {
@@ -66,11 +69,11 @@ export class TestUtilities {
   async captureJSErrors(): Promise<string[]> {
     const errors: string[] = [];
 
-    this.page.on('pageerror', (error) => {
+    this.page.on('pageerror', error => {
       errors.push(`JavaScript Error: ${error.message}`);
     });
 
-    this.page.on('console', (msg) => {
+    this.page.on('console', msg => {
       if (msg.type() === 'error') {
         errors.push(`Console Error: ${msg.text()}`);
       }
@@ -90,17 +93,20 @@ export class TestUtilities {
     const results = {
       failed: [] as string[],
       slow: [] as string[],
-      successful: [] as string[]
+      successful: [] as string[],
     };
 
-    this.page.on('response', (response) => {
+    this.page.on('response', response => {
       const url = response.url();
       const timing = response.request().timing();
-      const responseTime = timing?.responseEnd ? timing.responseEnd - timing.requestStart : 0;
+      const responseTime = timing?.responseEnd
+        ? timing.responseEnd - timing.requestStart
+        : 0;
 
       if (!response.ok()) {
         results.failed.push(`${url} - ${response.status()}`);
-      } else if (responseTime > 5000) { // Slow requests > 5s
+      } else if (responseTime > 5000) {
+        // Slow requests > 5s
         results.slow.push(`${url} - ${responseTime}ms`);
       } else {
         results.successful.push(url);
@@ -119,13 +125,13 @@ export class TestUtilities {
   }> {
     const results = {
       rendered: [] as string[],
-      missing: [] as string[]
+      missing: [] as string[],
     };
 
     for (const selector of selectors) {
       const element = this.page.locator(selector);
       const count = await element.count();
-      
+
       if (count > 0) {
         results.rendered.push(selector);
       } else {
@@ -150,12 +156,15 @@ export class TestUtilities {
     });
 
     const performanceMetrics = await this.page.evaluate(() => {
-      const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+      const navigation = performance.getEntriesByType(
+        'navigation'
+      )[0] as PerformanceNavigationTiming;
       return {
         loadTime: navigation.loadEventEnd - navigation.fetchStart,
-        domContentLoaded: navigation.domContentLoadedEventEnd - navigation.fetchStart,
+        domContentLoaded:
+          navigation.domContentLoadedEventEnd - navigation.fetchStart,
         firstContentfulPaint: 0, // Would need additional polyfill for FCP
-        resourceCount: performance.getEntriesByType('resource').length
+        resourceCount: performance.getEntriesByType('resource').length,
       };
     });
 
@@ -172,23 +181,32 @@ export class TestUtilities {
     headingStructure: string[];
   }> {
     const missingAltText = await this.page.locator('img:not([alt])').count();
-    const missingAriaLabels = await this.page.locator('button:not([aria-label]):not([aria-labelledby])').count();
-    const focusableElements = await this.page.locator('a, button, input, select, textarea, [tabindex]').count();
-    
-    const headings = await this.page.locator('h1, h2, h3, h4, h5, h6').allTextContents();
+    const missingAriaLabels = await this.page
+      .locator('button:not([aria-label]):not([aria-labelledby])')
+      .count();
+    const focusableElements = await this.page
+      .locator('a, button, input, select, textarea, [tabindex]')
+      .count();
+
+    const headings = await this.page
+      .locator('h1, h2, h3, h4, h5, h6')
+      .allTextContents();
 
     return {
       missingAltText,
       missingAriaLabels,
       focusableElements,
-      headingStructure: headings
+      headingStructure: headings,
     };
   }
 
   /**
    * API endpoint health checks
    */
-  async checkAPIEndpoints(endpoints: string[], baseUrl: string): Promise<{
+  async checkAPIEndpoints(
+    endpoints: string[],
+    baseUrl: string
+  ): Promise<{
     healthy: string[];
     unhealthy: string[];
     errors: string[];
@@ -196,12 +214,12 @@ export class TestUtilities {
     const results = {
       healthy: [] as string[],
       unhealthy: [] as string[],
-      errors: [] as string[]
+      errors: [] as string[],
     };
 
     for (const endpoint of endpoints) {
       const url = `${baseUrl}${endpoint}`;
-      
+
       try {
         const response = await this.page.request.get(url);
         if (response.ok()) {
@@ -232,19 +250,25 @@ export class TestUtilities {
       await this.page.waitForTimeout(1000); // Wait for layout adjustment
 
       const issues = [];
-      
+
       // Check for horizontal scroll
       const hasHorizontalScroll = await this.page.evaluate(() => {
-        return document.documentElement.scrollWidth > document.documentElement.clientWidth;
+        return (
+          document.documentElement.scrollWidth >
+          document.documentElement.clientWidth
+        );
       });
-      
+
       if (hasHorizontalScroll) {
         issues.push('Horizontal scrollbar present');
       }
 
       // Check for overlapping elements (basic check)
-      const overlappingElements = await this.page.locator('[style*="position: fixed"], [style*="position: absolute"]').count();
-      if (overlappingElements > 10) { // Arbitrary threshold
+      const overlappingElements = await this.page
+        .locator('[style*="position: fixed"], [style*="position: absolute"]')
+        .count();
+      if (overlappingElements > 10) {
+        // Arbitrary threshold
         issues.push('Potential overlapping elements detected');
       }
 
@@ -272,8 +296,12 @@ export class CrossDashboardTesting {
     await page2.goto(url2);
 
     // Compare loading times
-    const perf1 = await page1.evaluate(() => performance.timing.loadEventEnd - performance.timing.navigationStart);
-    const perf2 = await page2.evaluate(() => performance.timing.loadEventEnd - performance.timing.navigationStart);
+    const perf1 = await page1.evaluate(
+      () => performance.timing.loadEventEnd - performance.timing.navigationStart
+    );
+    const perf2 = await page2.evaluate(
+      () => performance.timing.loadEventEnd - performance.timing.navigationStart
+    );
 
     // Compare page titles
     const title1 = await page1.title();
@@ -286,7 +314,7 @@ export class CrossDashboardTesting {
     return {
       performance: { [dashboard1]: perf1, [dashboard2]: perf2 },
       titles: { [dashboard1]: title1, [dashboard2]: title2 },
-      linkCounts: { [dashboard1]: links1, [dashboard2]: links2 }
+      linkCounts: { [dashboard1]: links1, [dashboard2]: links2 },
     };
   }
 }

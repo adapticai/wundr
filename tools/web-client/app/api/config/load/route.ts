@@ -10,12 +10,12 @@ export async function GET() {
     // Dynamic import of Node.js modules to ensure they're only loaded server-side
     const { promises: fs } = await import('fs');
     const path = await import('path');
-    
+
     // Verify we're running in Node.js environment
     if (typeof process === 'undefined' || !process.cwd) {
       throw new Error('This API route requires Node.js runtime');
     }
-    
+
     const configDir = path.join(process.cwd(), '.wundr');
     const configFile = path.join(configDir, 'config.json');
 
@@ -37,12 +37,31 @@ export async function GET() {
           sidebarCollapsed: false,
         },
         analysis: {
-          patternsToIgnore: ['node_modules/**', 'dist/**', 'build/**', '.git/**'],
+          patternsToIgnore: [
+            'node_modules/**',
+            'dist/**',
+            'build/**',
+            '.git/**',
+          ],
           duplicateThreshold: 0.8,
           complexityThreshold: 10,
           minFileSize: 100,
-          excludeDirectories: ['node_modules', 'dist', 'build', '.git', 'coverage'],
-          includeFileTypes: ['.ts', '.tsx', '.js', '.jsx', '.vue', '.py', '.java'],
+          excludeDirectories: [
+            'node_modules',
+            'dist',
+            'build',
+            '.git',
+            'coverage',
+          ],
+          includeFileTypes: [
+            '.ts',
+            '.tsx',
+            '.js',
+            '.jsx',
+            '.vue',
+            '.py',
+            '.java',
+          ],
           enableSmartAnalysis: false,
           analysisDepth: 'medium',
         },

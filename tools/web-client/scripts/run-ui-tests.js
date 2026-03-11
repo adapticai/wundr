@@ -16,7 +16,7 @@ const colors = {
   yellow: '\x1b[33m',
   blue: '\x1b[34m',
   magenta: '\x1b[35m',
-  cyan: '\x1b[36m'
+  cyan: '\x1b[36m',
 };
 
 function log(message, color = 'reset') {
@@ -31,10 +31,10 @@ function header(message) {
 
 function checkDashboardAvailability() {
   header('Checking Dashboard Availability');
-  
+
   const dashboards = [
     { name: 'Web Client', port: 3000, url: 'http://localhost:3000' },
-    { name: 'Wundr Dashboard', port: 3001, url: 'http://localhost:3001' }
+    { name: 'Wundr Dashboard', port: 3001, url: 'http://localhost:3001' },
   ];
 
   for (const dashboard of dashboards) {
@@ -42,8 +42,14 @@ function checkDashboardAvailability() {
       execSync(`curl -s ${dashboard.url}`, { timeout: 5000 });
       log(`✅ ${dashboard.name} (port ${dashboard.port}) - Available`, 'green');
     } catch (error) {
-      log(`❌ ${dashboard.name} (port ${dashboard.port}) - Not Available`, 'red');
-      log(`   To start: cd to dashboard directory and run 'npm run dev'`, 'yellow');
+      log(
+        `❌ ${dashboard.name} (port ${dashboard.port}) - Not Available`,
+        'red'
+      );
+      log(
+        `   To start: cd to dashboard directory and run 'npm run dev'`,
+        'yellow'
+      );
     }
   }
   console.log('');
@@ -51,26 +57,26 @@ function checkDashboardAvailability() {
 
 function runPlaywrightTest(testFile, options = {}) {
   const { headed = false, debug = false, ui = false } = options;
-  
+
   let command = ['npx', 'playwright', 'test'];
-  
+
   if (testFile) {
     command.push(testFile);
   }
-  
+
   if (headed) command.push('--headed');
   if (debug) command.push('--debug');
   if (ui) command.push('--ui');
-  
+
   log(`Running: ${command.join(' ')}`, 'cyan');
-  
+
   const child = spawn(command[0], command.slice(1), {
     stdio: 'inherit',
-    cwd: process.cwd()
+    cwd: process.cwd(),
   });
-  
+
   return new Promise((resolve, reject) => {
-    child.on('close', (code) => {
+    child.on('close', code => {
       if (code === 0) {
         resolve();
       } else {
@@ -82,46 +88,46 @@ function runPlaywrightTest(testFile, options = {}) {
 
 async function runTestSuite(suiteName, options = {}) {
   const testSuites = {
-    'smoke': {
+    smoke: {
       file: 'smoke-tests.spec.ts',
-      description: 'Quick smoke tests - essential functionality validation'
+      description: 'Quick smoke tests - essential functionality validation',
     },
-    'comprehensive': {
-      file: 'comprehensive-ui-audit.spec.ts', 
-      description: 'Comprehensive UI audit - complete validation'
+    comprehensive: {
+      file: 'comprehensive-ui-audit.spec.ts',
+      description: 'Comprehensive UI audit - complete validation',
     },
-    'links': {
+    links: {
       file: 'broken-links-audit.spec.ts',
-      description: 'Broken links detection and validation'
+      description: 'Broken links detection and validation',
     },
-    'errors': {
+    errors: {
       file: 'runtime-errors-detection.spec.ts',
-      description: 'JavaScript runtime errors monitoring'
+      description: 'JavaScript runtime errors monitoring',
     },
-    'components': {
+    components: {
       file: 'missing-components-validation.spec.ts',
-      description: 'Missing components and rendering validation'
+      description: 'Missing components and rendering validation',
     },
-    'navigation': {
+    navigation: {
       file: 'navigation-issues-detection.spec.ts',
-      description: 'Navigation functionality and routing issues'
+      description: 'Navigation functionality and routing issues',
     },
-    'api': {
+    api: {
       file: 'api-endpoint-validation.spec.ts',
-      description: 'API endpoint health and functionality checks'
+      description: 'API endpoint health and functionality checks',
     },
-    'integration': {
+    integration: {
       file: 'wundr-dashboard-integration.spec.ts',
-      description: 'Cross-dashboard integration testing'
+      description: 'Cross-dashboard integration testing',
     },
-    'all': {
+    all: {
       file: null,
-      description: 'Run all test suites'
-    }
+      description: 'Run all test suites',
+    },
   };
 
   const suite = testSuites[suiteName];
-  
+
   if (!suite) {
     log(`❌ Unknown test suite: ${suiteName}`, 'red');
     log('\nAvailable test suites:', 'yellow');
@@ -146,10 +152,10 @@ async function runTestSuite(suiteName, options = {}) {
 
 function showUsage() {
   header('UI Test Runner - Usage');
-  
+
   log('Usage: node scripts/run-ui-tests.js [options] [test-suite]', 'bright');
   console.log('');
-  
+
   log('Test Suites:', 'yellow');
   log('  smoke         - Quick smoke tests (recommended first)', 'cyan');
   log('  comprehensive - Complete UI audit', 'cyan');
@@ -161,7 +167,7 @@ function showUsage() {
   log('  integration   - Cross-dashboard integration', 'cyan');
   log('  all           - Run all test suites', 'cyan');
   console.log('');
-  
+
   log('Options:', 'yellow');
   log('  --headed      - Run tests with browser UI visible', 'cyan');
   log('  --debug       - Run tests in debug mode', 'cyan');
@@ -169,7 +175,7 @@ function showUsage() {
   log('  --check       - Only check dashboard availability', 'cyan');
   log('  --report      - Show test report after completion', 'cyan');
   console.log('');
-  
+
   log('Examples:', 'yellow');
   log('  node scripts/run-ui-tests.js smoke', 'cyan');
   log('  node scripts/run-ui-tests.js comprehensive --headed', 'cyan');
@@ -180,7 +186,7 @@ function showUsage() {
 
 async function main() {
   const args = process.argv.slice(2);
-  
+
   if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
     showUsage();
     return;
@@ -192,7 +198,7 @@ async function main() {
     debug: args.includes('--debug'),
     ui: args.includes('--ui'),
     check: args.includes('--check'),
-    report: args.includes('--report')
+    report: args.includes('--report'),
   };
 
   // Always check dashboard availability first
@@ -207,15 +213,22 @@ async function main() {
 
   try {
     if (testSuite === 'all') {
-      const suites = ['smoke', 'comprehensive', 'links', 'errors', 'components', 'navigation', 'api'];
-      
+      const suites = [
+        'smoke',
+        'comprehensive',
+        'links',
+        'errors',
+        'components',
+        'navigation',
+        'api',
+      ];
+
       for (const suite of suites) {
         await runTestSuite(suite, options);
         console.log(''); // Add spacing between test suites
       }
-      
+
       log('✅ All test suites completed successfully!', 'green');
-      
     } else {
       await runTestSuite(testSuite, options);
     }
@@ -228,7 +241,6 @@ async function main() {
         log('❌ Failed to generate report', 'red');
       }
     }
-
   } catch (error) {
     log(`❌ Test execution failed: ${error.message}`, 'red');
     process.exit(1);

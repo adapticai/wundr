@@ -46,7 +46,9 @@ export const mdxComponents = {
 
       // Handle React elements with props
       if (React.isValidElement(node)) {
-        const element = node as React.ReactElement<{ children?: React.ReactNode }>;
+        const element = node as React.ReactElement<{
+          children?: React.ReactNode;
+        }>;
         if (element.props && 'children' in element.props) {
           return extractCodeContent(element.props.children);
         }

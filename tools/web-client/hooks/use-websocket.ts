@@ -1,34 +1,37 @@
-"use client"
+'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { WebSocketMessage } from '@/types/data'
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { WebSocketMessage } from '@/types/data';
 
 interface UseWebSocketOptions {
-  enabled?: boolean
-  reconnectAttempts?: number
-  reconnectInterval?: number
-  heartbeatInterval?: number
-  onMessage?: (message: any) => void
-  onConnect?: () => void
-  onDisconnect?: () => void
-  onError?: (error: Event) => void
+  enabled?: boolean;
+  reconnectAttempts?: number;
+  reconnectInterval?: number;
+  heartbeatInterval?: number;
+  onMessage?: (message: any) => void;
+  onConnect?: () => void;
+  onDisconnect?: () => void;
+  onError?: (error: Event) => void;
 }
 
 interface UseWebSocketReturn {
-  isConnected: boolean
-  connectionState: 'connecting' | 'connected' | 'disconnected' | 'error'
-  lastMessage: any
-  subscribe: (channel: string) => void
-  unsubscribe: (channel: string) => void
-  send: (message: any) => void
-  reconnect: () => void
+  isConnected: boolean;
+  connectionState: 'connecting' | 'connected' | 'disconnected' | 'error';
+  lastMessage: any;
+  subscribe: (channel: string) => void;
+  unsubscribe: (channel: string) => void;
+  send: (message: any) => void;
+  reconnect: () => void;
 }
 
-const WS_URL = process.env.NODE_ENV === 'production' 
-  ? 'wss://your-domain.com/ws' 
-  : 'ws://localhost:3001/ws'
+const WS_URL =
+  process.env.NODE_ENV === 'production'
+    ? 'wss://your-domain.com/ws'
+    : 'ws://localhost:3001/ws';
 
-export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketReturn {
+export function useWebSocket(
+  options: UseWebSocketOptions = {}
+): UseWebSocketReturn {
   const {
     enabled = true,
     reconnectAttempts = 5,
@@ -37,194 +40,206 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
     onMessage,
     onConnect,
     onDisconnect,
-    onError
-  } = options
+    onError,
+  } = options;
 
-  const [isConnected, setIsConnected] = useState(false)
-  const [connectionState, setConnectionState] = useState<'connecting' | 'connected' | 'disconnected' | 'error'>('disconnected')
-  const [lastMessage, setLastMessage] = useState<any>(null)
-  
-  const wsRef = useRef<WebSocket | null>(null)
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null)
-  const reconnectAttemptsRef = useRef(0)
-  const subscriptionsRef = useRef<Set<string>>(new Set())
-  const mountedRef = useRef(true)
+  const [isConnected, setIsConnected] = useState(false);
+  const [connectionState, setConnectionState] = useState<
+    'connecting' | 'connected' | 'disconnected' | 'error'
+  >('disconnected');
+  const [lastMessage, setLastMessage] = useState<any>(null);
+
+  const wsRef = useRef<WebSocket | null>(null);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectAttemptsRef = useRef(0);
+  const subscriptionsRef = useRef<Set<string>>(new Set());
+  const mountedRef = useRef(true);
 
   const cleanup = useCallback(() => {
     if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current)
-      reconnectTimeoutRef.current = null
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
     }
     if (heartbeatIntervalRef.current) {
-      clearInterval(heartbeatIntervalRef.current)
-      heartbeatIntervalRef.current = null
+      clearInterval(heartbeatIntervalRef.current);
+      heartbeatIntervalRef.current = null;
     }
-  }, [])
+  }, []);
 
   const startHeartbeat = useCallback(() => {
     if (heartbeatIntervalRef.current) {
-      clearInterval(heartbeatIntervalRef.current)
+      clearInterval(heartbeatIntervalRef.current);
     }
-    
+
     heartbeatIntervalRef.current = setInterval(() => {
       if (wsRef.current?.readyState === WebSocket.OPEN) {
         const pingMessage: WebSocketMessage = {
           type: 'ping',
-          timestamp: new Date().toISOString()
-        }
-        wsRef.current.send(JSON.stringify(pingMessage))
+          timestamp: new Date().toISOString(),
+        };
+        wsRef.current.send(JSON.stringify(pingMessage));
       }
-    }, heartbeatInterval)
-  }, [heartbeatInterval])
+    }, heartbeatInterval);
+  }, [heartbeatInterval]);
 
   const connect = useCallback(() => {
-    if (!enabled || !mountedRef.current) return
-    
+    if (!enabled || !mountedRef.current) return;
+
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      return
+      return;
     }
 
     try {
-      setConnectionState('connecting')
-      wsRef.current = new WebSocket(WS_URL)
+      setConnectionState('connecting');
+      wsRef.current = new WebSocket(WS_URL);
 
       wsRef.current.onopen = () => {
-        if (!mountedRef.current) return
-        
-        setIsConnected(true)
-        setConnectionState('connected')
-        reconnectAttemptsRef.current = 0
-        startHeartbeat()
-        
+        if (!mountedRef.current) return;
+
+        setIsConnected(true);
+        setConnectionState('connected');
+        reconnectAttemptsRef.current = 0;
+        startHeartbeat();
+
         // Resubscribe to previous channels
         subscriptionsRef.current.forEach(channel => {
           const message: WebSocketMessage = {
             type: 'subscribe',
             channel,
-            timestamp: new Date().toISOString()
-          }
-          wsRef.current?.send(JSON.stringify(message))
-        })
-        
-        if (onConnect) onConnect()
-      }
+            timestamp: new Date().toISOString(),
+          };
+          wsRef.current?.send(JSON.stringify(message));
+        });
 
-      wsRef.current.onmessage = (event) => {
-        if (!mountedRef.current) return
-        
+        if (onConnect) onConnect();
+      };
+
+      wsRef.current.onmessage = event => {
+        if (!mountedRef.current) return;
+
         try {
-          const message = JSON.parse(event.data)
-          setLastMessage(message)
-          
+          const message = JSON.parse(event.data);
+          setLastMessage(message);
+
           // Handle pong responses
           if (message.type === 'pong') {
-            return
+            return;
           }
-          
-          if (onMessage) onMessage(message)
+
+          if (onMessage) onMessage(message);
         } catch (_error) {
           // Error logged - details available in network tab
         }
-      }
+      };
 
       wsRef.current.onclose = () => {
-        if (!mountedRef.current) return
-        
-        setIsConnected(false)
-        setConnectionState('disconnected')
-        cleanup()
-        
-        if (onDisconnect) onDisconnect()
-        
+        if (!mountedRef.current) return;
+
+        setIsConnected(false);
+        setConnectionState('disconnected');
+        cleanup();
+
+        if (onDisconnect) onDisconnect();
+
         // Attempt reconnection
         if (reconnectAttemptsRef.current < reconnectAttempts) {
-          reconnectAttemptsRef.current++
+          reconnectAttemptsRef.current++;
           reconnectTimeoutRef.current = setTimeout(() => {
-            connect()
-          }, reconnectInterval)
+            connect();
+          }, reconnectInterval);
         } else {
-          setConnectionState('error')
+          setConnectionState('error');
         }
-      }
+      };
 
-      wsRef.current.onerror = (error) => {
-        if (!mountedRef.current) return
-        
-        setConnectionState('error')
-        if (onError) onError(error)
-      }
+      wsRef.current.onerror = error => {
+        if (!mountedRef.current) return;
+
+        setConnectionState('error');
+        if (onError) onError(error);
+      };
     } catch (_error) {
       if (mountedRef.current) {
-        setConnectionState('error')
+        setConnectionState('error');
         // Error logged - details available in network tab
       }
     }
-  }, [enabled, reconnectAttempts, reconnectInterval, startHeartbeat, cleanup, onConnect, onDisconnect, onError, onMessage])
+  }, [
+    enabled,
+    reconnectAttempts,
+    reconnectInterval,
+    startHeartbeat,
+    cleanup,
+    onConnect,
+    onDisconnect,
+    onError,
+    onMessage,
+  ]);
 
   const disconnect = useCallback(() => {
-    cleanup()
+    cleanup();
     if (wsRef.current) {
-      wsRef.current.close()
-      wsRef.current = null
+      wsRef.current.close();
+      wsRef.current = null;
     }
-    setIsConnected(false)
-    setConnectionState('disconnected')
-  }, [cleanup])
+    setIsConnected(false);
+    setConnectionState('disconnected');
+  }, [cleanup]);
 
   const send = useCallback((message: any) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       const wsMessage: WebSocketMessage = {
         ...message,
-        timestamp: new Date().toISOString()
-      }
-      wsRef.current.send(JSON.stringify(wsMessage))
+        timestamp: new Date().toISOString(),
+      };
+      wsRef.current.send(JSON.stringify(wsMessage));
     }
-  }, [])
+  }, []);
 
   const subscribe = useCallback((channel: string) => {
-    subscriptionsRef.current.add(channel)
-    
+    subscriptionsRef.current.add(channel);
+
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       const message: WebSocketMessage = {
         type: 'subscribe',
         channel,
-        timestamp: new Date().toISOString()
-      }
-      wsRef.current.send(JSON.stringify(message))
+        timestamp: new Date().toISOString(),
+      };
+      wsRef.current.send(JSON.stringify(message));
     }
-  }, [])
+  }, []);
 
   const unsubscribe = useCallback((channel: string) => {
-    subscriptionsRef.current.delete(channel)
-    
+    subscriptionsRef.current.delete(channel);
+
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       const message: WebSocketMessage = {
         type: 'unsubscribe',
         channel,
-        timestamp: new Date().toISOString()
-      }
-      wsRef.current.send(JSON.stringify(message))
+        timestamp: new Date().toISOString(),
+      };
+      wsRef.current.send(JSON.stringify(message));
     }
-  }, [])
+  }, []);
 
   const reconnect = useCallback(() => {
-    disconnect()
-    reconnectAttemptsRef.current = 0
-    setTimeout(connect, 100)
-  }, [disconnect, connect])
+    disconnect();
+    reconnectAttemptsRef.current = 0;
+    setTimeout(connect, 100);
+  }, [disconnect, connect]);
 
   // Initialize connection
   useEffect(() => {
     if (enabled) {
-      connect()
+      connect();
     }
-    
+
     return () => {
-      mountedRef.current = false
-      disconnect()
-    }
-  }, [enabled, connect, disconnect])
+      mountedRef.current = false;
+      disconnect();
+    };
+  }, [enabled, connect, disconnect]);
 
   return {
     isConnected,
@@ -233,6 +248,6 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
     subscribe,
     unsubscribe,
     send,
-    reconnect
-  }
+    reconnect,
+  };
 }

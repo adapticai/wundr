@@ -1,36 +1,37 @@
-'use client'
+'use client';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarGroupLabel,
-    SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-} from '@/components/ui/sidebar'
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from '@/components/ui/sidebar';
 import {
-    Activity,
-    BarChart3,
-    Cpu,
-    Database,
-    FileCode,
-    GitBranch,
-    Monitor,
-    Network,
-    Settings,
-    Shield,
-    Terminal,
-    Zap
-} from 'lucide-react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+  Activity,
+  BarChart3,
+  Cpu,
+  Database,
+  FileCode,
+  GitBranch,
+  Monitor,
+  Network,
+  Settings,
+  Shield,
+  Terminal,
+  Zap,
+} from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useUser } from '@/lib/user-context';
 
 // Navigation items
 const navigationItems = [
@@ -64,7 +65,7 @@ const navigationItems = [
     href: '/dashboard/quality',
     badge: 'new',
   },
-]
+];
 
 const toolsItems = [
   {
@@ -91,7 +92,7 @@ const toolsItems = [
     href: '/dashboard/system',
     badge: null,
   },
-]
+];
 
 const dataItems = [
   {
@@ -106,42 +107,49 @@ const dataItems = [
     href: '/dashboard/realtime',
     badge: 'live',
   },
-]
+];
 
 export function AppSidebar() {
-  const pathname = usePathname()
-  
+  const pathname = usePathname();
+  const { user, isLoading } = useUser();
+
+  const displayName = isLoading ? null : (user?.name ?? 'Guest User');
+  const displayRole = isLoading ? null : (user?.role ?? 'Not signed in');
+  const avatarSrc = user?.avatar ?? undefined;
+  const avatarFallback =
+    user?.initials ?? user?.name?.slice(0, 2).toUpperCase() ?? 'GU';
+
   return (
     <Sidebar>
-      <SidebarHeader className="border-b border-border">
-        <div className="flex items-center gap-3 px-3 py-4">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Monitor className="h-4 w-4" />
+      <SidebarHeader className='border-b border-border'>
+        <div className='flex items-center gap-3 px-3 py-4'>
+          <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground'>
+            <Monitor className='h-4 w-4' />
           </div>
-          <div className="flex flex-col">
-            <span className="font-semibold">Wundr</span>
-            <span className="text-xs text-muted-foreground">Dashboard</span>
+          <div className='flex flex-col'>
+            <span className='font-semibold'>Wundr</span>
+            <span className='text-xs text-muted-foreground'>Dashboard</span>
           </div>
         </div>
       </SidebarHeader>
-      
+
       <SidebarContent>
         {/* Main Navigation */}
         <SidebarGroup>
           <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navigationItems.map((item) => (
+              {navigationItems.map(item => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.href}
-                  >
-                    <Link href={item.href} className="flex items-center gap-3">
-                      <item.icon className="h-4 w-4" />
+                  <SidebarMenuButton asChild isActive={pathname === item.href}>
+                    <Link href={item.href} className='flex items-center gap-3'>
+                      <item.icon className='h-4 w-4' />
                       <span>{item.title}</span>
                       {item.badge && (
-                        <Badge variant="secondary" className="ml-auto h-5 text-xs">
+                        <Badge
+                          variant='secondary'
+                          className='ml-auto h-5 text-xs'
+                        >
                           {item.badge}
                         </Badge>
                       )}
@@ -152,23 +160,23 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        
+
         {/* Tools Section */}
         <SidebarGroup>
           <SidebarGroupLabel>Tools</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {toolsItems.map((item) => (
+              {toolsItems.map(item => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.href}
-                  >
-                    <Link href={item.href} className="flex items-center gap-3">
-                      <item.icon className="h-4 w-4" />
+                  <SidebarMenuButton asChild isActive={pathname === item.href}>
+                    <Link href={item.href} className='flex items-center gap-3'>
+                      <item.icon className='h-4 w-4' />
                       <span>{item.title}</span>
                       {item.badge && (
-                        <Badge variant="outline" className="ml-auto h-5 text-xs">
+                        <Badge
+                          variant='outline'
+                          className='ml-auto h-5 text-xs'
+                        >
                           {item.badge}
                         </Badge>
                       )}
@@ -179,25 +187,24 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        
+
         {/* Data Section */}
         <SidebarGroup>
           <SidebarGroupLabel>Data</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {dataItems.map((item) => (
+              {dataItems.map(item => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.href}
-                  >
-                    <Link href={item.href} className="flex items-center gap-3">
-                      <item.icon className="h-4 w-4" />
+                  <SidebarMenuButton asChild isActive={pathname === item.href}>
+                    <Link href={item.href} className='flex items-center gap-3'>
+                      <item.icon className='h-4 w-4' />
                       <span>{item.title}</span>
                       {item.badge && (
-                        <Badge 
-                          variant={item.badge === 'live' ? 'default' : 'outline'} 
-                          className="ml-auto h-5 text-xs"
+                        <Badge
+                          variant={
+                            item.badge === 'live' ? 'default' : 'outline'
+                          }
+                          className='ml-auto h-5 text-xs'
                         >
                           {item.badge}
                         </Badge>
@@ -210,31 +217,48 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      
-      <SidebarFooter className="border-t border-border">
+
+      <SidebarFooter className='border-t border-border'>
         <Separator />
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <Link href="/dashboard/settings" className="flex items-center gap-3">
-                <Settings className="h-4 w-4" />
+              <Link
+                href='/dashboard/settings'
+                className='flex items-center gap-3'
+              >
+                <Settings className='h-4 w-4' />
                 <span>Settings</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-        
-        <div className="flex items-center gap-3 px-3 py-2">
-          <Avatar className="h-8 w-8 rounded-lg">
-            <AvatarImage src="/avatars/user.png" alt="User" />
-            <AvatarFallback>WU</AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col text-sm">
-            <span className="font-medium">Wundr User</span>
-            <span className="text-xs text-muted-foreground">Administrator</span>
-          </div>
+
+        <div className='flex items-center gap-3 px-3 py-2'>
+          {isLoading ? (
+            <>
+              <div className='h-8 w-8 rounded-lg bg-muted animate-pulse' />
+              <div className='flex flex-col gap-1'>
+                <div className='h-3 w-24 rounded bg-muted animate-pulse' />
+                <div className='h-2 w-16 rounded bg-muted animate-pulse' />
+              </div>
+            </>
+          ) : (
+            <>
+              <Avatar className='h-8 w-8 rounded-lg'>
+                <AvatarImage src={avatarSrc} alt={displayName ?? 'User'} />
+                <AvatarFallback>{avatarFallback}</AvatarFallback>
+              </Avatar>
+              <div className='flex flex-col text-sm'>
+                <span className='font-medium'>{displayName}</span>
+                <span className='text-xs text-muted-foreground'>
+                  {displayRole}
+                </span>
+              </div>
+            </>
+          )}
         </div>
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }

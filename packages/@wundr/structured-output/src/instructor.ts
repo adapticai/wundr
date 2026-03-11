@@ -29,7 +29,6 @@ import type {
   LLMProvider,
   StreamingLLMProvider,
   LLMResponse,
-  StreamChunk,
   RetryContext,
   RetryConfig,
   GrammarEnforcer,
@@ -110,7 +109,7 @@ export class StructuredOutputGenerator {
     this.retryStrategy = createRetryStrategy(this.config.retryStrategy);
     this.grammarEnforcer = createGrammarEnforcer(
       this.config.grammarEnforcement?.method ?? 'json-schema',
-      this.config.grammarEnforcement,
+      this.config.grammarEnforcement
     );
   }
 
@@ -136,7 +135,7 @@ export class StructuredOutputGenerator {
    * @returns Validation result with parsed data or errors
    */
   async generate<T>(
-    options: GenerationOptions<T>,
+    options: GenerationOptions<T>
   ): Promise<ValidationResult<T>> {
     const startTime = Date.now();
     const mergedConfig = { ...this.config, ...options.config };
@@ -145,7 +144,7 @@ export class StructuredOutputGenerator {
     if (!this.llmProvider) {
       throw new StructuredOutputError(
         'No LLM provider configured. Call setLLMProvider() first.',
-        'CONFIGURATION_ERROR',
+        'CONFIGURATION_ERROR'
       );
     }
 
@@ -153,7 +152,7 @@ export class StructuredOutputGenerator {
     const systemPrompt = this.buildSystemPrompt(
       options.schema,
       mergedConfig,
-      options.systemPrompt,
+      options.systemPrompt
     );
 
     // Build the user prompt with context
@@ -179,14 +178,14 @@ export class StructuredOutputGenerator {
         const response = await this.callLLM(
           currentPrompt,
           systemPrompt,
-          mergedConfig,
+          mergedConfig
         );
         rawResponses.push(response.content);
 
         // Try to parse and validate
         const validationResult = this.validateResponse<T>(
           response.content,
-          options.schema,
+          options.schema
         );
 
         if (validationResult.success) {
@@ -237,7 +236,7 @@ export class StructuredOutputGenerator {
           userPrompt,
           lastErrors,
           mergedConfig.includeErrorFeedback,
-          retryResult.additionalInstructions,
+          retryResult.additionalInstructions
         );
       } catch (error) {
         if (
@@ -277,7 +276,7 @@ export class StructuredOutputGenerator {
    * @returns Final validation result
    */
   async streamPartial<T>(
-    options: StreamingOptions<T>,
+    options: StreamingOptions<T>
   ): Promise<ValidationResult<T>> {
     const startTime = Date.now();
     const mergedConfig = { ...this.config, ...options.config };
@@ -290,7 +289,7 @@ export class StructuredOutputGenerator {
       }
       throw new StructuredOutputError(
         'No streaming provider configured. Call setStreamingProvider() first.',
-        'CONFIGURATION_ERROR',
+        'CONFIGURATION_ERROR'
       );
     }
 
@@ -298,7 +297,7 @@ export class StructuredOutputGenerator {
     const systemPrompt = this.buildSystemPrompt(
       options.schema,
       mergedConfig,
-      options.systemPrompt,
+      options.systemPrompt
     );
     const userPrompt = this.buildUserPrompt(options.prompt, options.context);
 
@@ -323,7 +322,7 @@ export class StructuredOutputGenerator {
         const stream = this.streamingProvider(
           currentPrompt,
           systemPrompt,
-          mergedConfig,
+          mergedConfig
         );
 
         for await (const chunk of stream) {
@@ -332,7 +331,7 @@ export class StructuredOutputGenerator {
           // Try to parse partial result
           const partialResult = this.tryParsePartial<T>(
             accumulated,
-            options.schema,
+            options.schema
           );
 
           if (partialResult) {
@@ -342,7 +341,7 @@ export class StructuredOutputGenerator {
               isComplete: chunk.isFinal,
               confidence: this.calculateConfidence(
                 partialResult,
-                options.schema,
+                options.schema
               ),
             });
           }
@@ -357,7 +356,7 @@ export class StructuredOutputGenerator {
         // Final validation
         const validationResult = this.validateResponse<T>(
           accumulated,
-          options.schema,
+          options.schema
         );
 
         if (validationResult.success) {
@@ -405,7 +404,7 @@ export class StructuredOutputGenerator {
           userPrompt,
           lastErrors,
           mergedConfig.includeErrorFeedback,
-          retryResult.additionalInstructions,
+          retryResult.additionalInstructions
         );
       } catch (error) {
         if (
@@ -425,7 +424,7 @@ export class StructuredOutputGenerator {
         ];
 
         options.onError?.(
-          error instanceof Error ? error : new Error(String(error)),
+          error instanceof Error ? error : new Error(String(error))
         );
 
         if (attemptNumber >= mergedConfig.maxRetries) {
@@ -439,7 +438,7 @@ export class StructuredOutputGenerator {
     const error = new MaxRetriesExceededError(
       attemptNumber,
       lastErrors,
-      rawResponses,
+      rawResponses
     );
     options.onError?.(error);
     throw error;
@@ -493,7 +492,7 @@ export class StructuredOutputGenerator {
   private buildSystemPrompt(
     schema: ZodSchema,
     config: InstructorConfig,
-    customSystemPrompt?: string,
+    customSystemPrompt?: string
   ): string {
     const parts: string[] = [];
 
@@ -507,14 +506,14 @@ export class StructuredOutputGenerator {
       parts.push(customSystemPrompt);
     } else {
       parts.push(
-        'You are a helpful assistant that produces structured output.',
+        'You are a helpful assistant that produces structured output.'
       );
     }
 
     // Schema information
     const jsonSchema = toJsonSchema(schema);
     parts.push(
-      '\nYou must respond with valid JSON that matches the following schema:',
+      '\nYou must respond with valid JSON that matches the following schema:'
     );
     parts.push('```json');
     parts.push(JSON.stringify(jsonSchema, null, 2));
@@ -525,10 +524,10 @@ export class StructuredOutputGenerator {
     parts.push('- Respond ONLY with valid JSON, no additional text.');
     parts.push('- Ensure all required fields are present.');
     parts.push(
-      '- Use the exact field names and types specified in the schema.',
+      '- Use the exact field names and types specified in the schema.'
     );
     parts.push(
-      '- Do not include any markdown formatting or code blocks in your response.',
+      '- Do not include any markdown formatting or code blocks in your response.'
     );
 
     return parts.join('\n');
@@ -543,7 +542,7 @@ export class StructuredOutputGenerator {
       examples?: Array<{ input: string; output: unknown }>;
       instructions?: string;
       variables?: Record<string, unknown>;
-    },
+    }
   ): string {
     const parts: string[] = [];
 
@@ -569,7 +568,7 @@ export class StructuredOutputGenerator {
       for (const [key, value] of Object.entries(context.variables)) {
         finalPrompt = finalPrompt.replace(
           new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'g'),
-          String(value),
+          String(value)
         );
       }
     }
@@ -586,7 +585,7 @@ export class StructuredOutputGenerator {
     originalPrompt: string,
     errors: ValidationError[],
     includeErrorFeedback: boolean,
-    additionalInstructions?: string,
+    additionalInstructions?: string
   ): string {
     const parts: string[] = [originalPrompt];
 
@@ -607,12 +606,12 @@ export class StructuredOutputGenerator {
   private async callLLM(
     prompt: string,
     systemPrompt: string,
-    config: InstructorConfig,
+    config: InstructorConfig
   ): Promise<LLMResponse> {
     if (!this.llmProvider) {
       throw new StructuredOutputError(
         'No LLM provider configured',
-        'CONFIGURATION_ERROR',
+        'CONFIGURATION_ERROR'
       );
     }
 
@@ -624,7 +623,7 @@ export class StructuredOutputGenerator {
    */
   private validateResponse<T>(
     response: string,
-    schema: ZodSchema<T>,
+    schema: ZodSchema<T>
   ):
     | { success: true; data: T }
     | { success: false; errors: ValidationError[] } {
@@ -642,7 +641,7 @@ export class StructuredOutputGenerator {
               code: 'GRAMMAR_ERROR',
               expected: e.expected,
               received: e.found,
-            }),
+            })
           ),
         };
       }
@@ -693,7 +692,7 @@ export class StructuredOutputGenerator {
    */
   private tryParsePartial<T>(
     text: string,
-    _schema: ZodSchema<T>,
+    _schema: ZodSchema<T>
   ): Partial<T> | null {
     try {
       // Try to extract JSON even if incomplete
@@ -753,7 +752,7 @@ export class StructuredOutputGenerator {
    */
   private calculateConfidence<T>(
     partial: Partial<T>,
-    schema: ZodSchema<T>,
+    schema: ZodSchema<T>
   ): number {
     // Simple confidence based on how complete the partial result appears
     const result = schema.safeParse(partial);
@@ -766,7 +765,7 @@ export class StructuredOutputGenerator {
     const issues = result.error.issues.length;
     const totalFieldEstimate = Math.max(
       issues + Object.keys(partial as object).length,
-      1,
+      1
     );
 
     return Math.max(0, 1 - issues / totalFieldEstimate);
@@ -777,7 +776,7 @@ export class StructuredOutputGenerator {
    */
   private buildMetadata(
     config: InstructorConfig,
-    response?: LLMResponse,
+    response?: LLMResponse
   ): ValidationMetadata {
     return {
       model: config.model,
@@ -796,78 +795,9 @@ export class StructuredOutputGenerator {
  * Create a configured StructuredOutputGenerator instance
  */
 export function createInstructor(
-  config?: PartialInstructorConfig,
+  config?: PartialInstructorConfig
 ): StructuredOutputGenerator {
   return new StructuredOutputGenerator(config);
-}
-
-/**
- * Create a mock LLM provider for testing
- */
-export function createMockLLMProvider(
-  responses: string | string[] | ((prompt: string) => string),
-): LLMProvider {
-  let responseIndex = 0;
-  const responseArray = Array.isArray(responses)
-    ? responses
-    : typeof responses === 'string'
-      ? [responses]
-      : [];
-
-  return async (
-    prompt: string,
-    _systemPrompt: string,
-    config: InstructorConfig,
-  ) => {
-    let content: string;
-
-    if (typeof responses === 'function') {
-      content = responses(prompt);
-    } else {
-      content = responseArray[responseIndex % responseArray.length] ?? '';
-      responseIndex++;
-    }
-
-    return {
-      content,
-      model: config.model,
-      usage: {
-        promptTokens: Math.round(prompt.length / 4),
-        completionTokens: Math.round(content.length / 4),
-        totalTokens: Math.round((prompt.length + content.length) / 4),
-      },
-    };
-  };
-}
-
-/**
- * Create a mock streaming provider for testing
- */
-export function createMockStreamingProvider(
-  response: string,
-  chunkSize = 10,
-): StreamingLLMProvider {
-  return async function* (
-    _prompt: string,
-    _systemPrompt: string,
-    _config: InstructorConfig,
-  ): AsyncIterable<StreamChunk> {
-    let accumulated = '';
-
-    for (let i = 0; i < response.length; i += chunkSize) {
-      const delta = response.substring(i, i + chunkSize);
-      accumulated += delta;
-
-      yield {
-        delta,
-        accumulated,
-        isFinal: i + chunkSize >= response.length,
-      };
-
-      // Simulate streaming delay
-      await sleep(10);
-    }
-  };
 }
 
 // ============================================================================

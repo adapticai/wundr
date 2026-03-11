@@ -2,7 +2,8 @@
 
 ## Overview
 
-This document demonstrates the comprehensive markdown rendering system built for the dashboard. The system provides full support for:
+This document demonstrates the comprehensive markdown rendering system built for the dashboard. The
+system provides full support for:
 
 - ✅ **GitHub Flavored Markdown (GFM)** - Tables, strikethrough, task lists, and more
 - ✅ **Syntax Highlighting** - Code blocks with automatic language detection
@@ -14,6 +15,7 @@ This document demonstrates the comprehensive markdown rendering system built for
 ## Components
 
 ### MarkdownRenderer
+
 The core component for rendering markdown content with full feature support.
 
 ```typescript
@@ -28,6 +30,7 @@ import { MarkdownRenderer } from '@/components/markdown';
 ```
 
 ### FileContentViewer
+
 A comprehensive file viewer that automatically detects and renders different file types.
 
 ```typescript
@@ -63,27 +66,29 @@ All markdown content is styled to match the dashboard theme with:
 ## Example Usage
 
 ### Basic Markdown
+
 ```markdown
 # Hello World
 
-This is **bold** and *italic* text.
+This is **bold** and _italic_ text.
 
 - List item 1
 - List item 2
   - Nested item
 
 | Column 1 | Column 2 |
-|----------|----------|
+| -------- | -------- |
 | Data 1   | Data 2   |
 ```
 
 ### With Frontmatter
+
 ```markdown
 ---
-title: "Document Title"
-author: "Author Name"
-date: "2024-01-15"
-tags: ["markdown", "demo"]
+title: 'Document Title'
+author: 'Author Name'
+date: '2024-01-15'
+tags: ['markdown', 'demo']
 ---
 
 # Content Here
@@ -98,4 +103,5 @@ tags: ["markdown", "demo"]
 5. **Links** - External and internal navigation
 6. **Images** - Responsive image rendering
 
-This system seamlessly integrates with the dashboard's existing design system and provides a powerful foundation for documentation and content rendering.
+This system seamlessly integrates with the dashboard's existing design system and provides a
+powerful foundation for documentation and content rendering.

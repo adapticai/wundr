@@ -45,10 +45,12 @@ jest.mock('@/hooks/reports/use-reports', () => ({
 describe('ReportsDashboard', () => {
   it('renders the dashboard with reports', async () => {
     render(<ReportsDashboard />);
-    
+
     expect(screen.getByText('Reports')).toBeInTheDocument();
-    expect(screen.getByText('Generate, schedule, and manage migration reports')).toBeInTheDocument();
-    
+    expect(
+      screen.getByText('Generate, schedule, and manage migration reports')
+    ).toBeInTheDocument();
+
     await waitFor(() => {
       expect(screen.getByText('Test Migration Report')).toBeInTheDocument();
     });
@@ -57,16 +59,16 @@ describe('ReportsDashboard', () => {
   it('allows searching reports', async () => {
     const user = userEvent.setup();
     render(<ReportsDashboard />);
-    
+
     const searchInput = screen.getByPlaceholderText('Search reports...');
     await user.type(searchInput, 'Test');
-    
+
     expect(searchInput).toHaveValue('Test');
   });
 
   it('shows stats cards', async () => {
     render(<ReportsDashboard />);
-    
+
     await waitFor(() => {
       expect(screen.getByText('Total Reports')).toBeInTheDocument();
       expect(screen.getByText('Running')).toBeInTheDocument();

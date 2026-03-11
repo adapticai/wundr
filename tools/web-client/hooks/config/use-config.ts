@@ -6,11 +6,13 @@ export function useConfig() {
   return useConfigContext();
 }
 
-export function useConfigSection<T extends keyof ConfigurationState>(section: T) {
+export function useConfigSection<T extends keyof ConfigurationState>(
+  section: T
+) {
   const { config, updateConfig, resetSection, errors } = useConfig();
-  
+
   const sectionConfig = (config as any)[section];
-  
+
   const updateSection = useCallback(
     (updates: Partial<ConfigurationState[T]>) => {
       // Since the actual config is flat, we need to spread the updates directly
@@ -18,11 +20,11 @@ export function useConfigSection<T extends keyof ConfigurationState>(section: T)
     },
     [updateConfig]
   );
-  
+
   const resetSectionCallback = useCallback(() => {
     resetSection(section as any);
   }, [resetSection, section]);
-  
+
   const sectionErrors = useMemo(() => {
     const sectionErrorMap: Record<string, string> = {};
     const sectionString = String(section);
@@ -34,7 +36,7 @@ export function useConfigSection<T extends keyof ConfigurationState>(section: T)
     });
     return sectionErrorMap;
   }, [errors, section]);
-  
+
   return {
     config: sectionConfig,
     updateConfig: updateSection,
@@ -46,16 +48,16 @@ export function useConfigSection<T extends keyof ConfigurationState>(section: T)
 
 export function useConfigValidation() {
   const { errors } = useConfig();
-  
+
   const hasErrors = useMemo(() => Object.keys(errors).length > 0, [errors]);
-  
+
   const getFieldError = useCallback(
     (section: keyof ConfigurationState, field: string) => {
       return errors[`${String(section)}.${field}`];
     },
     [errors]
   );
-  
+
   const getSectionErrors = useCallback(
     (section: keyof ConfigurationState) => {
       const sectionErrors: Record<string, string> = {};
@@ -70,7 +72,7 @@ export function useConfigValidation() {
     },
     [errors]
   );
-  
+
   return {
     errors,
     hasErrors,
@@ -81,7 +83,7 @@ export function useConfigValidation() {
 
 export function useConfigPersistence() {
   const { exportConfig, importConfig, save, isDirty } = useConfig();
-  
+
   return {
     exportConfig,
     importConfig,
@@ -92,7 +94,7 @@ export function useConfigPersistence() {
 
 export function useConfigTemplates() {
   const { applyTemplate } = useConfig();
-  
+
   return {
     applyTemplate,
   };

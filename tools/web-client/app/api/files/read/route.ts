@@ -18,10 +18,10 @@ export async function GET(request: NextRequest) {
   try {
     const fs = await import('fs-extra');
     const path = await import('path');
-    
+
     const searchParams = request.nextUrl.searchParams;
     const filePath = searchParams.get('path');
-    
+
     if (!filePath) {
       return NextResponse.json(
         { error: 'File path is required' },
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     // Validate path to prevent directory traversal
     const rootPath = process.cwd();
     const resolvedPath = path.resolve(filePath);
-    
+
     if (!resolvedPath.startsWith(rootPath)) {
       return NextResponse.json(
         { error: 'Access denied: Path outside of allowed directory' },
@@ -43,22 +43,20 @@ export async function GET(request: NextRequest) {
     // Check if file exists
     const exists = await fs.pathExists(resolvedPath);
     if (!exists) {
-      return NextResponse.json(
-        { error: 'File not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
 
     const stats = await fs.stat(resolvedPath);
-    
+
     // Skip binary files and very large files
-    if (stats.size > 10 * 1024 * 1024) { // 10MB limit
+    if (stats.size > 10 * 1024 * 1024) {
+      // 10MB limit
       return NextResponse.json(
         { error: 'File too large to read (max 10MB)' },
         { status: 413 }
       );
     }
-    
+
     // Check if file is binary
     const buffer = await fs.readFile(resolvedPath);
     if (isBinaryFile(buffer)) {
@@ -67,21 +65,18 @@ export async function GET(request: NextRequest) {
         { status: 415 }
       );
     }
-    
+
     const content = buffer.toString('utf8');
-    
+
     return NextResponse.json({
       content,
       size: stats.size,
       modified: stats.mtime,
       path: resolvedPath,
-      name: path.basename(resolvedPath)
+      name: path.basename(resolvedPath),
     });
   } catch (_error) {
     // Error logged - details available in network tab;
-    return NextResponse.json(
-      { error: 'Failed to read file' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to read file' }, { status: 500 });
   }
 }

@@ -1,111 +1,124 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { ApiResponse } from '@/types/data'
+import { NextRequest, NextResponse } from 'next/server';
+import { ApiResponse } from '@/types/data';
 
 // Force dynamic rendering to allow fs access
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic';
 // Ensure this runs only on Node.js runtime
-export const runtime = 'nodejs'
+export const runtime = 'nodejs';
 
 // Types for configuration operations
 interface ConfigFile {
-  name: string
-  path: string
-  type: 'json' | 'yaml' | 'yml' | 'js' | 'ts' | 'env' | 'toml'
-  size: number
-  lastModified: string
-  content?: Record<string, unknown>
-  schema?: ConfigSchema
+  name: string;
+  path: string;
+  type: 'json' | 'yaml' | 'yml' | 'js' | 'ts' | 'env' | 'toml';
+  size: number;
+  lastModified: string;
+  content?: Record<string, unknown>;
+  schema?: ConfigSchema;
 }
 
 interface ConfigSchema {
-  properties: Record<string, {
-    type: 'string' | 'number' | 'boolean' | 'array' | 'object'
-    description?: string
-    default?: unknown
-    required?: boolean
-    enum?: unknown[]
-  }>
-  required?: string[]
-  additionalProperties?: boolean
+  properties: Record<
+    string,
+    {
+      type: 'string' | 'number' | 'boolean' | 'array' | 'object';
+      description?: string;
+      default?: unknown;
+      required?: boolean;
+      enum?: unknown[];
+    }
+  >;
+  required?: string[];
+  additionalProperties?: boolean;
 }
 
 interface ConfigValidationResult {
-  valid: boolean
+  valid: boolean;
   errors: Array<{
-    path: string
-    message: string
-    severity: 'error' | 'warning'
-  }>
+    path: string;
+    message: string;
+    severity: 'error' | 'warning';
+  }>;
   warnings: Array<{
-    path: string
-    message: string
-    suggestion?: string
-  }>
+    path: string;
+    message: string;
+    suggestion?: string;
+  }>;
 }
 
 interface ConfigTemplate {
-  name: string
-  description: string
-  type: string
-  content: Record<string, unknown>
-  schema?: ConfigSchema
-  tags?: string[]
+  name: string;
+  description: string;
+  type: string;
+  content: Record<string, unknown>;
+  schema?: ConfigSchema;
+  tags?: string[];
 }
 
 interface ConfigRequest {
-  action: 'list' | 'read' | 'write' | 'validate' | 'template' | 'merge' | 'backup'
-  configName?: string
-  content?: Record<string, unknown>
-  templateName?: string
+  action:
+    | 'list'
+    | 'read'
+    | 'write'
+    | 'validate'
+    | 'template'
+    | 'merge'
+    | 'backup';
+  configName?: string;
+  content?: Record<string, unknown>;
+  templateName?: string;
   options?: {
-    format?: 'json' | 'yaml' | 'env'
-    validate?: boolean
-    backup?: boolean
-    merge?: boolean
-  }
+    format?: 'json' | 'yaml' | 'env';
+    validate?: boolean;
+    backup?: boolean;
+    merge?: boolean;
+  };
 }
 
 // Rate limiting
-const requestTracker = new Map<string, { count: number; resetTime: number }>()
-const RATE_LIMIT = 100 // requests per hour
-const RATE_WINDOW = 60 * 60 * 1000 // 1 hour in ms
+const requestTracker = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT = 100; // requests per hour
+const RATE_WINDOW = 60 * 60 * 1000; // 1 hour in ms
 
 function checkRateLimit(clientId: string): boolean {
-  const now = Date.now()
-  const record = requestTracker.get(clientId) || { count: 0, resetTime: now + RATE_WINDOW }
-  
+  const now = Date.now();
+  const record = requestTracker.get(clientId) || {
+    count: 0,
+    resetTime: now + RATE_WINDOW,
+  };
+
   if (now > record.resetTime) {
-    record.count = 1
-    record.resetTime = now + RATE_WINDOW
+    record.count = 1;
+    record.resetTime = now + RATE_WINDOW;
   } else {
-    record.count++
+    record.count++;
   }
-  
-  requestTracker.set(clientId, record)
-  return record.count <= RATE_LIMIT
+
+  requestTracker.set(clientId, record);
+  return record.count <= RATE_LIMIT;
 }
 
 // Get project root directory
 async function getProjectRoot(): Promise<string> {
-  const { promises: fs } = await import('fs')
-  const path = await import('path')
-  
-  let dir = process.cwd()
+  const { promises: fs } = await import('fs');
+  const path = await import('path');
+
+  let dir = process.cwd();
   while (dir !== path.dirname(dir)) {
     try {
-      const packagePath = path.join(dir, 'package.json')
+      const packagePath = path.join(dir, 'package.json');
       try {
-        await fs.access(packagePath)
-        return dir
+        await fs.access(packagePath);
+        return dir;
       } catch {
         // File doesn't exist, continue searching
       }
     } catch (_e) {
       // Continue searching
     }
-    dir = path.dirname(dir)
+    dir = path.dirname(dir);
   }
-  return process.cwd()
+  return process.cwd();
 }
 
 // Common configuration file patterns
@@ -116,11 +129,11 @@ const CONFIG_PATTERNS = [
   'yarn.lock',
   'pnpm-lock.yaml',
   'pnpm-workspace.yaml',
-  
+
   // TypeScript
   'tsconfig.json',
   'tsconfig.*.json',
-  
+
   // Bundlers
   'webpack.config.js',
   'webpack.config.ts',
@@ -128,250 +141,276 @@ const CONFIG_PATTERNS = [
   'vite.config.ts',
   'rollup.config.js',
   'rollup.config.ts',
-  
+
   // Testing
   'jest.config.js',
   'jest.config.ts',
   'vitest.config.js',
   'vitest.config.ts',
-  
+
   // Linting/Formatting
   '.eslintrc.json',
   '.eslintrc.js',
   'eslint.config.js',
   '.prettierrc',
   '.prettierrc.json',
-  
+
   // Environment
   '.env',
   '.env.local',
   '.env.development',
   '.env.production',
-  
+
   // CI/CD
   '.github/workflows/*.yml',
   '.github/workflows/*.yaml',
   'docker-compose.yml',
   'docker-compose.yaml',
   'Dockerfile',
-  
+
   // Wundr specific
   'wundr.config.json',
   'wundr.config.js',
-  'CLAUDE.md'
-]
+  'CLAUDE.md',
+];
 
 // Validate configuration file access
-async function validateConfigAccess(configName: string, projectRoot: string): Promise<{ isValid: boolean; resolvedPath: string; error?: string }> {
+async function validateConfigAccess(
+  configName: string,
+  projectRoot: string
+): Promise<{ isValid: boolean; resolvedPath: string; error?: string }> {
   try {
-    const path = await import('path')
-    
+    const path = await import('path');
+
     // Prevent path traversal
-    if (configName.includes('..') || configName.includes('~') || path.isAbsolute(configName)) {
+    if (
+      configName.includes('..') ||
+      configName.includes('~') ||
+      path.isAbsolute(configName)
+    ) {
       return {
         isValid: false,
         resolvedPath: '',
-        error: 'Invalid configuration name. Use relative names only.'
-      }
+        error: 'Invalid configuration name. Use relative names only.',
+      };
     }
-    
-    const resolvedPath = path.resolve(projectRoot, configName)
-    
+
+    const resolvedPath = path.resolve(projectRoot, configName);
+
     // Ensure path is within project root
     if (!resolvedPath.startsWith(projectRoot)) {
       return {
         isValid: false,
         resolvedPath: '',
-        error: 'Configuration file outside project root.'
-      }
+        error: 'Configuration file outside project root.',
+      };
     }
-    
+
     // Check if file matches allowed configuration patterns
-    const relativePath = path.relative(projectRoot, resolvedPath)
+    const relativePath = path.relative(projectRoot, resolvedPath);
     const isAllowedConfig = CONFIG_PATTERNS.some(pattern => {
       if (pattern.includes('*')) {
-        const regex = new RegExp(pattern.replace('*', '.*'))
-        return regex.test(relativePath)
+        const regex = new RegExp(pattern.replace('*', '.*'));
+        return regex.test(relativePath);
       }
-      return relativePath === pattern || relativePath.endsWith('/' + pattern)
-    })
-    
+      return relativePath === pattern || relativePath.endsWith('/' + pattern);
+    });
+
     if (!isAllowedConfig) {
       return {
         isValid: false,
         resolvedPath: '',
-        error: 'Access restricted to known configuration files.'
-      }
+        error: 'Access restricted to known configuration files.',
+      };
     }
-    
-    return { isValid: true, resolvedPath }
+
+    return { isValid: true, resolvedPath };
   } catch (_error) {
     return {
       isValid: false,
       resolvedPath: '',
-      error: 'Failed to resolve configuration path.'
-    }
+      error: 'Failed to resolve configuration path.',
+    };
   }
 }
 
 // Detect configuration file type
 function getConfigType(filePath: string): ConfigFile['type'] {
   // Use basic path operations without importing path module
-  const ext = filePath.substring(filePath.lastIndexOf('.')).toLowerCase()
-  const basename = filePath.substring(filePath.lastIndexOf('/') + 1)
-  
-  if (basename.startsWith('.env')) return 'env'
-  
+  const ext = filePath.substring(filePath.lastIndexOf('.')).toLowerCase();
+  const basename = filePath.substring(filePath.lastIndexOf('/') + 1);
+
+  if (basename.startsWith('.env')) return 'env';
+
   switch (ext) {
     case '.json':
-      return 'json'
+      return 'json';
     case '.yaml':
     case '.yml':
-      return 'yaml'
+      return 'yaml';
     case '.js':
-      return 'js'
+      return 'js';
     case '.ts':
-      return 'ts'
+      return 'ts';
     case '.toml':
-      return 'toml'
+      return 'toml';
     default:
-      return 'json' // Default fallback
+      return 'json'; // Default fallback
   }
 }
 
 // Parse configuration file content
-async function parseConfigContent(filePath: string, type: ConfigFile['type']): Promise<Record<string, unknown> | { _raw: string; _note?: string }> {
+async function parseConfigContent(
+  filePath: string,
+  type: ConfigFile['type']
+): Promise<Record<string, unknown> | { _raw: string; _note?: string }> {
   try {
-    const { promises: fs } = await import('fs')
-    const content = await fs.readFile(filePath, 'utf8')
-    
+    const { promises: fs } = await import('fs');
+    const content = await fs.readFile(filePath, 'utf8');
+
     switch (type) {
       case 'json':
-        return JSON.parse(content)
-        
+        return JSON.parse(content);
+
       case 'yaml':
       case 'yml': {
         // Basic YAML parsing (simplified - in production use a proper YAML parser)
-        const yamlLines = content.split('\n').filter(line => line.trim() && !line.trim().startsWith('#'))
-        const yamlObj: Record<string, unknown> = {}
-        
+        const yamlLines = content
+          .split('\n')
+          .filter(line => line.trim() && !line.trim().startsWith('#'));
+        const yamlObj: Record<string, unknown> = {};
+
         for (const line of yamlLines) {
-          const [key, ...valueParts] = line.split(':')
+          const [key, ...valueParts] = line.split(':');
           if (key && valueParts.length > 0) {
-            const value = valueParts.join(':').trim()
-            const cleanKey = key.trim()
-            
+            const value = valueParts.join(':').trim();
+            const cleanKey = key.trim();
+
             // Try to parse as JSON value
             try {
-              yamlObj[cleanKey] = JSON.parse(value)
+              yamlObj[cleanKey] = JSON.parse(value);
             } catch {
               // Keep as string
-              yamlObj[cleanKey] = value.replace(/^["']|["']$/g, '')
+              yamlObj[cleanKey] = value.replace(/^["']|["']$/g, '');
             }
           }
         }
-        return yamlObj
+        return yamlObj;
       }
-        
+
       case 'env': {
-        const envObj: Record<string, string> = {}
-        const envLines = content.split('\n').filter(line => line.trim() && !line.trim().startsWith('#'))
-        
+        const envObj: Record<string, string> = {};
+        const envLines = content
+          .split('\n')
+          .filter(line => line.trim() && !line.trim().startsWith('#'));
+
         for (const line of envLines) {
-          const [key, ...valueParts] = line.split('=')
+          const [key, ...valueParts] = line.split('=');
           if (key && valueParts.length > 0) {
-            const value = valueParts.join('=').trim()
-            envObj[key.trim()] = value.replace(/^["']|["']$/g, '')
+            const value = valueParts.join('=').trim();
+            envObj[key.trim()] = value.replace(/^["']|["']$/g, '');
           }
         }
-        return envObj
+        return envObj;
       }
-        
+
       case 'js':
       case 'ts':
         // Return raw content for JS/TS files (can't safely execute)
-        return { _raw: content, _note: 'JavaScript/TypeScript files cannot be parsed safely' }
-        
+        return {
+          _raw: content,
+          _note: 'JavaScript/TypeScript files cannot be parsed safely',
+        };
+
       default:
-        return { _raw: content }
+        return { _raw: content };
     }
   } catch (_error) {
-    throw new Error(`Failed to parse ${type} configuration: ${_error instanceof Error ? _error.message : 'Unknown error'}`)
+    throw new Error(
+      `Failed to parse ${type} configuration: ${_error instanceof Error ? _error.message : 'Unknown error'}`
+    );
   }
 }
 
 // Serialize configuration content
-function serializeConfigContent(data: Record<string, unknown>, type: ConfigFile['type']): string {
+function serializeConfigContent(
+  data: Record<string, unknown>,
+  type: ConfigFile['type']
+): string {
   try {
     switch (type) {
       case 'json': {
-        return JSON.stringify(data, null, 2)
+        return JSON.stringify(data, null, 2);
       }
 
       case 'yaml':
       case 'yml': {
         // Basic YAML serialization
-        let yamlContent = ''
+        let yamlContent = '';
         for (const [key, value] of Object.entries(data)) {
           if (typeof value === 'string') {
-            yamlContent += `${key}: "${value}"\n`
+            yamlContent += `${key}: "${value}"\n`;
           } else {
-            yamlContent += `${key}: ${JSON.stringify(value)}\n`
+            yamlContent += `${key}: ${JSON.stringify(value)}\n`;
           }
         }
-        return yamlContent
+        return yamlContent;
       }
 
       case 'env': {
-        let envContent = ''
+        let envContent = '';
         for (const [key, value] of Object.entries(data)) {
-          envContent += `${key}=${value}\n`
+          envContent += `${key}=${value}\n`;
         }
-        return envContent
+        return envContent;
       }
 
       default:
-        return JSON.stringify(data, null, 2)
+        return JSON.stringify(data, null, 2);
     }
   } catch (_error) {
-    throw new Error(`Failed to serialize ${type} configuration: ${_error instanceof Error ? _error.message : 'Unknown error'}`)
+    throw new Error(
+      `Failed to serialize ${type} configuration: ${_error instanceof Error ? _error.message : 'Unknown error'}`
+    );
   }
 }
 
 // List configuration files
-async function listConfigurationFiles(projectRoot: string): Promise<ConfigFile[]> {
-  const configFiles: ConfigFile[] = []
-  
+async function listConfigurationFiles(
+  projectRoot: string
+): Promise<ConfigFile[]> {
+  const configFiles: ConfigFile[] = [];
+
   try {
-    const { promises: fs } = await import('fs')
-    const path = await import('path')
-    
+    const { promises: fs } = await import('fs');
+    const path = await import('path');
+
     // Scan for configuration files based on patterns
     for (const pattern of CONFIG_PATTERNS) {
       if (pattern.includes('*')) {
         // Handle wildcard patterns
-        const dirPath = path.dirname(path.resolve(projectRoot, pattern))
-        const fileName = path.basename(pattern)
-        
+        const dirPath = path.dirname(path.resolve(projectRoot, pattern));
+        const fileName = path.basename(pattern);
+
         try {
-          await fs.access(dirPath)
-          const entries = await fs.readdir(dirPath)
-          const regex = new RegExp(fileName.replace('*', '.*'))
-          
+          await fs.access(dirPath);
+          const entries = await fs.readdir(dirPath);
+          const regex = new RegExp(fileName.replace('*', '.*'));
+
           for (const entry of entries) {
             if (regex.test(entry)) {
-              const fullPath = path.join(dirPath, entry)
-              const stats = await fs.stat(fullPath)
-              
+              const fullPath = path.join(dirPath, entry);
+              const stats = await fs.stat(fullPath);
+
               if (stats.isFile()) {
-                const type = getConfigType(fullPath)
+                const type = getConfigType(fullPath);
                 configFiles.push({
                   name: entry,
                   path: fullPath,
                   type,
                   size: stats.size,
-                  lastModified: stats.mtime.toISOString()
-                })
+                  lastModified: stats.mtime.toISOString(),
+                });
               }
             }
           }
@@ -380,56 +419,60 @@ async function listConfigurationFiles(projectRoot: string): Promise<ConfigFile[]
         }
       } else {
         // Handle specific file patterns
-        const fullPath = path.resolve(projectRoot, pattern)
-        
+        const fullPath = path.resolve(projectRoot, pattern);
+
         try {
-          const stats = await fs.stat(fullPath)
-          
+          const stats = await fs.stat(fullPath);
+
           if (stats.isFile()) {
-            const type = getConfigType(fullPath)
+            const type = getConfigType(fullPath);
             configFiles.push({
               name: path.basename(fullPath),
               path: fullPath,
               type,
               size: stats.size,
-              lastModified: stats.mtime.toISOString()
-            })
+              lastModified: stats.mtime.toISOString(),
+            });
           }
         } catch {
           // File doesn't exist, skip
         }
       }
     }
-    
+
     // Sort by name
-    configFiles.sort((a, b) => a.name.localeCompare(b.name))
-    
-    return configFiles
+    configFiles.sort((a, b) => a.name.localeCompare(b.name));
+
+    return configFiles;
   } catch (_error) {
-    throw new Error(`Failed to list configuration files: ${_error instanceof Error ? _error.message : 'Unknown error'}`)
+    throw new Error(
+      `Failed to list configuration files: ${_error instanceof Error ? _error.message : 'Unknown error'}`
+    );
   }
 }
 
 // Read configuration file
 async function readConfigurationFile(filePath: string): Promise<ConfigFile> {
   try {
-    const { promises: fs } = await import('fs')
+    const { promises: fs } = await import('fs');
     // const path = await import('path') // Unused
-    
-    const stats = await fs.stat(filePath)
-    const type = getConfigType(filePath)
-    const content = await parseConfigContent(filePath, type)
-    
+
+    const stats = await fs.stat(filePath);
+    const type = getConfigType(filePath);
+    const content = await parseConfigContent(filePath, type);
+
     return {
       name: filePath.substring(filePath.lastIndexOf('/') + 1),
       path: filePath,
       type,
       size: stats.size,
       lastModified: stats.mtime.toISOString(),
-      content
-    }
+      content,
+    };
   } catch (_error) {
-    throw new Error(`Failed to read configuration file: ${_error instanceof Error ? _error.message : 'Unknown error'}`)
+    throw new Error(
+      `Failed to read configuration file: ${_error instanceof Error ? _error.message : 'Unknown error'}`
+    );
   }
 }
 
@@ -441,102 +484,107 @@ async function writeConfigurationFile(
   backup: boolean = true
 ): Promise<{ success: boolean; size: number; backupPath?: string }> {
   try {
-    const { promises: fs } = await import('fs')
-    const path = await import('path')
-    
-    let backupPath: string | undefined
-    
+    const { promises: fs } = await import('fs');
+    const path = await import('path');
+
+    let backupPath: string | undefined;
+
     // Create backup if requested and file exists
     if (backup) {
       try {
-        await fs.access(filePath)
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-        backupPath = `${filePath}.backup.${timestamp}`
-        await fs.copyFile(filePath, backupPath)
+        await fs.access(filePath);
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        backupPath = `${filePath}.backup.${timestamp}`;
+        await fs.copyFile(filePath, backupPath);
       } catch {
         // File doesn't exist, no backup needed
       }
     }
-    
+
     // Serialize content
-    const serializedContent = serializeConfigContent(content, type)
-    
+    const serializedContent = serializeConfigContent(content, type);
+
     // Ensure directory exists
-    const dir = path.dirname(filePath)
-    await fs.mkdir(dir, { recursive: true })
-    
+    const dir = path.dirname(filePath);
+    await fs.mkdir(dir, { recursive: true });
+
     // Write file
-    await fs.writeFile(filePath, serializedContent, 'utf8')
-    
-    const stats = await fs.stat(filePath)
-    return { success: true, size: stats.size, backupPath }
+    await fs.writeFile(filePath, serializedContent, 'utf8');
+
+    const stats = await fs.stat(filePath);
+    return { success: true, size: stats.size, backupPath };
   } catch (_error) {
-    throw new Error(`Failed to write configuration file: ${_error instanceof Error ? _error.message : 'Unknown error'}`)
+    throw new Error(
+      `Failed to write configuration file: ${_error instanceof Error ? _error.message : 'Unknown error'}`
+    );
   }
 }
 
 // Validate configuration
-function validateConfiguration(content: Record<string, unknown>, schema?: ConfigSchema): ConfigValidationResult {
+function validateConfiguration(
+  content: Record<string, unknown>,
+  schema?: ConfigSchema
+): ConfigValidationResult {
   const result: ConfigValidationResult = {
     valid: true,
     errors: [],
-    warnings: []
-  }
-  
+    warnings: [],
+  };
+
   if (!schema) {
-    return result // No schema to validate against
+    return result; // No schema to validate against
   }
-  
+
   // Check required properties
   if (schema.required) {
     for (const requiredProp of schema.required) {
       if (!(requiredProp in content)) {
-        result.valid = false
+        result.valid = false;
         result.errors.push({
           path: requiredProp,
           message: `Required property '${requiredProp}' is missing`,
-          severity: 'error'
-        })
+          severity: 'error',
+        });
       }
     }
   }
-  
+
   // Validate property types
   for (const [propName, propSchema] of Object.entries(schema.properties)) {
     if (propName in content) {
-      const value = content[propName]
-      const expectedType = propSchema.type
-      const actualType = Array.isArray(value) ? 'array' : typeof value
-      
+      const value = content[propName];
+      const expectedType = propSchema.type;
+      const actualType = Array.isArray(value) ? 'array' : typeof value;
+
       if (actualType !== expectedType) {
-        result.valid = false
+        result.valid = false;
         result.errors.push({
           path: propName,
           message: `Property '${propName}' should be ${expectedType} but got ${actualType}`,
-          severity: 'error'
-        })
+          severity: 'error',
+        });
       }
-      
+
       // Check enum values
       if (propSchema.enum && !propSchema.enum.includes(value)) {
-        result.valid = false
+        result.valid = false;
         result.errors.push({
           path: propName,
           message: `Property '${propName}' value '${value}' is not in allowed values: ${propSchema.enum.join(', ')}`,
-          severity: 'error'
-        })
+          severity: 'error',
+        });
       }
     } else if (propSchema.default !== undefined) {
       // Warn about missing optional properties with defaults
       result.warnings.push({
         path: propName,
         message: `Optional property '${propName}' is missing`,
-        suggestion: `Consider adding with default value: ${JSON.stringify(propSchema.default)}`
-      })
+        suggestion: `Consider adding with default value: ${JSON.stringify(propSchema.default)}`,
+      });
     }
   }
-  
-  return result
+
+  return result;
 }
 
 // Get configuration templates
@@ -554,17 +602,17 @@ function getConfigurationTemplates(): ConfigTemplate[] {
           includeFileTypes: ['.ts', '.tsx', '.js', '.jsx'],
           complexity: {
             maxComplexity: 15,
-            warningThreshold: 10
-          }
+            warningThreshold: 10,
+          },
         },
         quality: {
           maintainabilityThreshold: 70,
-          testCoverageThreshold: 80
+          testCoverageThreshold: 80,
         },
         dashboard: {
           refreshInterval: 30000,
-          enableRealtime: true
-        }
+          enableRealtime: true,
+        },
       },
       schema: {
         properties: {
@@ -572,10 +620,10 @@ function getConfigurationTemplates(): ConfigTemplate[] {
           version: { type: 'string', required: true },
           analysis: { type: 'object' },
           quality: { type: 'object' },
-          dashboard: { type: 'object' }
+          dashboard: { type: 'object' },
         },
-        required: ['name', 'version']
-      }
+        required: ['name', 'version'],
+      },
     },
     {
       name: 'typescript-config',
@@ -591,20 +639,23 @@ function getConfigurationTemplates(): ConfigTemplate[] {
           skipLibCheck: true,
           forceConsistentCasingInFileNames: true,
           declaration: true,
-          outDir: './dist'
+          outDir: './dist',
         },
         include: ['src/**/*'],
-        exclude: ['node_modules', 'dist']
-      }
-    }
-  ]
+        exclude: ['node_modules', 'dist'],
+      },
+    },
+  ];
 }
 
 // GET: List or read configuration files
 export async function GET(request: NextRequest) {
-  const startTime = Date.now()
-  const clientId = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'anonymous'
-  
+  const startTime = Date.now();
+  const clientId =
+    request.headers.get('x-forwarded-for') ||
+    request.headers.get('x-real-ip') ||
+    'anonymous';
+
   try {
     // Rate limiting
     if (!checkRateLimit(clientId)) {
@@ -612,94 +663,100 @@ export async function GET(request: NextRequest) {
         success: false,
         data: null,
         error: 'Rate limit exceeded. Please try again later.',
-        timestamp: new Date().toISOString()
-      }
-      return NextResponse.json(response, { status: 429 })
+        timestamp: new Date().toISOString(),
+      };
+      return NextResponse.json(response, { status: 429 });
     }
-    
-    const { searchParams } = new URL(request.url)
-    const action = searchParams.get('action') || 'list'
-    const configName = searchParams.get('config') || ''
-    const templateName = searchParams.get('template') || ''
-    
-    const projectRoot = await getProjectRoot()
 
-    let data: ConfigFile[] | ConfigFile | ConfigTemplate[] | ConfigTemplate
+    const { searchParams } = new URL(request.url);
+    const action = searchParams.get('action') || 'list';
+    const configName = searchParams.get('config') || '';
+    const templateName = searchParams.get('template') || '';
+
+    const projectRoot = await getProjectRoot();
+
+    let data: ConfigFile[] | ConfigFile | ConfigTemplate[] | ConfigTemplate;
 
     switch (action) {
       case 'read':
         if (!configName) {
-          throw new Error('Configuration name is required')
+          throw new Error('Configuration name is required');
         }
-        
-        const pathValidation = await validateConfigAccess(configName, projectRoot)
+
+        const pathValidation = await validateConfigAccess(
+          configName,
+          projectRoot
+        );
         if (!pathValidation.isValid) {
-          throw new Error(pathValidation.error || 'Invalid configuration file')
+          throw new Error(pathValidation.error || 'Invalid configuration file');
         }
-        
+
         try {
-          const { promises: fs } = await import('fs')
-          await fs.access(pathValidation.resolvedPath)
+          const { promises: fs } = await import('fs');
+          await fs.access(pathValidation.resolvedPath);
         } catch {
-          throw new Error('Configuration file not found')
+          throw new Error('Configuration file not found');
         }
-        
-        data = await readConfigurationFile(pathValidation.resolvedPath)
-        break
-        
+
+        data = await readConfigurationFile(pathValidation.resolvedPath);
+        break;
+
       case 'template':
-        const templates = getConfigurationTemplates()
+        const templates = getConfigurationTemplates();
         if (templateName) {
-          const template = templates.find(t => t.name === templateName)
+          const template = templates.find(t => t.name === templateName);
           if (!template) {
-            throw new Error('Template not found')
+            throw new Error('Template not found');
           }
-          data = template
+          data = template;
         } else {
-          data = templates
+          data = templates;
         }
-        break
-        
+        break;
+
       case 'list':
       default:
-        data = await listConfigurationFiles(projectRoot)
-        break
+        data = await listConfigurationFiles(projectRoot);
+        break;
     }
-    
-    const processingTime = Date.now() - startTime
-    
+
+    const processingTime = Date.now() - startTime;
+
     const response: ApiResponse<typeof data> = {
       success: true,
       data,
-      timestamp: new Date().toISOString()
-    }
-    
+      timestamp: new Date().toISOString(),
+    };
+
     return NextResponse.json(response, {
       headers: {
         'Cache-Control': 'public, max-age=180, stale-while-revalidate=300',
         'Content-Type': 'application/json',
-        'X-Processing-Time': `${processingTime}ms`
-      }
-    })
+        'X-Processing-Time': `${processingTime}ms`,
+      },
+    });
   } catch (_error) {
     // Error logged - details available in network tab
-    
+
     const response: ApiResponse<null> = {
       success: false,
       data: null,
       error: _error instanceof Error ? _error.message : 'Internal server error',
-      timestamp: new Date().toISOString()
-    }
-    
-    return NextResponse.json(response, { status: 500 })
+      timestamp: new Date().toISOString(),
+    };
+
+    return NextResponse.json(response, { status: 500 });
   }
 }
 
 // POST: Write, validate, or backup configuration files
 export async function POST(request: NextRequest) {
-  const startTime = Date.now()
-  const clientId = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'anonymous'
-  
+  const startTime = Date.now();
+  const clientId =
+    request.headers.get('x-forwarded-for') ||
+    request.headers.get('x-real-ip') ||
+    'anonymous';
+
   try {
     // Rate limiting
     if (!checkRateLimit(clientId)) {
@@ -707,138 +764,161 @@ export async function POST(request: NextRequest) {
         success: false,
         data: null,
         error: 'Rate limit exceeded. Please try again later.',
-        timestamp: new Date().toISOString()
-      }
-      return NextResponse.json(response, { status: 429 })
+        timestamp: new Date().toISOString(),
+      };
+      return NextResponse.json(response, { status: 429 });
     }
-    
-    const body: ConfigRequest = await request.json()
-    const { action, configName, content, templateName, options = {} } = body
-    
+
+    const body: ConfigRequest = await request.json();
+    const { action, configName, content, templateName, options = {} } = body;
+
     if (!action) {
       const response: ApiResponse<null> = {
         success: false,
         data: null,
         error: 'Missing required parameter: action',
-        timestamp: new Date().toISOString()
-      }
-      return NextResponse.json(response, { status: 400 })
+        timestamp: new Date().toISOString(),
+      };
+      return NextResponse.json(response, { status: 400 });
     }
-    
-    const projectRoot = await getProjectRoot()
 
-    let data: { success: boolean; size: number; backupPath?: string } | ConfigValidationResult | { success: boolean; backupPath: string }
+    const projectRoot = await getProjectRoot();
+
+    let data:
+      | { success: boolean; size: number; backupPath?: string }
+      | ConfigValidationResult
+      | { success: boolean; backupPath: string };
 
     switch (action) {
       case 'write':
         if (!configName || content === undefined) {
-          throw new Error('Configuration name and content are required')
+          throw new Error('Configuration name and content are required');
         }
-        
-        const pathValidation = await validateConfigAccess(configName, projectRoot)
+
+        const pathValidation = await validateConfigAccess(
+          configName,
+          projectRoot
+        );
         if (!pathValidation.isValid) {
-          throw new Error(pathValidation.error || 'Invalid configuration file')
+          throw new Error(pathValidation.error || 'Invalid configuration file');
         }
-        
-        const type = getConfigType(pathValidation.resolvedPath)
-        
+
+        const type = getConfigType(pathValidation.resolvedPath);
+
         // Validate content if schema provided
         if (options.validate) {
-          const templates = getConfigurationTemplates()
-          const template = templates.find(t => t.name === templateName)
-          
+          const templates = getConfigurationTemplates();
+          const template = templates.find(t => t.name === templateName);
+
           if (template?.schema) {
-            const validation = validateConfiguration(content, template.schema)
+            const validation = validateConfiguration(content, template.schema);
             if (!validation.valid) {
-              throw new Error(`Configuration validation failed: ${validation.errors.map(e => e.message).join(', ')}`)
+              throw new Error(
+                `Configuration validation failed: ${validation.errors.map(e => e.message).join(', ')}`
+              );
             }
           }
         }
-        
+
         data = await writeConfigurationFile(
           pathValidation.resolvedPath,
           content,
           type,
           options.backup !== false
-        )
-        break
-        
+        );
+        break;
+
       case 'validate':
         if (!configName) {
-          throw new Error('Configuration name is required')
+          throw new Error('Configuration name is required');
         }
-        
-        const validatePathValidation = await validateConfigAccess(configName, projectRoot)
+
+        const validatePathValidation = await validateConfigAccess(
+          configName,
+          projectRoot
+        );
         if (!validatePathValidation.isValid) {
-          throw new Error(validatePathValidation.error || 'Invalid configuration file')
+          throw new Error(
+            validatePathValidation.error || 'Invalid configuration file'
+          );
         }
-        
-        const configFile = await readConfigurationFile(validatePathValidation.resolvedPath)
-        const templates = getConfigurationTemplates()
-        const template = templates.find(t => t.name === templateName)
-        
-        data = validateConfiguration(configFile.content || {}, template?.schema)
-        break
-        
+
+        const configFile = await readConfigurationFile(
+          validatePathValidation.resolvedPath
+        );
+        const templates = getConfigurationTemplates();
+        const template = templates.find(t => t.name === templateName);
+
+        data = validateConfiguration(
+          configFile.content || {},
+          template?.schema
+        );
+        break;
+
       case 'backup':
         if (!configName) {
-          throw new Error('Configuration name is required')
+          throw new Error('Configuration name is required');
         }
-        
-        const backupPathValidation = await validateConfigAccess(configName, projectRoot)
+
+        const backupPathValidation = await validateConfigAccess(
+          configName,
+          projectRoot
+        );
         if (!backupPathValidation.isValid) {
-          throw new Error(backupPathValidation.error || 'Invalid configuration file')
+          throw new Error(
+            backupPathValidation.error || 'Invalid configuration file'
+          );
         }
-        
+
         try {
-          const { promises: fs } = await import('fs')
-          await fs.access(backupPathValidation.resolvedPath)
-          
-          const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-          const backupPath = `${backupPathValidation.resolvedPath}.backup.${timestamp}`
-          await fs.copyFile(backupPathValidation.resolvedPath, backupPath)
-          
-          data = { success: true, backupPath }
+          const { promises: fs } = await import('fs');
+          await fs.access(backupPathValidation.resolvedPath);
+
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+          const backupPath = `${backupPathValidation.resolvedPath}.backup.${timestamp}`;
+          await fs.copyFile(backupPathValidation.resolvedPath, backupPath);
+
+          data = { success: true, backupPath };
         } catch {
-          throw new Error('Configuration file not found')
+          throw new Error('Configuration file not found');
         }
-        break
-        
+        break;
+
       default:
         const response: ApiResponse<null> = {
           success: false,
           data: null,
           error: `Unsupported configuration action: ${action}`,
-          timestamp: new Date().toISOString()
-        }
-        return NextResponse.json(response, { status: 400 })
+          timestamp: new Date().toISOString(),
+        };
+        return NextResponse.json(response, { status: 400 });
     }
-    
-    const processingTime = Date.now() - startTime
-    
+
+    const processingTime = Date.now() - startTime;
+
     const response: ApiResponse<typeof data> = {
       success: true,
       data,
-      timestamp: new Date().toISOString()
-    }
-    
+      timestamp: new Date().toISOString(),
+    };
+
     return NextResponse.json(response, {
       headers: {
         'Content-Type': 'application/json',
-        'X-Processing-Time': `${processingTime}ms`
-      }
-    })
+        'X-Processing-Time': `${processingTime}ms`,
+      },
+    });
   } catch (_error) {
     // Error logged - details available in network tab
-    
+
     const response: ApiResponse<null> = {
       success: false,
       data: null,
       error: _error instanceof Error ? _error.message : 'Internal server error',
-      timestamp: new Date().toISOString()
-    }
-    
-    return NextResponse.json(response, { status: 500 })
+      timestamp: new Date().toISOString(),
+    };
+
+    return NextResponse.json(response, { status: 500 });
   }
 }
 
@@ -848,7 +928,7 @@ export async function OPTIONS() {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    }
-  })
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  });
 }

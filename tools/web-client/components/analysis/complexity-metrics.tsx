@@ -23,24 +23,27 @@ export function ComplexityMetrics({ entities }: ComplexityMetricsProps) {
   const isDark = mounted && (theme === 'dark' || resolvedTheme === 'dark');
 
   // Calculate complexity distribution
-  const complexityBuckets = entities.reduce((acc, entity) => {
-    const complexity = entity.complexity || 0;
-    const bucket =
-      complexity === 0
-        ? 'Unknown'
-        : complexity <= 5
-        ? 'Low (1-5)'
-        : complexity <= 10
-        ? 'Medium (6-10)'
-        : complexity <= 15
-        ? 'High (11-15)'
-        : complexity <= 25
-        ? 'Very High (16-25)'
-        : 'Extreme (25+)';
+  const complexityBuckets = entities.reduce(
+    (acc, entity) => {
+      const complexity = entity.complexity || 0;
+      const bucket =
+        complexity === 0
+          ? 'Unknown'
+          : complexity <= 5
+            ? 'Low (1-5)'
+            : complexity <= 10
+              ? 'Medium (6-10)'
+              : complexity <= 15
+                ? 'High (11-15)'
+                : complexity <= 25
+                  ? 'Very High (16-25)'
+                  : 'Extreme (25+)';
 
-    acc[bucket] = (acc[bucket] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+      acc[bucket] = (acc[bucket] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
   // Calculate statistics
   const entitiesWithComplexity = entities.filter(

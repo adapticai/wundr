@@ -1,10 +1,10 @@
 /**
  * Comprehensive Type Definitions for Web Client Application
- * 
+ *
  * This file provides centralized type definitions for the entire application,
  * including file system operations, analysis data structures, report interfaces,
  * configuration types, component props, and API response types.
- * 
+ *
  * @version 2.0.0
  * @author Wundr Development Team
  * @since 2024
@@ -104,7 +104,13 @@ export type PriorityLevel = 'low' | 'medium' | 'high' | 'critical';
 /**
  * Common status types
  */
-export type StatusType = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled' | 'paused';
+export type StatusType =
+  | 'pending'
+  | 'running'
+  | 'completed'
+  | 'failed'
+  | 'cancelled'
+  | 'paused';
 
 // =============================================================================
 // FILE SYSTEM TYPES
@@ -195,7 +201,16 @@ export interface AnalysisEntity {
   /** Full file path */
   path: string;
   /** Entity type */
-  type: 'class' | 'function' | 'module' | 'component' | 'interface' | 'enum' | 'type' | 'variable' | 'constant';
+  type:
+    | 'class'
+    | 'function'
+    | 'module'
+    | 'component'
+    | 'interface'
+    | 'enum'
+    | 'type'
+    | 'variable'
+    | 'constant';
   /** Dependencies array */
   dependencies: string[];
   /** Dependents array */
@@ -243,7 +258,15 @@ export interface AnalysisIssue {
   /** Unique identifier */
   id: string;
   /** Issue type */
-  type: 'bug' | 'vulnerability' | 'code_smell' | 'duplication' | 'complexity' | 'maintainability' | 'performance' | 'security';
+  type:
+    | 'bug'
+    | 'vulnerability'
+    | 'code_smell'
+    | 'duplication'
+    | 'complexity'
+    | 'maintainability'
+    | 'performance'
+    | 'security';
   /** Severity level */
   severity: SeverityLevel;
   /** Human-readable message */
@@ -407,7 +430,13 @@ export interface AnalysisRecommendation {
   /** Priority level */
   priority: PriorityLevel;
   /** Category */
-  category: 'Security' | 'Performance' | 'Maintainability' | 'Reliability' | 'Architecture' | 'Testing';
+  category:
+    | 'Security'
+    | 'Performance'
+    | 'Maintainability'
+    | 'Reliability'
+    | 'Architecture'
+    | 'Testing';
   /** Impact assessment */
   impact: string;
   /** Estimated effort */
@@ -668,7 +697,7 @@ export interface Report {
 /**
  * Report types enumeration
  */
-export type ReportType = 
+export type ReportType =
   | 'migration-analysis'
   | 'dependency-analysis'
   | 'code-quality'
@@ -683,7 +712,7 @@ export type ReportType =
 /**
  * Report status enumeration
  */
-export type ReportStatus = 
+export type ReportStatus =
   | 'pending'
   | 'running'
   | 'completed'
@@ -740,7 +769,15 @@ export interface ReportFilters {
 /**
  * Export format options
  */
-export type ExportFormat = 'pdf' | 'excel' | 'csv' | 'json' | 'html' | 'markdown' | 'docx' | 'xml';
+export type ExportFormat =
+  | 'pdf'
+  | 'excel'
+  | 'csv'
+  | 'json'
+  | 'html'
+  | 'markdown'
+  | 'docx'
+  | 'xml';
 
 /**
  * Report template definition
@@ -781,7 +818,16 @@ export interface ReportParameter {
   /** Display label */
   label: string;
   /** Parameter type */
-  type: 'string' | 'number' | 'boolean' | 'select' | 'multiselect' | 'date' | 'daterange' | 'file' | 'color';
+  type:
+    | 'string'
+    | 'number'
+    | 'boolean'
+    | 'select'
+    | 'multiselect'
+    | 'date'
+    | 'daterange'
+    | 'file'
+    | 'color';
   /** Whether required */
   required: boolean;
   /** Default value */
@@ -828,7 +874,15 @@ export interface ReportSection {
  */
 export interface ReportSectionContent {
   /** Content type */
-  type: 'text' | 'list' | 'code' | 'markdown' | 'callout' | 'metrics-grid' | 'image' | 'table';
+  type:
+    | 'text'
+    | 'list'
+    | 'code'
+    | 'markdown'
+    | 'callout'
+    | 'metrics-grid'
+    | 'image'
+    | 'table';
   /** Content data */
   content: string | string[] | Record<string, any>;
   /** Programming language for code blocks */
@@ -848,7 +902,16 @@ export interface ReportChart {
   /** Chart title */
   title: string;
   /** Chart type */
-  type: 'line' | 'bar' | 'pie' | 'doughnut' | 'radar' | 'scatter' | 'area' | 'treemap' | 'sankey';
+  type:
+    | 'line'
+    | 'bar'
+    | 'pie'
+    | 'doughnut'
+    | 'radar'
+    | 'scatter'
+    | 'area'
+    | 'treemap'
+    | 'sankey';
   /** Chart data */
   data: {
     labels: string[];
@@ -876,7 +939,15 @@ export interface ReportTable {
   columns: Array<{
     key: string;
     label: string;
-    type: 'text' | 'number' | 'badge' | 'progress' | 'link' | 'code' | 'date' | 'boolean';
+    type:
+      | 'text'
+      | 'number'
+      | 'badge'
+      | 'progress'
+      | 'link'
+      | 'code'
+      | 'date'
+      | 'boolean';
     sortable?: boolean;
     filterable?: boolean;
     width?: string;
@@ -1197,7 +1268,15 @@ export interface FormFieldProps extends BaseComponentProps {
   /** Field name */
   name: string;
   /** Field type */
-  type?: 'text' | 'email' | 'password' | 'number' | 'select' | 'textarea' | 'checkbox' | 'radio';
+  type?:
+    | 'text'
+    | 'email'
+    | 'password'
+    | 'number'
+    | 'select'
+    | 'textarea'
+    | 'checkbox'
+    | 'radio';
   /** Field value */
   value?: any;
   /** Change handler */
@@ -1311,7 +1390,14 @@ export interface BatchConfig {
  */
 export interface WebSocketMessage {
   /** Message type */
-  type: 'subscribe' | 'unsubscribe' | 'data' | 'error' | 'ping' | 'pong' | 'auth';
+  type:
+    | 'subscribe'
+    | 'unsubscribe'
+    | 'data'
+    | 'error'
+    | 'ping'
+    | 'pong'
+    | 'auth';
   /** Channel name */
   channel?: string;
   /** Message payload */

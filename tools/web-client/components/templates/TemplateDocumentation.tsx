@@ -1,22 +1,28 @@
-"use client";
+'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { 
-  BookOpen, 
-  Code2, 
-  Play, 
-  Settings, 
-  Lightbulb, 
-  AlertTriangle, 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  BookOpen,
+  Code2,
+  Play,
+  Settings,
+  Lightbulb,
+  AlertTriangle,
   CheckCircle,
   ExternalLink,
   Download,
-  GitBranch
-} from "lucide-react";
+  GitBranch,
+} from 'lucide-react';
 
 export function TemplateDocumentation() {
   const quickStartGuide = `# Service Templates Quick Start Guide
@@ -189,11 +195,11 @@ We welcome contributions to our template library:
 See our [Contributing Guide](https://github.com/wundr/templates/blob/main/CONTRIBUTING.md) for details.`;
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <BookOpen className="h-5 w-5 mr-2" />
+          <CardTitle className='flex items-center'>
+            <BookOpen className='h-5 w-5 mr-2' />
             Service Templates Documentation
           </CardTitle>
           <CardDescription>
@@ -201,44 +207,44 @@ See our [Contributing Guide](https://github.com/wundr/templates/blob/main/CONTRI
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="guide" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="guide">Quick Start</TabsTrigger>
-              <TabsTrigger value="examples">Examples</TabsTrigger>
-              <TabsTrigger value="api">API Reference</TabsTrigger>
-              <TabsTrigger value="faq">FAQ</TabsTrigger>
+          <Tabs defaultValue='guide' className='w-full'>
+            <TabsList className='grid w-full grid-cols-4'>
+              <TabsTrigger value='guide'>Quick Start</TabsTrigger>
+              <TabsTrigger value='examples'>Examples</TabsTrigger>
+              <TabsTrigger value='api'>API Reference</TabsTrigger>
+              <TabsTrigger value='faq'>FAQ</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="guide" className="space-y-4">
-              <ScrollArea className="h-[600px]">
-                <div className="prose prose-sm max-w-none pr-4">
-                  <pre className="whitespace-pre-wrap text-sm leading-relaxed">
+            <TabsContent value='guide' className='space-y-4'>
+              <ScrollArea className='h-[600px]'>
+                <div className='prose prose-sm max-w-none pr-4'>
+                  <pre className='whitespace-pre-wrap text-sm leading-relaxed'>
                     {quickStartGuide}
                   </pre>
                 </div>
               </ScrollArea>
             </TabsContent>
 
-            <TabsContent value="examples" className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <TabsContent value='examples' className='space-y-4'>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg flex items-center">
-                      <Code2 className="h-4 w-4 mr-2" />
+                    <CardTitle className='text-lg flex items-center'>
+                      <Code2 className='h-4 w-4 mr-2' />
                       REST API Example
                     </CardTitle>
                     <CardDescription>
                       Complete REST API with authentication and database
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline">Express.js</Badge>
-                      <Badge variant="outline">TypeScript</Badge>
-                      <Badge variant="outline">MongoDB</Badge>
-                      <Badge variant="outline">JWT</Badge>
+                  <CardContent className='space-y-3'>
+                    <div className='flex flex-wrap gap-2'>
+                      <Badge variant='outline'>Express.js</Badge>
+                      <Badge variant='outline'>TypeScript</Badge>
+                      <Badge variant='outline'>MongoDB</Badge>
+                      <Badge variant='outline'>JWT</Badge>
                     </div>
-                    <pre className="bg-muted p-3 rounded text-sm overflow-x-auto">
+                    <pre className='bg-muted p-3 rounded text-sm overflow-x-auto'>
                       <code>{`// Example endpoint
 app.post('/api/users', validateUser, async (req, res) => {
   try {
@@ -250,13 +256,13 @@ app.post('/api/users', validateUser, async (req, res) => {
   }
 });`}</code>
                     </pre>
-                    <div className="flex space-x-2">
-                      <Button size="sm">
-                        <Play className="h-4 w-4 mr-2" />
+                    <div className='flex space-x-2'>
+                      <Button size='sm'>
+                        <Play className='h-4 w-4 mr-2' />
                         Try Demo
                       </Button>
-                      <Button size="sm" variant="outline">
-                        <Download className="h-4 w-4 mr-2" />
+                      <Button size='sm' variant='outline'>
+                        <Download className='h-4 w-4 mr-2' />
                         Use Template
                       </Button>
                     </div>
@@ -265,22 +271,22 @@ app.post('/api/users', validateUser, async (req, res) => {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg flex items-center">
-                      <Code2 className="h-4 w-4 mr-2" />
+                    <CardTitle className='text-lg flex items-center'>
+                      <Code2 className='h-4 w-4 mr-2' />
                       GraphQL Example
                     </CardTitle>
                     <CardDescription>
                       Type-safe GraphQL server with Apollo
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline">Apollo Server</Badge>
-                      <Badge variant="outline">TypeScript</Badge>
-                      <Badge variant="outline">TypeGraphQL</Badge>
-                      <Badge variant="outline">Prisma</Badge>
+                  <CardContent className='space-y-3'>
+                    <div className='flex flex-wrap gap-2'>
+                      <Badge variant='outline'>Apollo Server</Badge>
+                      <Badge variant='outline'>TypeScript</Badge>
+                      <Badge variant='outline'>TypeGraphQL</Badge>
+                      <Badge variant='outline'>Prisma</Badge>
                     </div>
-                    <pre className="bg-muted p-3 rounded text-sm overflow-x-auto">
+                    <pre className='bg-muted p-3 rounded text-sm overflow-x-auto'>
                       <code>{`@Resolver(User)
 export class UserResolver {
   @Query(() => [User])
@@ -294,13 +300,13 @@ export class UserResolver {
   }
 }`}</code>
                     </pre>
-                    <div className="flex space-x-2">
-                      <Button size="sm">
-                        <Play className="h-4 w-4 mr-2" />
+                    <div className='flex space-x-2'>
+                      <Button size='sm'>
+                        <Play className='h-4 w-4 mr-2' />
                         Try Demo
                       </Button>
-                      <Button size="sm" variant="outline">
-                        <Download className="h-4 w-4 mr-2" />
+                      <Button size='sm' variant='outline'>
+                        <Download className='h-4 w-4 mr-2' />
                         Use Template
                       </Button>
                     </div>
@@ -309,22 +315,22 @@ export class UserResolver {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg flex items-center">
-                      <Code2 className="h-4 w-4 mr-2" />
+                    <CardTitle className='text-lg flex items-center'>
+                      <Code2 className='h-4 w-4 mr-2' />
                       Serverless Example
                     </CardTitle>
                     <CardDescription>
                       AWS Lambda function with API Gateway
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline">AWS Lambda</Badge>
-                      <Badge variant="outline">TypeScript</Badge>
-                      <Badge variant="outline">API Gateway</Badge>
-                      <Badge variant="outline">DynamoDB</Badge>
+                  <CardContent className='space-y-3'>
+                    <div className='flex flex-wrap gap-2'>
+                      <Badge variant='outline'>AWS Lambda</Badge>
+                      <Badge variant='outline'>TypeScript</Badge>
+                      <Badge variant='outline'>API Gateway</Badge>
+                      <Badge variant='outline'>DynamoDB</Badge>
                     </div>
-                    <pre className="bg-muted p-3 rounded text-sm overflow-x-auto">
+                    <pre className='bg-muted p-3 rounded text-sm overflow-x-auto'>
                       <code>{`export const handler = async (event: APIGatewayEvent) => {
   try {
     const body = JSON.parse(event.body || '{}');
@@ -343,13 +349,13 @@ export class UserResolver {
   }
 };`}</code>
                     </pre>
-                    <div className="flex space-x-2">
-                      <Button size="sm">
-                        <Play className="h-4 w-4 mr-2" />
+                    <div className='flex space-x-2'>
+                      <Button size='sm'>
+                        <Play className='h-4 w-4 mr-2' />
                         Try Demo
                       </Button>
-                      <Button size="sm" variant="outline">
-                        <Download className="h-4 w-4 mr-2" />
+                      <Button size='sm' variant='outline'>
+                        <Download className='h-4 w-4 mr-2' />
                         Use Template
                       </Button>
                     </div>
@@ -358,22 +364,22 @@ export class UserResolver {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg flex items-center">
-                      <Code2 className="h-4 w-4 mr-2" />
+                    <CardTitle className='text-lg flex items-center'>
+                      <Code2 className='h-4 w-4 mr-2' />
                       WebSocket Example
                     </CardTitle>
                     <CardDescription>
                       Real-time service with Socket.io
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline">Socket.io</Badge>
-                      <Badge variant="outline">TypeScript</Badge>
-                      <Badge variant="outline">Redis</Badge>
-                      <Badge variant="outline">Express</Badge>
+                  <CardContent className='space-y-3'>
+                    <div className='flex flex-wrap gap-2'>
+                      <Badge variant='outline'>Socket.io</Badge>
+                      <Badge variant='outline'>TypeScript</Badge>
+                      <Badge variant='outline'>Redis</Badge>
+                      <Badge variant='outline'>Express</Badge>
                     </div>
-                    <pre className="bg-muted p-3 rounded text-sm overflow-x-auto">
+                    <pre className='bg-muted p-3 rounded text-sm overflow-x-auto'>
                       <code>{`io.on('connection', (socket) => {
   socket.on('join-room', (roomId) => {
     socket.join(roomId);
@@ -392,13 +398,13 @@ export class UserResolver {
   });
 });`}</code>
                     </pre>
-                    <div className="flex space-x-2">
-                      <Button size="sm">
-                        <Play className="h-4 w-4 mr-2" />
+                    <div className='flex space-x-2'>
+                      <Button size='sm'>
+                        <Play className='h-4 w-4 mr-2' />
                         Try Demo
                       </Button>
-                      <Button size="sm" variant="outline">
-                        <Download className="h-4 w-4 mr-2" />
+                      <Button size='sm' variant='outline'>
+                        <Download className='h-4 w-4 mr-2' />
                         Use Template
                       </Button>
                     </div>
@@ -407,46 +413,49 @@ export class UserResolver {
               </div>
             </TabsContent>
 
-            <TabsContent value="api" className="space-y-4">
-              <div className="space-y-6">
+            <TabsContent value='api' className='space-y-4'>
+              <div className='space-y-6'>
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">Template CLI Commands</CardTitle>
+                    <CardTitle className='text-lg'>
+                      Template CLI Commands
+                    </CardTitle>
                     <CardDescription>
                       Command-line interface for working with templates
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-3">
+                  <CardContent className='space-y-4'>
+                    <div className='space-y-3'>
                       <div>
-                        <code className="bg-muted p-2 rounded text-sm block">
-                          npx create-wundr-service@latest --template=rest-api-express
+                        <code className='bg-muted p-2 rounded text-sm block'>
+                          npx create-wundr-service@latest
+                          --template=rest-api-express
                         </code>
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className='text-sm text-muted-foreground mt-1'>
                           Create a new service from a template
                         </p>
                       </div>
                       <div>
-                        <code className="bg-muted p-2 rounded text-sm block">
+                        <code className='bg-muted p-2 rounded text-sm block'>
                           wundr template list --category=api
                         </code>
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className='text-sm text-muted-foreground mt-1'>
                           List available templates by category
                         </p>
                       </div>
                       <div>
-                        <code className="bg-muted p-2 rounded text-sm block">
+                        <code className='bg-muted p-2 rounded text-sm block'>
                           wundr template info rest-api-express
                         </code>
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className='text-sm text-muted-foreground mt-1'>
                           Get detailed information about a template
                         </p>
                       </div>
                       <div>
-                        <code className="bg-muted p-2 rounded text-sm block">
+                        <code className='bg-muted p-2 rounded text-sm block'>
                           wundr template update
                         </code>
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className='text-sm text-muted-foreground mt-1'>
                           Update templates to latest versions
                         </p>
                       </div>
@@ -456,13 +465,15 @@ export class UserResolver {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">Configuration Options</CardTitle>
+                    <CardTitle className='text-lg'>
+                      Configuration Options
+                    </CardTitle>
                     <CardDescription>
                       Available configuration options for templates
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <pre className="bg-muted p-4 rounded text-sm overflow-x-auto">
+                    <pre className='bg-muted p-4 rounded text-sm overflow-x-auto'>
                       <code>{`{
   "projectName": "my-service",
   "packageName": "@myorg/my-service",
@@ -496,13 +507,15 @@ export class UserResolver {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">Template Structure</CardTitle>
+                    <CardTitle className='text-lg'>
+                      Template Structure
+                    </CardTitle>
                     <CardDescription>
                       Standard template directory structure
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <pre className="bg-muted p-4 rounded text-sm overflow-x-auto">
+                    <pre className='bg-muted p-4 rounded text-sm overflow-x-auto'>
                       <code>{`template/
 ├── template.json           # Template metadata
 ├── README.md              # Template documentation
@@ -522,91 +535,98 @@ export class UserResolver {
               </div>
             </TabsContent>
 
-            <TabsContent value="faq" className="space-y-4">
-              <div className="space-y-4">
+            <TabsContent value='faq' className='space-y-4'>
+              <div className='space-y-4'>
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg flex items-center">
-                      <Lightbulb className="h-5 w-5 mr-2" />
+                    <CardTitle className='text-lg flex items-center'>
+                      <Lightbulb className='h-5 w-5 mr-2' />
                       Frequently Asked Questions
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="space-y-4">
+                  <CardContent className='space-y-6'>
+                    <div className='space-y-4'>
                       <div>
-                        <h3 className="font-semibold flex items-center mb-2">
-                          <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                        <h3 className='font-semibold flex items-center mb-2'>
+                          <CheckCircle className='h-4 w-4 mr-2 text-green-600' />
                           How do I customize a template?
                         </h3>
-                        <p className="text-sm text-muted-foreground ml-6">
-                          Use the Template Customizer in the dashboard to configure features, database settings, 
-                          authentication, and deployment options before generating your code.
+                        <p className='text-sm text-muted-foreground ml-6'>
+                          Use the Template Customizer in the dashboard to
+                          configure features, database settings, authentication,
+                          and deployment options before generating your code.
                         </p>
                       </div>
 
                       <div>
-                        <h3 className="font-semibold flex items-center mb-2">
-                          <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                        <h3 className='font-semibold flex items-center mb-2'>
+                          <CheckCircle className='h-4 w-4 mr-2 text-green-600' />
                           Can I use templates with existing projects?
                         </h3>
-                        <p className="text-sm text-muted-foreground ml-6">
-                          Templates are designed for new projects. For existing projects, you can use individual 
-                          components or patterns from templates as reference.
+                        <p className='text-sm text-muted-foreground ml-6'>
+                          Templates are designed for new projects. For existing
+                          projects, you can use individual components or
+                          patterns from templates as reference.
                         </p>
                       </div>
 
                       <div>
-                        <h3 className="font-semibold flex items-center mb-2">
-                          <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                        <h3 className='font-semibold flex items-center mb-2'>
+                          <CheckCircle className='h-4 w-4 mr-2 text-green-600' />
                           How often are templates updated?
                         </h3>
-                        <p className="text-sm text-muted-foreground ml-6">
-                          Templates are updated regularly to include security patches, dependency updates, 
-                          and new features. Check the template version and last updated date.
+                        <p className='text-sm text-muted-foreground ml-6'>
+                          Templates are updated regularly to include security
+                          patches, dependency updates, and new features. Check
+                          the template version and last updated date.
                         </p>
                       </div>
 
                       <div>
-                        <h3 className="font-semibold flex items-center mb-2">
-                          <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                        <h3 className='font-semibold flex items-center mb-2'>
+                          <CheckCircle className='h-4 w-4 mr-2 text-green-600' />
                           What if I encounter issues with a template?
                         </h3>
-                        <p className="text-sm text-muted-foreground ml-6">
-                          Check the troubleshooting section, search our GitHub issues, or join our Discord 
-                          community for help. You can also submit bug reports.
+                        <p className='text-sm text-muted-foreground ml-6'>
+                          Check the troubleshooting section, search our GitHub
+                          issues, or join our Discord community for help. You
+                          can also submit bug reports.
                         </p>
                       </div>
 
                       <div>
-                        <h3 className="font-semibold flex items-center mb-2">
-                          <AlertTriangle className="h-4 w-4 mr-2 text-yellow-600" />
+                        <h3 className='font-semibold flex items-center mb-2'>
+                          <AlertTriangle className='h-4 w-4 mr-2 text-yellow-600' />
                           Are templates production-ready?
                         </h3>
-                        <p className="text-sm text-muted-foreground ml-6">
-                          Yes, templates include production best practices, but you should review and test 
-                          the generated code before deploying to production environments.
+                        <p className='text-sm text-muted-foreground ml-6'>
+                          Yes, templates include production best practices, but
+                          you should review and test the generated code before
+                          deploying to production environments.
                         </p>
                       </div>
 
                       <div>
-                        <h3 className="font-semibold flex items-center mb-2">
-                          <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                        <h3 className='font-semibold flex items-center mb-2'>
+                          <CheckCircle className='h-4 w-4 mr-2 text-green-600' />
                           How do I contribute a new template?
                         </h3>
-                        <p className="text-sm text-muted-foreground ml-6">
-                          Follow our template contribution guidelines on GitHub. Include proper documentation, 
-                          tests, and examples. All templates go through a review process.
+                        <p className='text-sm text-muted-foreground ml-6'>
+                          Follow our template contribution guidelines on GitHub.
+                          Include proper documentation, tests, and examples. All
+                          templates go through a review process.
                         </p>
                       </div>
 
                       <div>
-                        <h3 className="font-semibold flex items-center mb-2">
-                          <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                        <h3 className='font-semibold flex items-center mb-2'>
+                          <CheckCircle className='h-4 w-4 mr-2 text-green-600' />
                           Can I create private templates?
                         </h3>
-                        <p className="text-sm text-muted-foreground ml-6">
-                          Enterprise plans include private template repositories. Contact us for custom 
-                          template development and private hosting options.
+                        <p className='text-sm text-muted-foreground ml-6'>
+                          Enterprise plans include private template
+                          repositories. Contact us for custom template
+                          development and private hosting options.
                         </p>
                       </div>
                     </div>
@@ -615,21 +635,30 @@ export class UserResolver {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">Need More Help?</CardTitle>
+                    <CardTitle className='text-lg'>Need More Help?</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <Button variant="outline" className="h-20 flex flex-col space-y-2">
-                        <ExternalLink className="h-5 w-5" />
-                        <span className="text-sm">Documentation</span>
+                    <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                      <Button
+                        variant='outline'
+                        className='h-20 flex flex-col space-y-2'
+                      >
+                        <ExternalLink className='h-5 w-5' />
+                        <span className='text-sm'>Documentation</span>
                       </Button>
-                      <Button variant="outline" className="h-20 flex flex-col space-y-2">
-                        <GitBranch className="h-5 w-5" />
-                        <span className="text-sm">GitHub Issues</span>
+                      <Button
+                        variant='outline'
+                        className='h-20 flex flex-col space-y-2'
+                      >
+                        <GitBranch className='h-5 w-5' />
+                        <span className='text-sm'>GitHub Issues</span>
                       </Button>
-                      <Button variant="outline" className="h-20 flex flex-col space-y-2">
-                        <Settings className="h-5 w-5" />
-                        <span className="text-sm">Discord Community</span>
+                      <Button
+                        variant='outline'
+                        className='h-20 flex flex-col space-y-2'
+                      >
+                        <Settings className='h-5 w-5' />
+                        <span className='text-sm'>Discord Community</span>
                       </Button>
                     </div>
                   </CardContent>

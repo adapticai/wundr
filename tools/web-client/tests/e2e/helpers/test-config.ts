@@ -7,35 +7,31 @@ export const TEST_CONFIG = {
     wundr: {
       name: '@wundr/dashboard',
       baseURL: 'http://localhost:3001',
-      description: 'Real-time monitoring dashboard'
+      description: 'Real-time monitoring dashboard',
     },
     webClient: {
       name: 'web-client',
       baseURL: 'http://localhost:3000',
-      description: 'Intelligent monorepo analysis dashboard'
-    }
+      description: 'Intelligent monorepo analysis dashboard',
+    },
   },
-  
+
   timeouts: {
     navigation: 30000,
     apiResponse: 10000,
     websocket: 5000,
-    pageLoad: 15000
+    pageLoad: 15000,
   },
 
   retries: {
     flaky: 2,
     network: 3,
-    api: 2
+    api: 2,
   },
 
   // Expected routes for each dashboard
   routes: {
-    wundr: [
-      '/',
-      '/dashboard',
-      '/dashboard/overview'
-    ],
+    wundr: ['/', '/dashboard', '/dashboard/overview'],
     webClient: [
       '/',
       '/dashboard',
@@ -68,9 +64,9 @@ export const TEST_CONFIG = {
       '/dashboard/about',
       '/dashboard/logos',
       '/dashboard/markdown-demo',
-      '/dashboard/load-report'
-    ]
-  }
+      '/dashboard/load-report',
+    ],
+  },
 } as const;
 
 export type DashboardName = keyof typeof TEST_CONFIG.dashboards;

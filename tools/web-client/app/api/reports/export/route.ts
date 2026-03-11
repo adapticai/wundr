@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 // import { ReportService } from '@/lib/services/report-service';
-import {
-  ReportContent,
-  ExportFormat,
-} from '@/types/reports';
+import { ReportContent, ExportFormat } from '@/types/reports';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { reportContent, format, reportName } = body;
-    
+
     // Validate required fields
     if (!reportContent || !format || !reportName) {
       return NextResponse.json(
@@ -19,10 +16,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate format
-    const validFormats: ExportFormat[] = ['json', 'csv', 'html', 'pdf', 'excel', 'markdown'];
+    const validFormats: ExportFormat[] = [
+      'json',
+      'csv',
+      'html',
+      'pdf',
+      'excel',
+      'markdown',
+    ];
     if (!validFormats.includes(format)) {
       return NextResponse.json(
-        { error: `Invalid format. Supported formats: ${validFormats.join(', ')}` },
+        {
+          error: `Invalid format. Supported formats: ${validFormats.join(', ')}`,
+        },
         { status: 400 }
       );
     }
@@ -82,12 +88,11 @@ export async function POST(request: NextRequest) {
         'Content-Disposition': `attachment; filename="${reportName}.${fileExtension}"`,
       },
     });
-
   } catch (_error) {
     // Error logged - details available in network tab;
-    
+
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to export report',
         details: _error instanceof Error ? _error.message : 'Unknown error',
         success: false,
@@ -102,8 +107,10 @@ export async function POST(request: NextRequest) {
  */
 async function generateCSV(reportContent: ReportContent): Promise<string> {
   // Extract tabular data from tables in sections
-  const tables = reportContent.sections.flatMap(section => section.tables || []);
-  
+  const tables = reportContent.sections.flatMap(
+    section => section.tables || []
+  );
+
   if (tables.length === 0) {
     throw new Error('No tabular data found in report for CSV export');
   }
@@ -111,13 +118,15 @@ async function generateCSV(reportContent: ReportContent): Promise<string> {
   // Use the first table for CSV export
   const table = tables[0];
   const headers = table.columns.map(col => col.label).join(',');
-  const rows = table.rows.map(row => 
-    table.columns.map(col => {
-      const value = row[col.key];
-      return typeof value === 'string' && value.includes(',') 
-        ? `"${value.replace(/"/g, '""')}"` 
-        : value;
-    }).join(',')
+  const rows = table.rows.map(row =>
+    table.columns
+      .map(col => {
+        const value = row[col.key];
+        return typeof value === 'string' && value.includes(',')
+          ? `"${value.replace(/"/g, '""')}"`
+          : value;
+      })
+      .join(',')
   );
 
   return [headers, ...rows].join('\n');
@@ -126,8 +135,13 @@ async function generateCSV(reportContent: ReportContent): Promise<string> {
 /**
  * Generate HTML report
  */
-function generateHTMLReport(reportContent: ReportContent, title: string, printable = false): string {
-  const styles = printable ? `
+function generateHTMLReport(
+  reportContent: ReportContent,
+  title: string,
+  printable = false
+): string {
+  const styles = printable
+    ? `
     <style>
       body { font-family: Arial, sans-serif; margin: 20px; }
       .print-only { display: block; }
@@ -139,7 +153,8 @@ function generateHTMLReport(reportContent: ReportContent, title: string, printab
         .container { box-shadow: none; }
       }
     </style>
-  ` : `
+  `
+    : `
     <style>
       body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
       .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -184,12 +199,16 @@ function generateHTMLReport(reportContent: ReportContent, title: string, printab
             
             <h3>Key Metrics</h3>
             <div style="display: flex; flex-wrap: wrap; justify-content: center;">
-                ${reportContent.summary.metrics.map(metric => `
+                ${reportContent.summary.metrics
+                  .map(
+                    metric => `
                     <div class="metric">
                         <div class="metric-value">${metric.value}</div>
                         <div>${metric.label}</div>
                     </div>
-                `).join('')}
+                `
+                  )
+                  .join('')}
             </div>
 
             <h3>Key Findings</h3>
@@ -200,58 +219,79 @@ function generateHTMLReport(reportContent: ReportContent, title: string, printab
             <h3>Risk Assessment</h3>
             <p><strong>Risk Level:</strong> <span class="risk-level risk-${reportContent.summary.riskAssessment.level}">${reportContent.summary.riskAssessment.level}</span></p>
             
-            ${reportContent.summary.riskAssessment.factors.length > 0 ? `
+            ${
+              reportContent.summary.riskAssessment.factors.length > 0
+                ? `
                 <h4>Risk Factors:</h4>
                 <ul>
                     ${reportContent.summary.riskAssessment.factors.map(factor => `<li>${factor}</li>`).join('')}
                 </ul>
-            ` : ''}
+            `
+                : ''
+            }
             
-            ${reportContent.summary.riskAssessment.mitigation.length > 0 ? `
+            ${
+              reportContent.summary.riskAssessment.mitigation.length > 0
+                ? `
                 <h4>Mitigation Strategies:</h4>
                 <ul>
                     ${reportContent.summary.riskAssessment.mitigation.map(mitigation => `<li>${mitigation}</li>`).join('')}
                 </ul>
-            ` : ''}
+            `
+                : ''
+            }
         </div>
 
-        ${reportContent.sections.map(section => `
+        ${reportContent.sections
+          .map(
+            section => `
             <div class="section">
                 <h2>${section.title}</h2>
                 ${section.description ? `<p><em>${section.description}</em></p>` : ''}
                 
-                ${section.content.map(content => {
-                  switch (content.type) {
-                    case 'text':
-                      return `<p>${content.content}</p>`;
-                    case 'list':
-                      return `<ul>${Array.isArray(content.content) ? content.content.map(item => `<li>${item}</li>`).join('') : ''}</ul>`;
-                    case 'metrics-grid':
-                      return `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0;">
-                        ${Object.entries(content.content as Record<string, string | number>).map(([key, value]) => `
+                ${section.content
+                  .map(content => {
+                    switch (content.type) {
+                      case 'text':
+                        return `<p>${content.content}</p>`;
+                      case 'list':
+                        return `<ul>${Array.isArray(content.content) ? content.content.map(item => `<li>${item}</li>`).join('') : ''}</ul>`;
+                      case 'metrics-grid':
+                        return `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0;">
+                        ${Object.entries(
+                          content.content as Record<string, string | number>
+                        )
+                          .map(
+                            ([key, value]) => `
                           <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
                             <div style="font-size: 1.5em; font-weight: bold; color: #0066cc;">${value}</div>
                             <div style="color: #666; margin-top: 5px;">${key}</div>
                           </div>
-                        `).join('')}
+                        `
+                          )
+                          .join('')}
                       </div>`;
-                    case 'callout':
-                      const level = content.level || 'info';
-                      const emoji = {
-                        info: 'ℹ️',
-                        warning: '⚠️',
-                        error: '❌',
-                        success: '✅'
-                      }[level];
-                      return `<div style="padding: 15px; margin: 15px 0; border-left: 4px solid #0066cc; background: #f8f9fa;">
+                      case 'callout':
+                        const level = content.level || 'info';
+                        const emoji = {
+                          info: 'ℹ️',
+                          warning: '⚠️',
+                          error: '❌',
+                          success: '✅',
+                        }[level];
+                        return `<div style="padding: 15px; margin: 15px 0; border-left: 4px solid #0066cc; background: #f8f9fa;">
                         ${emoji} <strong>${level.toUpperCase()}:</strong> ${content.content}
                       </div>`;
-                    default:
-                      return `<div>${content.content}</div>`;
-                  }
-                }).join('')}
+                      default:
+                        return `<div>${content.content}</div>`;
+                    }
+                  })
+                  .join('')}
 
-                ${section.tables?.map(table => `
+                ${
+                  section.tables
+                    ?.map(
+                      table => `
                     <h3>${table.title}</h3>
                     <div style="overflow-x: auto;">
                         <table>
@@ -261,50 +301,86 @@ function generateHTMLReport(reportContent: ReportContent, title: string, printab
                                 </tr>
                             </thead>
                             <tbody>
-                                ${table.rows.slice(0, 20).map(row => `
+                                ${table.rows
+                                  .slice(0, 20)
+                                  .map(
+                                    row => `
                                     <tr>
-                                        ${table.columns.map(col => {
-                                          const value = row[col.key];
-                                          if (col.type === 'badge' && ['critical', 'high', 'medium', 'low'].includes(String(value).toLowerCase())) {
-                                            return `<td><span class="badge badge-${String(value).toLowerCase()}">${value}</span></td>`;
-                                          }
-                                          if (col.type === 'progress') {
-                                            return `<td>${value}%</td>`;
-                                          }
-                                          if (col.type === 'code') {
-                                            return `<td><code>${value}</code></td>`;
-                                          }
-                                          return `<td>${value || ''}</td>`;
-                                        }).join('')}
+                                        ${table.columns
+                                          .map(col => {
+                                            const value = row[col.key];
+                                            if (
+                                              col.type === 'badge' &&
+                                              [
+                                                'critical',
+                                                'high',
+                                                'medium',
+                                                'low',
+                                              ].includes(
+                                                String(value).toLowerCase()
+                                              )
+                                            ) {
+                                              return `<td><span class="badge badge-${String(value).toLowerCase()}">${value}</span></td>`;
+                                            }
+                                            if (col.type === 'progress') {
+                                              return `<td>${value}%</td>`;
+                                            }
+                                            if (col.type === 'code') {
+                                              return `<td><code>${value}</code></td>`;
+                                            }
+                                            return `<td>${value || ''}</td>`;
+                                          })
+                                          .join('')}
                                     </tr>
-                                `).join('')}
-                                ${table.rows.length > 20 ? `
+                                `
+                                  )
+                                  .join('')}
+                                ${
+                                  table.rows.length > 20
+                                    ? `
                                     <tr>
                                         <td colspan="${table.columns.length}" style="text-align: center; font-style: italic; color: #666;">
                                             ... and ${table.rows.length - 20} more rows
                                         </td>
                                     </tr>
-                                ` : ''}
+                                `
+                                    : ''
+                                }
                             </tbody>
                         </table>
                     </div>
-                `).join('') || ''}
+                `
+                    )
+                    .join('') || ''
+                }
             </div>
-        `).join('')}
+        `
+          )
+          .join('')}
 
-        ${reportContent.appendices && reportContent.appendices.length > 0 ? `
+        ${
+          reportContent.appendices && reportContent.appendices.length > 0
+            ? `
             <div class="section">
                 <h2>Appendices</h2>
-                ${reportContent.appendices.map(appendix => `
+                ${reportContent.appendices
+                  .map(
+                    appendix => `
                     <h3>${appendix.title}</h3>
                     <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; overflow-x: auto;">
-                        ${appendix.type === 'raw-data' ? 
-                          `<pre style="white-space: pre-wrap; font-family: 'Consolas', monospace; font-size: 0.9em;">${appendix.content}</pre>` : 
-                          `<div>${appendix.content}</div>`}
+                        ${
+                          appendix.type === 'raw-data'
+                            ? `<pre style="white-space: pre-wrap; font-family: 'Consolas', monospace; font-size: 0.9em;">${appendix.content}</pre>`
+                            : `<div>${appendix.content}</div>`
+                        }
                     </div>
-                `).join('')}
+                `
+                  )
+                  .join('')}
             </div>
-        ` : ''}
+        `
+            : ''
+        }
 
         <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666; font-size: 0.9em;">
             <p>Generated by Wundr Analysis Engine • ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
@@ -318,7 +394,10 @@ function generateHTMLReport(reportContent: ReportContent, title: string, printab
 /**
  * Generate markdown report
  */
-function generateMarkdownReport(reportContent: ReportContent, title: string): string {
+function generateMarkdownReport(
+  reportContent: ReportContent,
+  title: string
+): string {
   const sections: string[] = [];
 
   // Header
@@ -335,9 +414,9 @@ function generateMarkdownReport(reportContent: ReportContent, title: string): st
   const metricsTable = [
     '| Metric | Value |',
     '|--------|-------|',
-    ...reportContent.summary.metrics.map(metric => 
-      `| ${metric.label} | ${metric.value} |`
-    )
+    ...reportContent.summary.metrics.map(
+      metric => `| ${metric.label} | ${metric.value} |`
+    ),
   ].join('\n');
   sections.push(metricsTable);
 
@@ -351,7 +430,9 @@ function generateMarkdownReport(reportContent: ReportContent, title: string): st
 
   // Risk assessment
   sections.push('\n### Risk Assessment');
-  sections.push(`**Overall Risk Level:** \`${reportContent.summary.riskAssessment.level.toUpperCase()}\``);
+  sections.push(
+    `**Overall Risk Level:** \`${reportContent.summary.riskAssessment.level.toUpperCase()}\``
+  );
 
   if (reportContent.summary.riskAssessment.factors.length > 0) {
     sections.push('\n**Risk Factors:**');
@@ -370,7 +451,7 @@ function generateMarkdownReport(reportContent: ReportContent, title: string): st
   // Sections
   reportContent.sections.forEach(section => {
     sections.push(`\n## ${section.title}`);
-    
+
     if (section.description) {
       sections.push(section.description);
     }
@@ -388,9 +469,11 @@ function generateMarkdownReport(reportContent: ReportContent, title: string): st
         case 'metrics-grid':
           if (typeof content.content === 'object' && content.content !== null) {
             const metrics = content.content as Record<string, string | number>;
-            sections.push(Object.entries(metrics)
-              .map(([key, value]) => `**${key}**: ${value}`)
-              .join(' | '));
+            sections.push(
+              Object.entries(metrics)
+                .map(([key, value]) => `**${key}**: ${value}`)
+                .join(' | ')
+            );
           }
           break;
         case 'callout':
@@ -399,9 +482,11 @@ function generateMarkdownReport(reportContent: ReportContent, title: string): st
             info: 'ℹ️',
             warning: '⚠️',
             error: '❌',
-            success: '✅'
+            success: '✅',
           }[level];
-          sections.push(`> ${emoji} **${level.toUpperCase()}**: ${content.content}`);
+          sections.push(
+            `> ${emoji} **${level.toUpperCase()}**: ${content.content}`
+          );
           break;
       }
     });
@@ -410,7 +495,7 @@ function generateMarkdownReport(reportContent: ReportContent, title: string): st
     if (section.tables) {
       section.tables.forEach(table => {
         sections.push(`\n### ${table.title}`);
-        
+
         if (table.rows.length === 0) {
           sections.push('*No data available*');
           return;
@@ -419,28 +504,30 @@ function generateMarkdownReport(reportContent: ReportContent, title: string): st
         // Header
         const headers = table.columns.map(col => col.label).join(' | ');
         const separator = table.columns.map(() => '---').join(' | ');
-        
+
         sections.push(`| ${headers} |`);
         sections.push(`| ${separator} |`);
 
         // Rows (limit to first 20 for readability)
         const displayRows = table.rows.slice(0, 20);
         displayRows.forEach(row => {
-          const cells = table.columns.map(col => {
-            const value = row[col.key];
-            
-            // Format based on column type
-            switch (col.type) {
-              case 'badge':
-              case 'code':
-                return `\`${value}\``;
-              case 'progress':
-                return `${value}%`;
-              default:
-                return String(value || '');
-            }
-          }).join(' | ');
-          
+          const cells = table.columns
+            .map(col => {
+              const value = row[col.key];
+
+              // Format based on column type
+              switch (col.type) {
+                case 'badge':
+                case 'code':
+                  return `\`${value}\``;
+                case 'progress':
+                  return `${value}%`;
+                default:
+                  return String(value || '');
+              }
+            })
+            .join(' | ');
+
           sections.push(`| ${cells} |`);
         });
 

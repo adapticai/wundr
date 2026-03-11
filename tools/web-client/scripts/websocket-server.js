@@ -1,14 +1,14 @@
 // Standalone WebSocket server for development
 // Run with: node scripts/websocket-server.js
 
-const WebSocket = require('ws')
-const http = require('http')
+const WebSocket = require('ws');
+const http = require('http');
 
-const server = http.createServer()
-const wss = new WebSocket.Server({ server, path: '/ws' })
+const server = http.createServer();
+const wss = new WebSocket.Server({ server, path: '/ws' });
 
-const clients = new Map()
-let clientIdCounter = 0
+const clients = new Map();
+let clientIdCounter = 0;
 
 // Generate mock data
 function generatePerformanceData() {
@@ -21,8 +21,8 @@ function generatePerformanceData() {
     loadTime: 900 + Math.random() * 400,
     testDuration: 2400 + Math.random() * 600,
     cacheHitRate: 0.8 + Math.random() * 0.15,
-    errorRate: Math.random() * 1.5
-  }
+    errorRate: Math.random() * 1.5,
+  };
 }
 
 function generateQualityData() {
@@ -36,14 +36,14 @@ function generateQualityData() {
     codeSmells: 15 + Math.random() * 10,
     bugs: 3 + Math.random() * 5,
     vulnerabilities: Math.random() * 3,
-    linesOfCode: 52000 + Math.random() * 3000
-  }
+    linesOfCode: 52000 + Math.random() * 3000,
+  };
 }
 
 function generateGitData() {
-  const hour = new Date().getHours()
-  const activityMultiplier = (hour >= 9 && hour <= 17) ? 1.5 : 0.3
-  
+  const hour = new Date().getHours();
+  const activityMultiplier = hour >= 9 && hour <= 17 ? 1.5 : 0.3;
+
   return {
     timestamp: new Date().toISOString(),
     commits: Math.round(Math.random() * 5 * activityMultiplier),
@@ -53,8 +53,8 @@ function generateGitData() {
     contributors: 5 + Math.round(Math.random() * 3),
     branches: 12 + Math.round(Math.random() * 2),
     pullRequests: Math.round(Math.random() * 2 * activityMultiplier),
-    issues: Math.round(Math.random() * 1.5 * activityMultiplier)
-  }
+    issues: Math.round(Math.random() * 1.5 * activityMultiplier),
+  };
 }
 
 function broadcast(channel, data) {
@@ -64,143 +64,155 @@ function broadcast(channel, data) {
     payload: {
       type: channel,
       data,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     },
-    timestamp: new Date().toISOString()
-  })
+    timestamp: new Date().toISOString(),
+  });
 
   clients.forEach((client, clientId) => {
-    if (client.subscriptions.has(channel) && client.ws.readyState === WebSocket.OPEN) {
+    if (
+      client.subscriptions.has(channel) &&
+      client.ws.readyState === WebSocket.OPEN
+    ) {
       try {
-        client.ws.send(message)
+        client.ws.send(message);
       } catch (error) {
-        console.error(`Error sending to client ${clientId}:`, error)
-        clients.delete(clientId)
+        console.error(`Error sending to client ${clientId}:`, error);
+        clients.delete(clientId);
       }
     }
-  })
+  });
 }
 
 wss.on('connection', (ws, request) => {
-  const clientId = ++clientIdCounter
+  const clientId = ++clientIdCounter;
   const client = {
     ws,
     subscriptions: new Set(),
-    lastPing: Date.now()
-  }
-  
-  clients.set(clientId, client)
-  console.log(`Client ${clientId} connected from ${request.socket.remoteAddress}`)
+    lastPing: Date.now(),
+  };
 
-  ws.on('message', (data) => {
+  clients.set(clientId, client);
+  console.log(
+    `Client ${clientId} connected from ${request.socket.remoteAddress}`
+  );
+
+  ws.on('message', data => {
     try {
-      const message = JSON.parse(data.toString())
-      
+      const message = JSON.parse(data.toString());
+
       switch (message.type) {
         case 'subscribe':
           if (message.channel) {
-            client.subscriptions.add(message.channel)
-            console.log(`Client ${clientId} subscribed to ${message.channel}`)
+            client.subscriptions.add(message.channel);
+            console.log(`Client ${clientId} subscribed to ${message.channel}`);
           }
-          break
-          
+          break;
+
         case 'unsubscribe':
           if (message.channel) {
-            client.subscriptions.delete(message.channel)
-            console.log(`Client ${clientId} unsubscribed from ${message.channel}`)
+            client.subscriptions.delete(message.channel);
+            console.log(
+              `Client ${clientId} unsubscribed from ${message.channel}`
+            );
           }
-          break
-          
+          break;
+
         case 'pong':
-          client.lastPing = Date.now()
-          break
-          
+          client.lastPing = Date.now();
+          break;
+
         default:
-          console.warn(`Unknown message type from client ${clientId}:`, message.type)
+          console.warn(
+            `Unknown message type from client ${clientId}:`,
+            message.type
+          );
       }
     } catch (error) {
-      console.error(`Error parsing message from client ${clientId}:`, error)
+      console.error(`Error parsing message from client ${clientId}:`, error);
     }
-  })
+  });
 
   ws.on('close', () => {
-    clients.delete(clientId)
-    console.log(`Client ${clientId} disconnected`)
-  })
+    clients.delete(clientId);
+    console.log(`Client ${clientId} disconnected`);
+  });
 
-  ws.on('error', (error) => {
-    console.error(`WebSocket error for client ${clientId}:`, error)
-    clients.delete(clientId)
-  })
-})
+  ws.on('error', error => {
+    console.error(`WebSocket error for client ${clientId}:`, error);
+    clients.delete(clientId);
+  });
+});
 
 // Send periodic data updates
 setInterval(() => {
-  broadcast('performance', generatePerformanceData())
-}, 10000) // Every 10 seconds
+  broadcast('performance', generatePerformanceData());
+}, 10000); // Every 10 seconds
 
 setInterval(() => {
-  broadcast('quality', generateQualityData())
-}, 60000) // Every minute
+  broadcast('quality', generateQualityData());
+}, 60000); // Every minute
 
 setInterval(() => {
-  broadcast('git', generateGitData())
-}, 30000) // Every 30 seconds
+  broadcast('git', generateGitData());
+}, 30000); // Every 30 seconds
 
 // Heartbeat to detect dead connections
 setInterval(() => {
-  const now = Date.now()
-  
+  const now = Date.now();
+
   clients.forEach((client, clientId) => {
     if (now - client.lastPing > 60000) {
-      console.log(`Removing dead client ${clientId}`)
-      client.ws.terminate()
-      clients.delete(clientId)
-      return
+      console.log(`Removing dead client ${clientId}`);
+      client.ws.terminate();
+      clients.delete(clientId);
+      return;
     }
-    
+
     if (client.ws.readyState === WebSocket.OPEN) {
       try {
-        client.ws.send(JSON.stringify({
-          type: 'ping',
-          timestamp: new Date().toISOString()
-        }))
+        client.ws.send(
+          JSON.stringify({
+            type: 'ping',
+            timestamp: new Date().toISOString(),
+          })
+        );
       } catch (error) {
-        console.error(`Error pinging client ${clientId}:`, error)
-        clients.delete(clientId)
+        console.error(`Error pinging client ${clientId}:`, error);
+        clients.delete(clientId);
       }
     }
-  })
-}, 30000) // Every 30 seconds
+  });
+}, 30000); // Every 30 seconds
 
-const PORT = process.env.WS_PORT || 3001
+const PORT = process.env.WS_PORT || 3001;
 server.listen(PORT, () => {
-  console.log(`\n🚀 WebSocket server running on port ${PORT}`)
-  console.log(`📡 WebSocket URL: ws://localhost:${PORT}/ws`)
-  console.log(`👥 Clients connected: ${clients.size}`)
-  console.log('\n📊 Broadcasting channels:')
-  console.log('  - performance (every 10s)')
-  console.log('  - quality (every 60s)')
-  console.log('  - git (every 30s)')
-  console.log('\n📝 To connect from your dashboard:')
-  console.log('  usePerformanceData({ realtime: true })')
-  console.log('  useQualityMetrics({ realtime: true })')
-  console.log('  useGitActivity({ realtime: true })')
-})
+  console.log(`\n🚀 WebSocket server running on port ${PORT}`);
+  console.log(`📡 WebSocket URL: ws://localhost:${PORT}/ws`);
+  console.log(`👥 Clients connected: ${clients.size}`);
+  console.log('\n📊 Broadcasting channels:');
+  console.log('  - performance (every 10s)');
+  console.log('  - quality (every 60s)');
+  console.log('  - git (every 30s)');
+  console.log('\n📝 To connect from your dashboard:');
+  console.log('  usePerformanceData({ realtime: true })');
+  console.log('  useQualityMetrics({ realtime: true })');
+  console.log('  useGitActivity({ realtime: true })');
+});
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('\n🛑 Shutting down WebSocket server...')
+  console.log('\n🛑 Shutting down WebSocket server...');
   server.close(() => {
-    console.log('✅ WebSocket server closed')
-    process.exit(0)
-  })
-})
+    console.log('✅ WebSocket server closed');
+    process.exit(0);
+  });
+});
 
 process.on('SIGINT', () => {
-  console.log('\n🛑 Shutting down WebSocket server...')
+  console.log('\n🛑 Shutting down WebSocket server...');
   server.close(() => {
-    console.log('✅ WebSocket server closed')
-    process.exit(0)
-  })
-})
+    console.log('✅ WebSocket server closed');
+    process.exit(0);
+  });
+});

@@ -1,49 +1,50 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server';
 // WebSocket types are available but not used in this HTTP endpoint
 // import { WebSocketMessage, RealtimeUpdate } from '@/types/data'
 
 // Production WebSocket handler for real-time updates
 class WebSocketManager {
-  private static instance: WebSocketManager
-  private clients: Map<string, WebSocket | unknown> = new Map()
-  private subscriptions: Map<string, Set<string>> = new Map()
-  private updateInterval: NodeJS.Timeout | null = null
+  private static instance: WebSocketManager;
+  private clients: Map<string, WebSocket | unknown> = new Map();
+  private subscriptions: Map<string, Set<string>> = new Map();
+  private updateInterval: NodeJS.Timeout | null = null;
 
   static getInstance(): WebSocketManager {
     if (!WebSocketManager.instance) {
-      WebSocketManager.instance = new WebSocketManager()
+      WebSocketManager.instance = new WebSocketManager();
     }
-    return WebSocketManager.instance
+    return WebSocketManager.instance;
   }
 
   // HTTP endpoint for WebSocket connection info and real-time data simulation
   getConnectionInfo() {
-    const wsUrl = process.env.NODE_ENV === 'production' 
-      ? 'wss://your-domain.com/ws' 
-      : 'ws://localhost:3001/ws'
-    
+    const wsUrl =
+      process.env.NODE_ENV === 'production'
+        ? 'wss://your-domain.com/ws'
+        : 'ws://localhost:3001/ws';
+
     return {
       url: wsUrl,
       status: 'available',
       channels: ['dashboard', 'performance', 'quality', 'recommendations'],
       features: ['realtime_updates', 'subscription_management', 'heartbeat'],
-      fallback: 'polling_enabled'
-    }
+      fallback: 'polling_enabled',
+    };
   }
 
   // Generate real-time updates for polling fallback
   generateUpdate(channel: string) {
     switch (channel) {
       case 'dashboard':
-        return this.generateDashboardUpdate()
+        return this.generateDashboardUpdate();
       case 'recommendations':
-        return this.generateRecommendationsUpdate()
+        return this.generateRecommendationsUpdate();
       case 'performance':
-        return this.generatePerformanceUpdate()
+        return this.generatePerformanceUpdate();
       case 'quality':
-        return this.generateQualityUpdate()
+        return this.generateQualityUpdate();
       default:
-        return null
+        return null;
     }
   }
 
@@ -58,9 +59,9 @@ class WebSocketManager {
         circularDependencies: Math.floor(Math.random() * 5) + 5,
         unusedExports: Math.floor(Math.random() * 50) + 150,
         codeSmells: Math.floor(Math.random() * 20) + 80,
-        lastUpdate: new Date().toISOString()
-      }
-    }
+        lastUpdate: new Date().toISOString(),
+      },
+    };
   }
 
   private generatePerformanceUpdate() {
@@ -73,9 +74,9 @@ class WebSocketManager {
         memoryUsage: Math.floor(Math.random() * 100) + 400,
         cpuUsage: Math.floor(Math.random() * 50) + 20,
         loadTime: Math.floor(Math.random() * 300) + 500,
-        errorRate: Math.random() * 2
-      }
-    }
+        errorRate: Math.random() * 2,
+      },
+    };
   }
 
   private generateQualityUpdate() {
@@ -90,15 +91,15 @@ class WebSocketManager {
         technicalDebt: Math.floor(Math.random() * 20) + 120,
         codeSmells: Math.floor(Math.random() * 20) + 80,
         bugs: Math.floor(Math.random() * 5) + 10,
-        vulnerabilities: Math.floor(Math.random() * 3) + 3
-      }
-    }
+        vulnerabilities: Math.floor(Math.random() * 3) + 3,
+      },
+    };
   }
 
   private generateRecommendationsUpdate() {
-    const priorities = ['critical', 'high', 'medium', 'low']
-    const statuses = ['pending', 'in_progress', 'completed']
-    
+    const priorities = ['critical', 'high', 'medium', 'low'];
+    const statuses = ['pending', 'in_progress', 'completed'];
+
     return {
       type: 'recommendations',
       data: {
@@ -107,59 +108,64 @@ class WebSocketManager {
         totalPending: Math.floor(Math.random() * 20) + 10,
         critical: Math.floor(Math.random() * 5) + 2,
         autoFixAvailable: Math.floor(Math.random() * 8) + 5,
-        recentActivity: [{
-          id: `rec-${Date.now()}`,
-          title: `New recommendation: Optimize component ${Math.floor(Math.random() * 100)}`,
-          priority: priorities[Math.floor(Math.random() * priorities.length)],
-          status: statuses[Math.floor(Math.random() * statuses.length)],
-          timestamp: new Date().toISOString()
-        }]
-      }
-    }
+        recentActivity: [
+          {
+            id: `rec-${Date.now()}`,
+            title: `New recommendation: Optimize component ${Math.floor(Math.random() * 100)}`,
+            priority: priorities[Math.floor(Math.random() * priorities.length)],
+            status: statuses[Math.floor(Math.random() * statuses.length)],
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      },
+    };
   }
 }
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const channel = searchParams.get('channel')
-    const action = searchParams.get('action')
-    
-    const manager = WebSocketManager.getInstance()
-    
+    const { searchParams } = new URL(request.url);
+    const channel = searchParams.get('channel');
+    const action = searchParams.get('action');
+
+    const manager = WebSocketManager.getInstance();
+
     if (action === 'info') {
       return NextResponse.json({
         success: true,
         data: manager.getConnectionInfo(),
-        timestamp: new Date().toISOString()
-      })
+        timestamp: new Date().toISOString(),
+      });
     }
-    
+
     if (action === 'update' && channel) {
-      const update = manager.generateUpdate(channel)
+      const update = manager.generateUpdate(channel);
       if (update) {
         return NextResponse.json({
           success: true,
           data: update,
-          timestamp: new Date().toISOString()
-        })
+          timestamp: new Date().toISOString(),
+        });
       }
     }
-    
+
     // Default WebSocket connection info
     return NextResponse.json({
       success: true,
       data: manager.getConnectionInfo(),
-      timestamp: new Date().toISOString()
-    })
+      timestamp: new Date().toISOString(),
+    });
   } catch (_error) {
     // Error logged - details available in network tab
-    
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to get WebSocket information',
-      timestamp: new Date().toISOString()
-    }, { status: 500 })
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to get WebSocket information',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    );
   }
 }
 
@@ -170,7 +176,8 @@ export async function OPTIONS() {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Upgrade, Connection, Sec-WebSocket-Key, Sec-WebSocket-Version'
-    }
-  })
+      'Access-Control-Allow-Headers':
+        'Upgrade, Connection, Sec-WebSocket-Key, Sec-WebSocket-Version',
+    },
+  });
 }

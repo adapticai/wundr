@@ -352,8 +352,9 @@ export class GroupChatManager extends EventEmitter<GroupChatEvents> {
           this.context
         );
       } else {
-        // Default placeholder response
-        response = this.generatePlaceholderResponse(participant);
+        throw new Error(
+          `No response generator configured. Call setResponseGenerator() with a real LLM integration before starting the chat.`
+        );
       }
 
       // Update metrics
@@ -376,21 +377,6 @@ export class GroupChatManager extends EventEmitter<GroupChatEvents> {
 
       return null;
     }
-  }
-
-  /**
-   * Generate a placeholder response when no generator is set
-   * @param participant - Participant to generate for
-   * @returns Placeholder response
-   */
-  private generatePlaceholderResponse(participant: ChatParticipant): string {
-    const prompts = [
-      `[${participant.name}]: I acknowledge the message and am ready to contribute.`,
-      `[${participant.name}]: Based on my expertise in ${participant.capabilities.join(', ')}, I suggest we proceed.`,
-      `[${participant.name}]: Let me analyze this from my perspective.`,
-    ];
-
-    return prompts[Math.floor(Math.random() * prompts.length)]!;
   }
 
   /**

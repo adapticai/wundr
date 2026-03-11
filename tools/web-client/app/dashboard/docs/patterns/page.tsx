@@ -3,7 +3,13 @@
 import React from 'react';
 import { DocsLayout } from '@/components/docs/DocsLayout';
 import { MarkdownRenderer } from '@/components/markdown/MarkdownRenderer';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Code, FileText, GitBranch, Package, Shield, Zap } from 'lucide-react';
@@ -18,7 +24,8 @@ const patternCategories = [
     patterns: [
       {
         title: 'Modular Monolith',
-        description: 'Organize your application into well-defined modules with clear boundaries',
+        description:
+          'Organize your application into well-defined modules with clear boundaries',
         code: `// modules/user/index.ts
 export interface UserModule {
   services: {
@@ -46,7 +53,7 @@ export function createUserModule(db: Database): UserModule {
     controllers: { userController }
   };
 }`,
-        language: 'typescript'
+        language: 'typescript',
       },
       {
         title: 'Clean Architecture',
@@ -80,9 +87,9 @@ export class CreateUserUseCase {
     return user;
   }
 }`,
-        language: 'typescript'
-      }
-    ]
+        language: 'typescript',
+      },
+    ],
   },
   {
     id: 'performance',
@@ -111,7 +118,7 @@ async function loadAnalyticsModule() {
   const { AnalyticsModule } = await import('./modules/analytics');
   return new AnalyticsModule();
 }`,
-        language: 'typescript'
+        language: 'typescript',
       },
       {
         title: 'Memoization',
@@ -146,9 +153,9 @@ const memoize = <T extends (...args: any[]) => any>(fn: T): T => {
     return result;
   }) as T;
 };`,
-        language: 'typescript'
-      }
-    ]
+        language: 'typescript',
+      },
+    ],
   },
   {
     id: 'security',
@@ -186,9 +193,9 @@ async function getUser(id: string) {
   const result = await db.query(query, [id]);
   return result.rows[0];
 }`,
-        language: 'typescript'
-      }
-    ]
+        language: 'typescript',
+      },
+    ],
   },
   {
     id: 'testing',
@@ -232,9 +239,9 @@ describe('User API', () => {
     });
   });
 });`,
-        language: 'typescript'
-      }
-    ]
+        language: 'typescript',
+      },
+    ],
   },
   {
     id: 'git',
@@ -264,43 +271,50 @@ Customers were being charged twice when clicking
 submit button multiple times.
 
 Fixes #123`,
-        language: 'bash'
-      }
-    ]
-  }
+        language: 'bash',
+      },
+    ],
+  },
 ];
 
 export default function PatternsPage() {
-  const [selectedCategory, setSelectedCategory] = React.useState('architecture');
-  const currentCategory = patternCategories.find(cat => cat.id === selectedCategory);
+  const [selectedCategory, setSelectedCategory] =
+    React.useState('architecture');
+  const currentCategory = patternCategories.find(
+    cat => cat.id === selectedCategory
+  );
 
   return (
     <DocsLayout>
-      <div className="max-w-6xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-4">Development Patterns</h1>
-          <p className="text-muted-foreground">
+      <div className='max-w-6xl'>
+        <div className='mb-8'>
+          <h1 className='text-3xl font-bold mb-4'>Development Patterns</h1>
+          <p className='text-muted-foreground'>
             Best practices and patterns for building maintainable applications
           </p>
         </div>
 
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-          <TabsList className="grid grid-cols-5 w-full mb-8">
-            {patternCategories.map((category) => (
-              <TabsTrigger key={category.id} value={category.id} className="flex items-center gap-2">
-                <category.icon className="h-4 w-4" />
-                <span className="hidden md:inline">{category.title}</span>
+          <TabsList className='grid grid-cols-5 w-full mb-8'>
+            {patternCategories.map(category => (
+              <TabsTrigger
+                key={category.id}
+                value={category.id}
+                className='flex items-center gap-2'
+              >
+                <category.icon className='h-4 w-4' />
+                <span className='hidden md:inline'>{category.title}</span>
               </TabsTrigger>
             ))}
           </TabsList>
 
-          {patternCategories.map((category) => (
+          {patternCategories.map(category => (
             <TabsContent key={category.id} value={category.id}>
-              <div className="space-y-6">
+              <div className='space-y-6'>
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <category.icon className="h-5 w-5" />
+                    <CardTitle className='flex items-center gap-2'>
+                      <category.icon className='h-5 w-5' />
                       {category.title}
                     </CardTitle>
                     <CardDescription>{category.description}</CardDescription>
@@ -310,16 +324,19 @@ export default function PatternsPage() {
                 {category.patterns.map((pattern, index) => (
                   <Card key={index}>
                     <CardHeader>
-                      <CardTitle className="text-xl">{pattern.title}</CardTitle>
+                      <CardTitle className='text-xl'>{pattern.title}</CardTitle>
                       <CardDescription>{pattern.description}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="relative">
-                        <Badge className="absolute top-2 right-2" variant="secondary">
+                      <div className='relative'>
+                        <Badge
+                          className='absolute top-2 right-2'
+                          variant='secondary'
+                        >
                           {pattern.language}
                         </Badge>
-                        <pre className="bg-muted p-4 rounded-lg overflow-x-auto">
-                          <code className="text-sm">{pattern.code}</code>
+                        <pre className='bg-muted p-4 rounded-lg overflow-x-auto'>
+                          <code className='text-sm'>{pattern.code}</code>
                         </pre>
                       </div>
                     </CardContent>

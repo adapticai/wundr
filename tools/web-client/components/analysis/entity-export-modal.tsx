@@ -3,7 +3,13 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 // import { Checkbox } from '@/components/ui/checkbox';
 import { ResponsiveModal } from '@/components/ui/responsive-modal';
 import { Badge } from '@/components/ui/badge';
@@ -49,7 +55,10 @@ interface ExportOptions {
   };
 }
 
-export function EntityExportModal({ entities, onClose }: EntityExportModalProps) {
+export function EntityExportModal({
+  entities,
+  onClose,
+}: EntityExportModalProps) {
   const [exportOptions, setExportOptions] = useState<ExportOptions>({
     format: 'json',
     includeFields: {
@@ -81,25 +90,33 @@ export function EntityExportModal({ entities, onClose }: EntityExportModalProps)
   // Filter entities based on export options
   const filteredEntities = entities.filter(entity => {
     // Type filter
-    if (exportOptions.filters.types.length > 0 && 
-        !exportOptions.filters.types.includes(entity.type)) {
+    if (
+      exportOptions.filters.types.length > 0 &&
+      !exportOptions.filters.types.includes(entity.type)
+    ) {
       return false;
     }
 
     // Export type filter
-    if (exportOptions.filters.exportTypes.length > 0 && 
-        !exportOptions.filters.exportTypes.includes(entity.exportType)) {
+    if (
+      exportOptions.filters.exportTypes.length > 0 &&
+      !exportOptions.filters.exportTypes.includes(entity.exportType)
+    ) {
       return false;
     }
 
     // Complexity filters
     const complexity = entity.complexity || 0;
-    if (exportOptions.filters.minComplexity !== undefined && 
-        complexity < exportOptions.filters.minComplexity) {
+    if (
+      exportOptions.filters.minComplexity !== undefined &&
+      complexity < exportOptions.filters.minComplexity
+    ) {
       return false;
     }
-    if (exportOptions.filters.maxComplexity !== undefined && 
-        complexity > exportOptions.filters.maxComplexity) {
+    if (
+      exportOptions.filters.maxComplexity !== undefined &&
+      complexity > exportOptions.filters.maxComplexity
+    ) {
       return false;
     }
 
@@ -143,37 +160,48 @@ export function EntityExportModal({ entities, onClose }: EntityExportModalProps)
   const generateExportData = () => {
     const exportData = filteredEntities.map(entity => {
       const exportEntity: Record<string, unknown> = {};
-      
+
       if (exportOptions.includeFields.name) exportEntity.name = entity.name;
       if (exportOptions.includeFields.type) exportEntity.type = entity.type;
       if (exportOptions.includeFields.file) exportEntity.file = entity.file;
       if (exportOptions.includeFields.line) exportEntity.line = entity.line;
-      if (exportOptions.includeFields.column) exportEntity.column = 'column' in entity ? entity.column : undefined;
-      if (exportOptions.includeFields.exportType) exportEntity.exportType = entity.exportType;
-      if (exportOptions.includeFields.complexity) exportEntity.complexity = entity.complexity;
-      if (exportOptions.includeFields.dependencies) exportEntity.dependencies = entity.dependencies;
-      if (exportOptions.includeFields.jsDoc) exportEntity.jsDoc = 'jsDoc' in entity ? entity.jsDoc : undefined;
-      if (exportOptions.includeFields.signature) exportEntity.signature = 'signature' in entity ? entity.signature : undefined;
-      if (exportOptions.includeFields.members) exportEntity.members = 'members' in entity ? entity.members : undefined;
-      
+      if (exportOptions.includeFields.column)
+        exportEntity.column = 'column' in entity ? entity.column : undefined;
+      if (exportOptions.includeFields.exportType)
+        exportEntity.exportType = entity.exportType;
+      if (exportOptions.includeFields.complexity)
+        exportEntity.complexity = entity.complexity;
+      if (exportOptions.includeFields.dependencies)
+        exportEntity.dependencies = entity.dependencies;
+      if (exportOptions.includeFields.jsDoc)
+        exportEntity.jsDoc = 'jsDoc' in entity ? entity.jsDoc : undefined;
+      if (exportOptions.includeFields.signature)
+        exportEntity.signature =
+          'signature' in entity ? entity.signature : undefined;
+      if (exportOptions.includeFields.members)
+        exportEntity.members = 'members' in entity ? entity.members : undefined;
+
       return exportEntity;
     });
 
     return exportData;
   };
 
-
   const exportAsMarkdown = (data: Record<string, unknown>[]) => {
-    if (data.length === 0) return new Blob(['# No data to export'], { type: 'text/markdown' });
+    if (data.length === 0)
+      return new Blob(['# No data to export'], { type: 'text/markdown' });
 
     let markdown = '# Entity Analysis Export\n\n';
     markdown += `Generated on: ${new Date().toISOString()}\n`;
     markdown += `Total entities: ${data.length}\n\n`;
 
     const headers = Object.keys(data[0]);
-    
+
     // Create table header
-    markdown += '| ' + headers.map(h => h.charAt(0).toUpperCase() + h.slice(1)).join(' | ') + ' |\n';
+    markdown +=
+      '| ' +
+      headers.map(h => h.charAt(0).toUpperCase() + h.slice(1)).join(' | ') +
+      ' |\n';
     markdown += '| ' + headers.map(() => '---').join(' | ') + ' |\n';
 
     // Add rows
@@ -202,7 +230,7 @@ export function EntityExportModal({ entities, onClose }: EntityExportModalProps)
     }
 
     const headers = Object.keys(data[0]);
-    
+
     const html = `
 <!DOCTYPE html>
 <html>
@@ -230,20 +258,26 @@ export function EntityExportModal({ entities, onClose }: EntityExportModalProps)
             </tr>
         </thead>
         <tbody>
-            ${data.map(row => `
+            ${data
+              .map(
+                row => `
                 <tr>
-                    ${headers.map(header => {
-                      const value = row[header];
-                      if (Array.isArray(value)) {
-                        return `<td>${value.join(', ')}</td>`;
-                      }
-                      if (typeof value === 'object' && value !== null) {
-                        return `<td><pre>${JSON.stringify(value, null, 2)}</pre></td>`;
-                      }
-                      return `<td>${value || ''}</td>`;
-                    }).join('')}
+                    ${headers
+                      .map(header => {
+                        const value = row[header];
+                        if (Array.isArray(value)) {
+                          return `<td>${value.join(', ')}</td>`;
+                        }
+                        if (typeof value === 'object' && value !== null) {
+                          return `<td><pre>${JSON.stringify(value, null, 2)}</pre></td>`;
+                        }
+                        return `<td>${value || ''}</td>`;
+                      })
+                      .join('')}
                 </tr>
-            `).join('')}
+            `
+              )
+              .join('')}
         </tbody>
     </table>
 </body>
@@ -255,32 +289,38 @@ export function EntityExportModal({ entities, onClose }: EntityExportModalProps)
 
   const handleExport = async () => {
     setIsExporting(true);
-    
+
     try {
       const data = generateExportData();
-      const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+      const timestamp = new Date()
+        .toISOString()
+        .slice(0, 19)
+        .replace(/:/g, '-');
       let filename: string;
 
       switch (exportOptions.format) {
         case 'json':
           filename = `entities-export-${timestamp}.json`;
-          exportToJSON({
-            entities: data,
-            filters: exportOptions.filters,
-            fields: exportOptions.includeFields,
-            exportedAt: new Date().toISOString(),
-            totalEntities: filteredEntities.length
-          }, {
-            filename,
-            pretty: true,
-            autoDownload: true
-          });
+          exportToJSON(
+            {
+              entities: data,
+              filters: exportOptions.filters,
+              fields: exportOptions.includeFields,
+              exportedAt: new Date().toISOString(),
+              totalEntities: filteredEntities.length,
+            },
+            {
+              filename,
+              pretty: true,
+              autoDownload: true,
+            }
+          );
           break;
         case 'csv':
           filename = `entities-export-${timestamp}.csv`;
           exportToCSV(data, {
             filename,
-            autoDownload: true
+            autoDownload: true,
           });
           break;
         case 'markdown':
@@ -322,11 +362,16 @@ export function EntityExportModal({ entities, onClose }: EntityExportModalProps)
 
   const getFormatIcon = (format: ExportFormat) => {
     switch (format) {
-      case 'json': return <Code className="h-4 w-4" />;
-      case 'csv': return <FileSpreadsheet className="h-4 w-4" />;
-      case 'markdown': return <FileText className="h-4 w-4" />;
-      case 'html': return <FileText className="h-4 w-4" />;
-      default: return <FileText className="h-4 w-4" />;
+      case 'json':
+        return <Code className='h-4 w-4' />;
+      case 'csv':
+        return <FileSpreadsheet className='h-4 w-4' />;
+      case 'markdown':
+        return <FileText className='h-4 w-4' />;
+      case 'html':
+        return <FileText className='h-4 w-4' />;
+      default:
+        return <FileText className='h-4 w-4' />;
     }
   };
 
@@ -335,205 +380,279 @@ export function EntityExportModal({ entities, onClose }: EntityExportModalProps)
       open={true}
       onOpenChange={onClose}
       title={
-        <div className="flex items-center gap-2">
-          <Download className="h-5 w-5" />
+        <div className='flex items-center gap-2'>
+          <Download className='h-5 w-5' />
           Export Entity Data
         </div>
       }
-      contentClassName="space-y-6 md:max-h-[60vh] md:overflow-y-auto"
-      className="md:max-w-4xl"
+      contentClassName='space-y-6 md:max-h-[60vh] md:overflow-y-auto'
+      className='md:max-w-4xl'
     >
-      <div className="space-y-6">
-          {/* Export Format */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Export Format</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {[
-                  { value: 'json', label: 'JSON', description: 'Structured data format' },
-                  { value: 'csv', label: 'CSV', description: 'Spreadsheet format' },
-                  { value: 'markdown', label: 'Markdown', description: 'Documentation format' },
-                  { value: 'html', label: 'HTML', description: 'Web page format' },
-                ].map((format) => (
-                  <div
-                    key={format.value}
-                    className={`border rounded-lg p-3 cursor-pointer transition-colors ${
-                      exportOptions.format === format.value
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                    onClick={() => setExportOptions(prev => ({ ...prev, format: format.value as ExportFormat }))}
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      {getFormatIcon(format.value as ExportFormat)}
-                      <span className="font-medium">{format.label}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">{format.description}</p>
+      <div className='space-y-6'>
+        {/* Export Format */}
+        <Card>
+          <CardHeader>
+            <CardTitle className='text-lg'>Export Format</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className='grid grid-cols-2 md:grid-cols-4 gap-3'>
+              {[
+                {
+                  value: 'json',
+                  label: 'JSON',
+                  description: 'Structured data format',
+                },
+                {
+                  value: 'csv',
+                  label: 'CSV',
+                  description: 'Spreadsheet format',
+                },
+                {
+                  value: 'markdown',
+                  label: 'Markdown',
+                  description: 'Documentation format',
+                },
+                {
+                  value: 'html',
+                  label: 'HTML',
+                  description: 'Web page format',
+                },
+              ].map(format => (
+                <div
+                  key={format.value}
+                  className={`border rounded-lg p-3 cursor-pointer transition-colors ${
+                    exportOptions.format === format.value
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border hover:border-primary/50'
+                  }`}
+                  onClick={() =>
+                    setExportOptions(prev => ({
+                      ...prev,
+                      format: format.value as ExportFormat,
+                    }))
+                  }
+                >
+                  <div className='flex items-center gap-2 mb-1'>
+                    {getFormatIcon(format.value as ExportFormat)}
+                    <span className='font-medium'>{format.label}</span>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  <p className='text-xs text-muted-foreground'>
+                    {format.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Fields to Include */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Fields to Include</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {Object.entries(exportOptions.includeFields).map(([field, included]) => (
-                  <div key={field} className="flex items-center space-x-2">
+        {/* Fields to Include */}
+        <Card>
+          <CardHeader>
+            <CardTitle className='text-lg'>Fields to Include</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className='grid grid-cols-2 md:grid-cols-3 gap-4'>
+              {Object.entries(exportOptions.includeFields).map(
+                ([field, included]) => (
+                  <div key={field} className='flex items-center space-x-2'>
                     <input
-                      type="checkbox"
+                      type='checkbox'
                       id={field}
                       checked={included}
-                      onChange={() => handleFieldToggle(field as keyof ExportOptions['includeFields'])}
-                      className="rounded border-gray-300"
+                      onChange={() =>
+                        handleFieldToggle(
+                          field as keyof ExportOptions['includeFields']
+                        )
+                      }
+                      className='rounded border-gray-300'
                     />
-                    <label htmlFor={field} className="text-sm font-medium capitalize cursor-pointer">
+                    <label
+                      htmlFor={field}
+                      className='text-sm font-medium capitalize cursor-pointer'
+                    >
                       {field.replace(/([A-Z])/g, ' $1').trim()}
                     </label>
                   </div>
+                )
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Filters */}
+        <Card>
+          <CardHeader>
+            <CardTitle className='text-lg'>Filters</CardTitle>
+          </CardHeader>
+          <CardContent className='space-y-4'>
+            {/* Entity Types */}
+            <div>
+              <label className='text-sm font-medium mb-2 block'>
+                Entity Types
+              </label>
+              <div className='flex flex-wrap gap-2'>
+                {uniqueTypes.map(type => (
+                  <div key={type} className='flex items-center space-x-2'>
+                    <input
+                      type='checkbox'
+                      id={`type-${type}`}
+                      checked={exportOptions.filters.types.includes(type)}
+                      onChange={e => handleTypeFilter(type, e.target.checked)}
+                      className='rounded border-gray-300'
+                    />
+                    <label
+                      htmlFor={`type-${type}`}
+                      className='text-sm capitalize cursor-pointer'
+                    >
+                      {type}
+                    </label>
+                  </div>
                 ))}
+                {exportOptions.filters.types.length === 0 && (
+                  <Badge variant='secondary'>All types included</Badge>
+                )}
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* Filters */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Filters</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Entity Types */}
+            {/* Export Types */}
+            <div>
+              <label className='text-sm font-medium mb-2 block'>
+                Export Types
+              </label>
+              <div className='flex flex-wrap gap-2'>
+                {uniqueExportTypes.map(exportType => (
+                  <div key={exportType} className='flex items-center space-x-2'>
+                    <input
+                      type='checkbox'
+                      id={`export-${exportType}`}
+                      checked={exportOptions.filters.exportTypes.includes(
+                        exportType
+                      )}
+                      onChange={e =>
+                        handleExportTypeFilter(exportType, e.target.checked)
+                      }
+                      className='rounded border-gray-300'
+                    />
+                    <label
+                      htmlFor={`export-${exportType}`}
+                      className='text-sm capitalize cursor-pointer'
+                    >
+                      {exportType}
+                    </label>
+                  </div>
+                ))}
+                {exportOptions.filters.exportTypes.length === 0 && (
+                  <Badge variant='secondary'>All export types included</Badge>
+                )}
+              </div>
+            </div>
+
+            {/* Complexity Range */}
+            <div className='grid grid-cols-2 gap-4'>
               <div>
-                <label className="text-sm font-medium mb-2 block">Entity Types</label>
-                <div className="flex flex-wrap gap-2">
-                  {uniqueTypes.map((type) => (
-                    <div key={type} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id={`type-${type}`}
-                        checked={exportOptions.filters.types.includes(type)}
-                        onChange={(e) => handleTypeFilter(type, e.target.checked)}
-                        className="rounded border-gray-300"
-                      />
-                      <label htmlFor={`type-${type}`} className="text-sm capitalize cursor-pointer">
-                        {type}
-                      </label>
-                    </div>
-                  ))}
-                  {exportOptions.filters.types.length === 0 && (
-                    <Badge variant="secondary">All types included</Badge>
-                  )}
-                </div>
-              </div>
-
-              {/* Export Types */}
-              <div>
-                <label className="text-sm font-medium mb-2 block">Export Types</label>
-                <div className="flex flex-wrap gap-2">
-                  {uniqueExportTypes.map((exportType) => (
-                    <div key={exportType} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id={`export-${exportType}`}
-                        checked={exportOptions.filters.exportTypes.includes(exportType)}
-                        onChange={(e) => handleExportTypeFilter(exportType, e.target.checked)}
-                        className="rounded border-gray-300"
-                      />
-                      <label htmlFor={`export-${exportType}`} className="text-sm capitalize cursor-pointer">
-                        {exportType}
-                      </label>
-                    </div>
-                  ))}
-                  {exportOptions.filters.exportTypes.length === 0 && (
-                    <Badge variant="secondary">All export types included</Badge>
-                  )}
-                </div>
-              </div>
-
-              {/* Complexity Range */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Min Complexity</label>
-                  <input
-                    type="number"
-                    min="0"
-                    className="w-full border rounded px-3 py-2 text-sm"
-                    value={exportOptions.filters.minComplexity || ''}
-                    onChange={(e) => setExportOptions(prev => ({
+                <label className='text-sm font-medium mb-2 block'>
+                  Min Complexity
+                </label>
+                <input
+                  type='number'
+                  min='0'
+                  className='w-full border rounded px-3 py-2 text-sm'
+                  value={exportOptions.filters.minComplexity || ''}
+                  onChange={e =>
+                    setExportOptions(prev => ({
                       ...prev,
                       filters: {
                         ...prev.filters,
-                        minComplexity: e.target.value ? Number(e.target.value) : undefined,
+                        minComplexity: e.target.value
+                          ? Number(e.target.value)
+                          : undefined,
                       },
-                    }))}
-                    placeholder="No minimum"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Max Complexity</label>
-                  <input
-                    type="number"
-                    min="0"
-                    className="w-full border rounded px-3 py-2 text-sm"
-                    value={exportOptions.filters.maxComplexity || ''}
-                    onChange={(e) => setExportOptions(prev => ({
+                    }))
+                  }
+                  placeholder='No minimum'
+                />
+              </div>
+              <div>
+                <label className='text-sm font-medium mb-2 block'>
+                  Max Complexity
+                </label>
+                <input
+                  type='number'
+                  min='0'
+                  className='w-full border rounded px-3 py-2 text-sm'
+                  value={exportOptions.filters.maxComplexity || ''}
+                  onChange={e =>
+                    setExportOptions(prev => ({
                       ...prev,
                       filters: {
                         ...prev.filters,
-                        maxComplexity: e.target.value ? Number(e.target.value) : undefined,
+                        maxComplexity: e.target.value
+                          ? Number(e.target.value)
+                          : undefined,
                       },
-                    }))}
-                    placeholder="No maximum"
-                  />
-                </div>
+                    }))
+                  }
+                  placeholder='No maximum'
+                />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Preview */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Export Preview</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-sm text-muted-foreground space-y-1">
-                <p>Format: <Badge variant="secondary">{exportOptions.format.toUpperCase()}</Badge></p>
-                <p>Entities to export: <Badge variant="secondary">{filteredEntities.length}</Badge></p>
-                <p>Fields included: <Badge variant="secondary">{Object.values(exportOptions.includeFields).filter(Boolean).length}</Badge></p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-      footer={
-        <div className="flex items-center gap-2 w-full justify-between md:justify-end">
-          <Button variant="outline" onClick={onClose} disabled={isExporting}>
+        {/* Preview */}
+        <Card>
+          <CardHeader>
+            <CardTitle className='text-lg'>Export Preview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className='text-sm text-muted-foreground space-y-1'>
+              <p>
+                Format:{' '}
+                <Badge variant='secondary'>
+                  {exportOptions.format.toUpperCase()}
+                </Badge>
+              </p>
+              <p>
+                Entities to export:{' '}
+                <Badge variant='secondary'>{filteredEntities.length}</Badge>
+              </p>
+              <p>
+                Fields included:{' '}
+                <Badge variant='secondary'>
+                  {
+                    Object.values(exportOptions.includeFields).filter(Boolean)
+                      .length
+                  }
+                </Badge>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      footer=
+      {
+        <div className='flex items-center gap-2 w-full justify-between md:justify-end'>
+          <Button variant='outline' onClick={onClose} disabled={isExporting}>
             Cancel
           </Button>
           <Button
             onClick={handleExport}
             disabled={isExporting || filteredEntities.length === 0}
-            className="min-w-32"
+            className='min-w-32'
           >
             {isExporting ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2' />
                 Exporting...
               </>
             ) : exportComplete ? (
               <>
-                <CheckCircle className="h-4 w-4 mr-2" />
+                <CheckCircle className='h-4 w-4 mr-2' />
                 Exported!
               </>
             ) : (
               <>
-                <Download className="h-4 w-4 mr-2" />
+                <Download className='h-4 w-4 mr-2' />
                 Export ({filteredEntities.length} entities)
               </>
             )}

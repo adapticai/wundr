@@ -12,134 +12,157 @@ export interface FileOperationResult {
 export function useFileOperations() {
   const [isLoading, setIsLoading] = useState(false);
 
-  const downloadFile = useCallback(async (file: FileSystemItem): Promise<FileOperationResult> => {
-    try {
-      setIsLoading(true);
-      
-      // In a real implementation, you would fetch the file content from your API
-      // For now, we'll simulate the download
-      const response = await fetch(`/api/files${file.path}`);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to download file: ${response.statusText}`);
-      }
-      
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = file.name;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
-      return { success: true, message: 'File downloaded successfully' };
-    } catch (_error) {
-      // Error logged - details available in network tab;
-      return { 
-        success: false, 
-        error: _error instanceof Error ? _error.message : 'Download failed' 
-      };
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const downloadFile = useCallback(
+    async (file: FileSystemItem): Promise<FileOperationResult> => {
+      try {
+        setIsLoading(true);
 
-  const copyFilePath = useCallback(async (file: FileSystemItem): Promise<FileOperationResult> => {
-    try {
-      await navigator.clipboard.writeText(file.path);
-      return { success: true, message: 'File path copied to clipboard' };
-    } catch (_error) {
-      // Error logged - details available in network tab;
-      return { 
-        success: false, 
-        error: 'Failed to copy path to clipboard' 
-      };
-    }
-  }, []);
+        // In a real implementation, you would fetch the file content from your API
+        // For now, we'll simulate the download
+        const response = await fetch(`/api/files${file.path}`);
 
-  const getFileContent = useCallback(async (file: FileSystemItem): Promise<string | null> => {
-    try {
-      setIsLoading(true);
-      
-      // In a real implementation, you would fetch from your API
-      const response = await fetch(`/api/files${file.path}/content`);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch file content: ${response.statusText}`);
-      }
-      
-      return await response.text();
-    } catch (_error) {
-      // Error logged - details available in network tab;
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+        if (!response.ok) {
+          throw new Error(`Failed to download file: ${response.statusText}`);
+        }
 
-  const previewFile = useCallback(async (file: FileSystemItem): Promise<FileOperationResult> => {
-    try {
-      // This would typically open a modal or navigate to a preview page
-      const content = await getFileContent(file);
-      
-      if (content === null) {
-        return { success: false, error: 'Failed to load file content' };
-      }
-      
-      // For now, just log the content (in a real app, you'd show it in a modal)
-      console.log('File content:', content);
-      
-      return { success: true, message: 'File preview opened' };
-    } catch (_error) {
-      return { 
-        success: false, 
-        error: _error instanceof Error ? _error.message : 'Preview failed' 
-      };
-    }
-  }, [getFileContent]);
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
 
-  const editFile = useCallback(async (file: FileSystemItem): Promise<FileOperationResult> => {
-    try {
-      // This would typically navigate to an editor or open an editor modal
-      const content = await getFileContent(file);
-      
-      if (content === null) {
-        return { success: false, error: 'Failed to load file content' };
+        return { success: true, message: 'File downloaded successfully' };
+      } catch (_error) {
+        // Error logged - details available in network tab;
+        return {
+          success: false,
+          error: _error instanceof Error ? _error.message : 'Download failed',
+        };
+      } finally {
+        setIsLoading(false);
       }
-      
-      // For now, just log (in a real app, you'd open an editor)
-      console.log('Opening file for editing:', file.path);
-      
-      return { success: true, message: 'File opened in editor' };
-    } catch (_error) {
-      return { 
-        success: false, 
-        error: _error instanceof Error ? _error.message : 'Failed to open editor' 
-      };
-    }
-  }, [getFileContent]);
+    },
+    []
+  );
 
-  const refreshDirectory = useCallback(async (path: string): Promise<FileSystemItem[]> => {
-    try {
-      setIsLoading(true);
-      
-      // In a real implementation, you would fetch from your API
-      const response = await fetch(`/api/files${path}`);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to refresh directory: ${response.statusText}`);
+  const copyFilePath = useCallback(
+    async (file: FileSystemItem): Promise<FileOperationResult> => {
+      try {
+        await navigator.clipboard.writeText(file.path);
+        return { success: true, message: 'File path copied to clipboard' };
+      } catch (_error) {
+        // Error logged - details available in network tab;
+        return {
+          success: false,
+          error: 'Failed to copy path to clipboard',
+        };
       }
-      
-      return await response.json();
-    } catch (_error) {
-      // Error logged - details available in network tab;
-      return [];
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
+
+  const getFileContent = useCallback(
+    async (file: FileSystemItem): Promise<string | null> => {
+      try {
+        setIsLoading(true);
+
+        // In a real implementation, you would fetch from your API
+        const response = await fetch(`/api/files${file.path}/content`);
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch file content: ${response.statusText}`
+          );
+        }
+
+        return await response.text();
+      } catch (_error) {
+        // Error logged - details available in network tab;
+        return null;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
+
+  const previewFile = useCallback(
+    async (file: FileSystemItem): Promise<FileOperationResult> => {
+      try {
+        // This would typically open a modal or navigate to a preview page
+        const content = await getFileContent(file);
+
+        if (content === null) {
+          return { success: false, error: 'Failed to load file content' };
+        }
+
+        // For now, just log the content (in a real app, you'd show it in a modal)
+        console.log('File content:', content);
+
+        return { success: true, message: 'File preview opened' };
+      } catch (_error) {
+        return {
+          success: false,
+          error: _error instanceof Error ? _error.message : 'Preview failed',
+        };
+      }
+    },
+    [getFileContent]
+  );
+
+  const editFile = useCallback(
+    async (file: FileSystemItem): Promise<FileOperationResult> => {
+      try {
+        // This would typically navigate to an editor or open an editor modal
+        const content = await getFileContent(file);
+
+        if (content === null) {
+          return { success: false, error: 'Failed to load file content' };
+        }
+
+        // For now, just log (in a real app, you'd open an editor)
+        console.log('Opening file for editing:', file.path);
+
+        return { success: true, message: 'File opened in editor' };
+      } catch (_error) {
+        return {
+          success: false,
+          error:
+            _error instanceof Error ? _error.message : 'Failed to open editor',
+        };
+      }
+    },
+    [getFileContent]
+  );
+
+  const refreshDirectory = useCallback(
+    async (path: string): Promise<FileSystemItem[]> => {
+      try {
+        setIsLoading(true);
+
+        // In a real implementation, you would fetch from your API
+        const response = await fetch(`/api/files${path}`);
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to refresh directory: ${response.statusText}`
+          );
+        }
+
+        return await response.json();
+      } catch (_error) {
+        // Error logged - details available in network tab;
+        return [];
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
 
   return {
     isLoading,

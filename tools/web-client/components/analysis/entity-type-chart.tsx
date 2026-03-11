@@ -92,7 +92,11 @@ export function EntityTypeChart({ entities }: EntityTypeChartProps) {
       },
       tooltip: {
         callbacks: {
-          label: function (tooltipItem: { label: string; parsed: number; dataset: { data: number[] } }) {
+          label: function (tooltipItem: {
+            label: string;
+            parsed: number;
+            dataset: { data: number[] };
+          }) {
             const label = tooltipItem.label || '';
             const value = tooltipItem.parsed;
             const total = tooltipItem.dataset.data.reduce(

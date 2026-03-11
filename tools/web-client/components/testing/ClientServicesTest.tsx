@@ -1,7 +1,13 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
@@ -11,7 +17,7 @@ import {
   isBrowserSafe,
   TestResult as ServiceTestResult,
   MockService,
-  createMockEndpoint
+  createMockEndpoint,
 } from '@/lib/services/client/test-client-services';
 
 interface TestResult {
@@ -40,14 +46,14 @@ export default function ClientServicesTest() {
         baseUrl: 'https://api.test.com',
         endpoints: [
           createMockEndpoint('GET', '/health', { status: 'ok' }, 200),
-          createMockEndpoint('GET', '/api/status', { healthy: true }, 200)
+          createMockEndpoint('GET', '/api/status', { healthy: true }, 200),
         ],
         config: {
           enableLogging: false,
           logLevel: 'info',
           persistState: false,
           enableCors: true,
-          defaultDelay: 0
+          defaultDelay: 0,
         },
         state: {
           data: {},
@@ -61,44 +67,68 @@ export default function ClientServicesTest() {
             failedRequests: 0,
             errorRate: 0,
             memoryUsage: 0,
-            lastUpdated: new Date()
-          }
+            lastUpdated: new Date(),
+          },
         },
-        interceptors: []
+        interceptors: [],
       };
 
       // Run tests
       const browserSafe = isBrowserSafe(mockService);
-      const services = ['ClientReportService', 'ClientScriptService', 'ClientBatchService', 'ClientTemplateService'];
+      const services = [
+        'ClientReportService',
+        'ClientScriptService',
+        'ClientBatchService',
+        'ClientTemplateService',
+      ];
       const results = await runClientServiceTests(services);
 
       // Group results by test type
-      const instantiationTests = results.filter((r: ServiceTestResult) => r.name.includes('instantiation') || r.name.includes('Health check'));
-      const validationTests = results.filter((r: ServiceTestResult) => r.name.includes('validation') || r.name.includes('Parameter'));
+      const instantiationTests = results.filter(
+        (r: ServiceTestResult) =>
+          r.name.includes('instantiation') || r.name.includes('Health check')
+      );
+      const validationTests = results.filter(
+        (r: ServiceTestResult) =>
+          r.name.includes('validation') || r.name.includes('Parameter')
+      );
 
       setTestResults({
         browserSafe,
         instantiation: {
-          success: instantiationTests.length > 0 && instantiationTests.every((t: ServiceTestResult) => t.status === 'passed'),
+          success:
+            instantiationTests.length > 0 &&
+            instantiationTests.every(
+              (t: ServiceTestResult) => t.status === 'passed'
+            ),
           errors: instantiationTests
             .filter((t: ServiceTestResult) => t.status === 'failed')
-            .map((t: ServiceTestResult) => t.error?.message || `${t.name} failed`)
+            .map(
+              (t: ServiceTestResult) => t.error?.message || `${t.name} failed`
+            ),
         },
         validation: {
-          success: validationTests.length > 0 && validationTests.every((t: ServiceTestResult) => t.status === 'passed'),
+          success:
+            validationTests.length > 0 &&
+            validationTests.every(
+              (t: ServiceTestResult) => t.status === 'passed'
+            ),
           errors: validationTests
             .filter((t: ServiceTestResult) => t.status === 'failed')
-            .map((t: ServiceTestResult) => t.error?.message || `${t.name} failed`)
+            .map(
+              (t: ServiceTestResult) => t.error?.message || `${t.name} failed`
+            ),
         },
       });
-
     } catch (_error) {
       // Error logged - details available in network tab;
       setTestResults({
         browserSafe: false,
         instantiation: {
           success: false,
-          errors: [`Test execution failed: ${_error instanceof Error ? _error.message : 'Unknown error'}`]
+          errors: [
+            `Test execution failed: ${_error instanceof Error ? _error.message : 'Unknown error'}`,
+          ],
         },
         validation: { success: false, errors: [] },
       });
@@ -117,26 +147,37 @@ export default function ClientServicesTest() {
   }, [runTestsOnMount]);
 
   const getStatusIcon = (success: boolean | undefined) => {
-    if (success === undefined) return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
-    return success ? 
-      <CheckCircle className="h-4 w-4 text-green-500" /> : 
-      <XCircle className="h-4 w-4 text-red-500" />;
+    if (success === undefined)
+      return <AlertTriangle className='h-4 w-4 text-yellow-500' />;
+    return success ? (
+      <CheckCircle className='h-4 w-4 text-green-500' />
+    ) : (
+      <XCircle className='h-4 w-4 text-red-500' />
+    );
   };
 
   const getStatusBadge = (success: boolean | undefined) => {
-    if (success === undefined) return <Badge variant="secondary">Unknown</Badge>;
-    return success ? 
-      <Badge variant="default" className="bg-green-500">Pass</Badge> : 
-      <Badge variant="destructive">Fail</Badge>;
+    if (success === undefined)
+      return <Badge variant='secondary'>Unknown</Badge>;
+    return success ? (
+      <Badge variant='default' className='bg-green-500'>
+        Pass
+      </Badge>
+    ) : (
+      <Badge variant='destructive'>Fail</Badge>
+    );
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className='space-y-6'>
+      <div className='flex items-center justify-between'>
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight">Client Services Test</h2>
-          <p className="text-sm text-muted-foreground">
-            Verify that client services work in browser context without Node.js dependencies
+          <h2 className='text-2xl font-semibold tracking-tight'>
+            Client Services Test
+          </h2>
+          <p className='text-sm text-muted-foreground'>
+            Verify that client services work in browser context without Node.js
+            dependencies
           </p>
         </div>
         <Button onClick={runTests} disabled={isLoading}>
@@ -145,28 +186,29 @@ export default function ClientServicesTest() {
       </div>
 
       {testResults && (
-        <div className="grid gap-4">
+        <div className='grid gap-4'>
           {/* Browser Compatibility */}
           <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center gap-2">
+            <CardHeader className='pb-3'>
+              <div className='flex items-center justify-between'>
+                <CardTitle className='text-lg flex items-center gap-2'>
                   {getStatusIcon(testResults.browserSafe)}
                   Browser Compatibility
                 </CardTitle>
                 {getStatusBadge(testResults.browserSafe)}
               </div>
               <CardDescription>
-                Tests if browser APIs (fetch, URL, EventSource, etc.) are available
+                Tests if browser APIs (fetch, URL, EventSource, etc.) are
+                available
               </CardDescription>
             </CardHeader>
             <CardContent>
               {testResults.browserSafe ? (
-                <p className="text-sm text-green-600">
+                <p className='text-sm text-green-600'>
                   ✅ All required browser APIs are available
                 </p>
               ) : (
-                <p className="text-sm text-red-600">
+                <p className='text-sm text-red-600'>
                   ❌ Missing required browser APIs
                 </p>
               )}
@@ -175,30 +217,31 @@ export default function ClientServicesTest() {
 
           {/* Service Instantiation */}
           <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center gap-2">
+            <CardHeader className='pb-3'>
+              <div className='flex items-center justify-between'>
+                <CardTitle className='text-lg flex items-center gap-2'>
                   {getStatusIcon(testResults.instantiation.success)}
                   Service Instantiation
                 </CardTitle>
                 {getStatusBadge(testResults.instantiation.success)}
               </div>
               <CardDescription>
-                Tests if client services can be instantiated without Node.js dependencies
+                Tests if client services can be instantiated without Node.js
+                dependencies
               </CardDescription>
             </CardHeader>
             <CardContent>
               {testResults.instantiation.success ? (
-                <p className="text-sm text-green-600">
+                <p className='text-sm text-green-600'>
                   ✅ All client services instantiated successfully
                 </p>
               ) : (
-                <div className="space-y-2">
-                  <p className="text-sm text-red-600">
+                <div className='space-y-2'>
+                  <p className='text-sm text-red-600'>
                     ❌ Service instantiation failed
                   </p>
                   {testResults.instantiation.errors.map((error, index) => (
-                    <div key={index} className="text-xs bg-red-50 p-2 rounded">
+                    <div key={index} className='text-xs bg-red-50 p-2 rounded'>
                       {error}
                     </div>
                   ))}
@@ -209,9 +252,9 @@ export default function ClientServicesTest() {
 
           {/* Parameter Validation */}
           <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center gap-2">
+            <CardHeader className='pb-3'>
+              <div className='flex items-center justify-between'>
+                <CardTitle className='text-lg flex items-center gap-2'>
                   {getStatusIcon(testResults.validation.success)}
                   Parameter Validation
                 </CardTitle>
@@ -223,16 +266,16 @@ export default function ClientServicesTest() {
             </CardHeader>
             <CardContent>
               {testResults.validation.success ? (
-                <p className="text-sm text-green-600">
+                <p className='text-sm text-green-600'>
                   ✅ Parameter validation working correctly
                 </p>
               ) : (
-                <div className="space-y-2">
-                  <p className="text-sm text-red-600">
+                <div className='space-y-2'>
+                  <p className='text-sm text-red-600'>
                     ❌ Parameter validation failed
                   </p>
                   {testResults.validation.errors.map((error, index) => (
-                    <div key={index} className="text-xs bg-red-50 p-2 rounded">
+                    <div key={index} className='text-xs bg-red-50 p-2 rounded'>
                       {error}
                     </div>
                   ))}
@@ -243,43 +286,58 @@ export default function ClientServicesTest() {
 
           {/* Overall Status */}
           <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center gap-2">
+            <CardHeader className='pb-3'>
+              <div className='flex items-center justify-between'>
+                <CardTitle className='text-lg flex items-center gap-2'>
                   {getStatusIcon(
-                    testResults.browserSafe && 
-                    testResults.instantiation.success && 
-                    testResults.validation.success
+                    testResults.browserSafe &&
+                      testResults.instantiation.success &&
+                      testResults.validation.success
                   )}
                   Overall Status
                 </CardTitle>
                 {getStatusBadge(
-                  testResults.browserSafe && 
-                  testResults.instantiation.success && 
-                  testResults.validation.success
+                  testResults.browserSafe &&
+                    testResults.instantiation.success &&
+                    testResults.validation.success
                 )}
               </div>
             </CardHeader>
             <CardContent>
-              {testResults.browserSafe && 
-               testResults.instantiation.success && 
-               testResults.validation.success ? (
-                <div className="text-sm text-green-600">
-                  <p>🎉 All tests passed! Client services are browser-safe and ready to use.</p>
-                  <div className="mt-4 p-3 bg-green-50 rounded">
-                    <p className="font-medium">Available Services:</p>
-                    <ul className="mt-1 space-y-1 text-xs">
-                      <li>• ClientReportService - Generate and export reports</li>
-                      <li>• ClientScriptService - Execute and manage scripts</li>
-                      <li>• ClientBatchService - Batch processing operations</li>
-                      <li>• ClientTemplateService - Template management and generation</li>
+              {testResults.browserSafe &&
+              testResults.instantiation.success &&
+              testResults.validation.success ? (
+                <div className='text-sm text-green-600'>
+                  <p>
+                    🎉 All tests passed! Client services are browser-safe and
+                    ready to use.
+                  </p>
+                  <div className='mt-4 p-3 bg-green-50 rounded'>
+                    <p className='font-medium'>Available Services:</p>
+                    <ul className='mt-1 space-y-1 text-xs'>
+                      <li>
+                        • ClientReportService - Generate and export reports
+                      </li>
+                      <li>
+                        • ClientScriptService - Execute and manage scripts
+                      </li>
+                      <li>
+                        • ClientBatchService - Batch processing operations
+                      </li>
+                      <li>
+                        • ClientTemplateService - Template management and
+                        generation
+                      </li>
                     </ul>
                   </div>
                 </div>
               ) : (
-                <div className="text-sm text-red-600">
-                  <p>❌ Some tests failed. Client services may not work correctly in browser context.</p>
-                  <p className="mt-2 text-xs">
+                <div className='text-sm text-red-600'>
+                  <p>
+                    ❌ Some tests failed. Client services may not work correctly
+                    in browser context.
+                  </p>
+                  <p className='mt-2 text-xs'>
                     Check the individual test results above for specific issues.
                   </p>
                 </div>
@@ -291,9 +349,10 @@ export default function ClientServicesTest() {
 
       {!testResults && !isLoading && (
         <Card>
-          <CardContent className="p-6">
-            <p className="text-center text-muted-foreground">
-              Click &quot;Run Tests&quot; to verify client services are working correctly
+          <CardContent className='p-6'>
+            <p className='text-center text-muted-foreground'>
+              Click &quot;Run Tests&quot; to verify client services are working
+              correctly
             </p>
           </CardContent>
         </Card>

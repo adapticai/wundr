@@ -14,26 +14,30 @@ test.describe('Broken Links Audit', () => {
     testUtils = new TestUtilities(page);
   });
 
-  test('should audit all internal links in web client dashboard', async ({ page }) => {
+  test('should audit all internal links in web client dashboard', async ({
+    page,
+  }) => {
     const baseUrl = TEST_CONFIG.dashboards.webClient.baseURL;
     const routes = TEST_CONFIG.routes.webClient;
-    
+
     const allBrokenLinks: string[] = [];
     const allWorkingLinks: string[] = [];
     const allRedirectLinks: string[] = [];
 
-    for (const route of routes.slice(0, 10)) { // Limit for performance
+    for (const route of routes.slice(0, 10)) {
+      // Limit for performance
       try {
         console.log(`Auditing links on: ${route}`);
-        
-        const linkAudit = await testUtils.performLinkAudit(`${baseUrl}${route}`);
-        
+
+        const linkAudit = await testUtils.performLinkAudit(
+          `${baseUrl}${route}`
+        );
+
         allBrokenLinks.push(...linkAudit.brokenLinks);
         allWorkingLinks.push(...linkAudit.workingLinks);
         allRedirectLinks.push(...linkAudit.redirectLinks);
-        
+
         await page.waitForTimeout(500); // Rate limiting
-        
       } catch (_error) {
         console.log(`Error auditing ${route}: ${_error}`);
       }
@@ -48,7 +52,7 @@ test.describe('Broken Links Audit', () => {
     console.log(`Working Links: ${uniqueWorkingLinks.length}`);
     console.log(`Redirect Links: ${uniqueRedirectLinks.length}`);
     console.log(`Broken Links: ${uniqueBrokenLinks.length}`);
-    
+
     if (uniqueBrokenLinks.length > 0) {
       console.log(`\nBROKEN LINKS FOUND:`);
       uniqueBrokenLinks.forEach((link, index) => {
@@ -65,14 +69,14 @@ test.describe('Broken Links Audit', () => {
 
     // Allow some broken links but flag if too many
     expect(uniqueBrokenLinks.length).toBeLessThan(20);
-    
+
     // Should have found some working links
     expect(uniqueWorkingLinks.length).toBeGreaterThan(0);
   });
 
   test('should check external links separately', async ({ page }) => {
     await page.goto(TEST_CONFIG.dashboards.webClient.baseURL);
-    
+
     const allLinks = await page.locator('a[href]').all();
     const externalLinks = [];
     const internalLinks = [];
@@ -116,20 +120,23 @@ test.describe('Broken Links Audit', () => {
 
   test('should validate navigation links work correctly', async ({ page }) => {
     await page.goto(TEST_CONFIG.dashboards.webClient.baseURL + '/dashboard');
-    
+
     // Find all navigation links
-    const navLinks = await page.locator('nav a, [role="navigation"] a, [data-testid*="nav"] a').all();
+    const navLinks = await page
+      .locator('nav a, [role="navigation"] a, [data-testid*="nav"] a')
+      .all();
     const brokenNavLinks: string[] = [];
     const workingNavLinks: string[] = [];
 
-    for (const link of navLinks.slice(0, 10)) { // Test first 10 nav links
+    for (const link of navLinks.slice(0, 10)) {
+      // Test first 10 nav links
       try {
         const href = await link.getAttribute('href');
         if (href && href.startsWith('/')) {
           // Click the link and check if it navigates correctly
           await link.click();
           await page.waitForLoadState('networkidle');
-          
+
           const currentUrl = page.url();
           if (currentUrl.includes(href)) {
             workingNavLinks.push(href);
@@ -164,9 +171,9 @@ test.describe('Broken Links Audit', () => {
       try {
         await page.goto(TEST_CONFIG.dashboards.webClient.baseURL + route);
         await page.waitForTimeout(1000);
-        
+
         const images = await page.locator('img').all();
-        
+
         for (const img of images) {
           const src = await img.getAttribute('src');
           if (src) {
@@ -202,9 +209,13 @@ test.describe('Broken Links Audit', () => {
     expect(uniqueBrokenImages.length).toBeLessThan(5);
   });
 
-  test('should validate anchor links and internal navigation', async ({ page }) => {
-    await page.goto(TEST_CONFIG.dashboards.webClient.baseURL + '/dashboard/docs');
-    
+  test('should validate anchor links and internal navigation', async ({
+    page,
+  }) => {
+    await page.goto(
+      TEST_CONFIG.dashboards.webClient.baseURL + '/dashboard/docs'
+    );
+
     // Find all anchor links (hash links)
     const anchorLinks = await page.locator('a[href^="#"]').all();
     const brokenAnchors: string[] = [];
@@ -214,11 +225,11 @@ test.describe('Broken Links Audit', () => {
       const href = await link.getAttribute('href');
       if (href) {
         const targetId = href.substring(1); // Remove #
-        
+
         // Check if target element exists
         const targetElement = page.locator(`#${targetId}`);
-        const targetExists = await targetElement.count() > 0;
-        
+        const targetExists = (await targetElement.count()) > 0;
+
         if (targetExists) {
           workingAnchors.push(href);
         } else {
@@ -250,13 +261,13 @@ test.describe('Broken Links Audit', () => {
         brokenLinks: 0,
         redirectLinks: 0,
         brokenImages: 0,
-        workingImages: 0
+        workingImages: 0,
       },
       details: {
         brokenLinksList: [] as string[],
         brokenImagesList: [] as string[],
-        redirectLinksList: [] as string[]
-      }
+        redirectLinksList: [] as string[],
+      },
     };
 
     // Test a subset of routes for comprehensive report
@@ -265,29 +276,37 @@ test.describe('Broken Links Audit', () => {
 
     for (const route of routesToTest) {
       try {
-        const linkAudit = await testUtils.performLinkAudit(`${TEST_CONFIG.dashboards.webClient.baseURL}${route}`);
-        
+        const linkAudit = await testUtils.performLinkAudit(
+          `${TEST_CONFIG.dashboards.webClient.baseURL}${route}`
+        );
+
         report.summary.workingLinks += linkAudit.workingLinks.length;
         report.summary.brokenLinks += linkAudit.brokenLinks.length;
         report.summary.redirectLinks += linkAudit.redirectLinks.length;
-        
+
         report.details.brokenLinksList.push(...linkAudit.brokenLinks);
         report.details.redirectLinksList.push(...linkAudit.redirectLinks);
-        
       } catch (_error) {
         console.log(`Error in comprehensive audit for ${route}: ${_error}`);
       }
     }
 
     // Remove duplicates
-    report.details.brokenLinksList = [...new Set(report.details.brokenLinksList)];
-    report.details.redirectLinksList = [...new Set(report.details.redirectLinksList)];
-    
-    report.summary.totalLinksFound = report.summary.workingLinks + report.summary.brokenLinks + report.summary.redirectLinks;
+    report.details.brokenLinksList = [
+      ...new Set(report.details.brokenLinksList),
+    ];
+    report.details.redirectLinksList = [
+      ...new Set(report.details.redirectLinksList),
+    ];
+
+    report.summary.totalLinksFound =
+      report.summary.workingLinks +
+      report.summary.brokenLinks +
+      report.summary.redirectLinks;
 
     console.log('\n=== COMPREHENSIVE LINK AUDIT REPORT ===');
     console.log(JSON.stringify(report.summary, null, 2));
-    
+
     if (report.details.brokenLinksList.length > 0) {
       console.log('\nTOP BROKEN LINKS:');
       report.details.brokenLinksList.slice(0, 10).forEach((link, index) => {
@@ -297,6 +316,8 @@ test.describe('Broken Links Audit', () => {
 
     // Store report for potential CI/CD integration
     expect(report.summary.totalLinksFound).toBeGreaterThan(0);
-    expect(report.summary.brokenLinks).toBeLessThan(report.summary.totalLinksFound * 0.1); // Less than 10% broken
+    expect(report.summary.brokenLinks).toBeLessThan(
+      report.summary.totalLinksFound * 0.1
+    ); // Less than 10% broken
   });
 });

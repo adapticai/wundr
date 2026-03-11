@@ -15,9 +15,9 @@ export async function GET() {
             {
               type: 'complexity',
               severity: 'high',
-              message: 'Cyclomatic complexity is 12 (threshold: 10)'
-            }
-          ]
+              message: 'Cyclomatic complexity is 12 (threshold: 10)',
+            },
+          ],
         },
         {
           name: 'userController.js',
@@ -25,7 +25,7 @@ export async function GET() {
           type: 'module',
           dependencies: ['express', 'joi'],
           complexity: 8,
-          issues: []
+          issues: [],
         },
         {
           name: 'UserComponent.tsx',
@@ -37,10 +37,10 @@ export async function GET() {
             {
               type: 'code-smell',
               severity: 'low',
-              message: 'Contains console.log statements'
-            }
-          ]
-        }
+              message: 'Contains console.log statements',
+            },
+          ],
+        },
       ],
       duplicates: [
         {
@@ -49,10 +49,10 @@ export async function GET() {
           severity: 'medium',
           occurrences: [
             { path: '/src/utils/validation.ts', startLine: 10, endLine: 25 },
-            { path: '/src/helpers/validator.js', startLine: 5, endLine: 20 }
+            { path: '/src/helpers/validator.js', startLine: 5, endLine: 20 },
           ],
-          linesCount: 15
-        }
+          linesCount: 15,
+        },
       ],
       recommendations: [
         {
@@ -62,7 +62,7 @@ export async function GET() {
           severity: 'high',
           category: 'Maintainability',
           effort: 'medium',
-          impact: 'high'
+          impact: 'high',
         },
         {
           id: 'remove-duplicates',
@@ -71,8 +71,8 @@ export async function GET() {
           severity: 'low',
           category: 'Code Quality',
           effort: 'low',
-          impact: 'medium'
-        }
+          impact: 'medium',
+        },
       ],
       metrics: {
         totalFiles: 45,
@@ -80,9 +80,9 @@ export async function GET() {
         complexity: 7.3,
         maintainability: 82,
         technicalDebt: 23,
-        coverage: 78
+        coverage: 78,
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     return NextResponse.json(mockData);

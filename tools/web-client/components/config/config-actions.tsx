@@ -2,15 +2,15 @@
 
 import React, { useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Download, 
-  Upload, 
-  RotateCcw, 
-  Save, 
-  AlertTriangle 
-} from 'lucide-react';
+import { Download, Upload, RotateCcw, Save, AlertTriangle } from 'lucide-react';
 import { useConfig, useConfigPersistence } from '@/hooks/config/use-config';
 import { useToast } from '@/hooks/use-toast';
 
@@ -40,7 +40,9 @@ export function ConfigActions() {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -54,7 +56,10 @@ export function ConfigActions() {
     } catch (_error) {
       toast({
         title: 'Import Failed',
-        description: _error instanceof Error ? _error.message : 'Failed to import configuration.',
+        description:
+          _error instanceof Error
+            ? _error.message
+            : 'Failed to import configuration.',
         variant: 'destructive',
       });
     }
@@ -66,7 +71,11 @@ export function ConfigActions() {
   };
 
   const handleReset = () => {
-    if (window.confirm('Are you sure you want to reset all settings to defaults? This action cannot be undone.')) {
+    if (
+      window.confirm(
+        'Are you sure you want to reset all settings to defaults? This action cannot be undone.'
+      )
+    ) {
       resetAll();
       toast({
         title: 'Configuration Reset',
@@ -85,7 +94,10 @@ export function ConfigActions() {
     } catch (_error) {
       toast({
         title: 'Save Failed',
-        description: _error instanceof Error ? _error.message : 'Failed to save configuration.',
+        description:
+          _error instanceof Error
+            ? _error.message
+            : 'Failed to save configuration.',
         variant: 'destructive',
       });
     }
@@ -94,36 +106,38 @@ export function ConfigActions() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Save className="h-5 w-5" />
+        <CardTitle className='flex items-center gap-2'>
+          <Save className='h-5 w-5' />
           Configuration Actions
         </CardTitle>
         <CardDescription>
           Save, export, import, or reset your configuration settings
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className='space-y-4'>
         {/* Save Section */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
+        <div className='space-y-2'>
+          <div className='flex items-center justify-between'>
             <div>
-              <h4 className="text-sm font-medium">Save Changes</h4>
-              <p className="text-xs text-muted-foreground">
-                {isDirty ? 'You have unsaved changes' : 'Configuration is up to date'}
+              <h4 className='text-sm font-medium'>Save Changes</h4>
+              <p className='text-xs text-muted-foreground'>
+                {isDirty
+                  ? 'You have unsaved changes'
+                  : 'Configuration is up to date'}
               </p>
             </div>
-            <Button 
+            <Button
               onClick={handleSave}
               disabled={!isDirty}
-              className="min-w-20"
+              className='min-w-20'
             >
-              <Save className="h-4 w-4 mr-2" />
+              <Save className='h-4 w-4 mr-2' />
               Save
             </Button>
           </div>
           {isDirty && (
-            <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
-              <AlertTriangle className="h-3 w-3" />
+            <div className='flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400'>
+              <AlertTriangle className='h-3 w-3' />
               Remember to save your changes
             </div>
           )}
@@ -132,40 +146,41 @@ export function ConfigActions() {
         <Separator />
 
         {/* Import/Export Section */}
-        <div className="space-y-3">
-          <h4 className="text-sm font-medium">Backup & Restore</h4>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleExport} className="flex-1">
-              <Download className="h-4 w-4 mr-2" />
+        <div className='space-y-3'>
+          <h4 className='text-sm font-medium'>Backup & Restore</h4>
+          <div className='flex gap-2'>
+            <Button variant='outline' onClick={handleExport} className='flex-1'>
+              <Download className='h-4 w-4 mr-2' />
               Export Config
             </Button>
-            <Button variant="outline" onClick={handleImport} className="flex-1">
-              <Upload className="h-4 w-4 mr-2" />
+            <Button variant='outline' onClick={handleImport} className='flex-1'>
+              <Upload className='h-4 w-4 mr-2' />
               Import Config
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Export your configuration as a JSON file or import a previously saved configuration
+          <p className='text-xs text-muted-foreground'>
+            Export your configuration as a JSON file or import a previously
+            saved configuration
           </p>
         </div>
 
         <Separator />
 
         {/* Reset Section */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
+        <div className='space-y-2'>
+          <div className='flex items-center justify-between'>
             <div>
-              <h4 className="text-sm font-medium">Reset Configuration</h4>
-              <p className="text-xs text-muted-foreground">
+              <h4 className='text-sm font-medium'>Reset Configuration</h4>
+              <p className='text-xs text-muted-foreground'>
                 Restore all settings to their default values
               </p>
             </div>
-            <Button 
-              variant="outline" 
+            <Button
+              variant='outline'
               onClick={handleReset}
-              className="text-destructive hover:text-destructive"
+              className='text-destructive hover:text-destructive'
             >
-              <RotateCcw className="h-4 w-4 mr-2" />
+              <RotateCcw className='h-4 w-4 mr-2' />
               Reset All
             </Button>
           </div>
@@ -174,11 +189,11 @@ export function ConfigActions() {
         {/* Hidden file input */}
         <input
           ref={fileInputRef}
-          type="file"
-          accept=".json"
+          type='file'
+          accept='.json'
           onChange={handleFileChange}
-          className="hidden"
-          aria-hidden="true"
+          className='hidden'
+          aria-hidden='true'
         />
       </CardContent>
     </Card>

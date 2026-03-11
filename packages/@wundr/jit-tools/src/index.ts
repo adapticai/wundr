@@ -48,9 +48,12 @@ import { ToolRegistry } from './tool-registry';
 import { JITToolRetriever } from './tool-retriever';
 
 import type { InjectionOptions } from './context-injector';
-import type { JITToolConfig } from './types';
+import type { EmbeddingService, JITToolConfig } from './types';
 
 export type {
+  // Embedding Service
+  EmbeddingService,
+
   // Core Types
   ToolSpec,
   ToolParameter,
@@ -179,6 +182,12 @@ export interface JITToolsSystemConfig {
   jitConfig?: Partial<JITToolConfig>;
   /** Default injection options */
   injectionOptions?: Partial<InjectionOptions>;
+  /**
+   * Embedding provider for semantic tool retrieval.
+   * Required when `jitConfig.enableSemanticSearch` is `true` (the default).
+   * If omitted and semantic search is enabled, retrieval calls will throw.
+   */
+  embeddingService?: EmbeddingService | null;
 }
 
 /**
@@ -214,14 +223,18 @@ export interface JITToolsSystem {
  * ```
  */
 export function createJITToolsSystem(
-  config: JITToolsSystemConfig = {},
+  config: JITToolsSystemConfig = {}
 ): JITToolsSystem {
   const registry = new ToolRegistry();
-  const retriever = new JITToolRetriever(registry, config.jitConfig);
+  const retriever = new JITToolRetriever(
+    registry,
+    config.jitConfig,
+    config.embeddingService ?? null
+  );
   const injector = new ContextInjector(
     retriever,
     config.jitConfig,
-    config.injectionOptions,
+    config.injectionOptions
   );
 
   return {

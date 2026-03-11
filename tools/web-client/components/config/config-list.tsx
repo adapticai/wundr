@@ -33,7 +33,7 @@ export function ConfigList({
   const addItem = () => {
     const trimmedValue = inputValue.trim();
     if (!trimmedValue) return;
-    
+
     if (!allowDuplicates && items.includes(trimmedValue)) return;
     if (maxItems && items.length >= maxItems) return;
 
@@ -57,39 +57,39 @@ export function ConfigList({
 
   return (
     <ConfigField label={label} description={description} error={error}>
-      <div className="space-y-3">
+      <div className='space-y-3'>
         {/* Input for adding new items */}
-        <div className="flex gap-2">
+        <div className='flex gap-2'>
           <Input
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={e => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder={placeholder}
             disabled={!canAddMore}
             className={error ? 'border-destructive' : ''}
           />
           <Button
-            type="button"
+            type='button'
             onClick={addItem}
             disabled={!inputValue.trim() || !canAddMore}
-            size="sm"
+            size='sm'
           >
-            <Plus className="h-4 w-4" />
+            <Plus className='h-4 w-4' />
           </Button>
         </div>
 
         {/* Display current items */}
         {items.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <div className='flex flex-wrap gap-2'>
             {items.map((item, index) => (
-              <Badge key={index} variant="secondary" className="px-2 py-1">
-                <span className="mr-1">{item}</span>
+              <Badge key={index} variant='secondary' className='px-2 py-1'>
+                <span className='mr-1'>{item}</span>
                 <button
-                  type="button"
+                  type='button'
                   onClick={() => removeItem(index)}
-                  className="hover:text-destructive"
+                  className='hover:text-destructive'
                 >
-                  <X className="h-3 w-3" />
+                  <X className='h-3 w-3' />
                 </button>
               </Badge>
             ))}
@@ -97,10 +97,14 @@ export function ConfigList({
         )}
 
         {/* Info text */}
-        <div className="flex justify-between text-xs text-muted-foreground">
-          <span>{items.length} item{items.length !== 1 ? 's' : ''}</span>
+        <div className='flex justify-between text-xs text-muted-foreground'>
+          <span>
+            {items.length} item{items.length !== 1 ? 's' : ''}
+          </span>
           {maxItems && (
-            <span>{items.length}/{maxItems} items</span>
+            <span>
+              {items.length}/{maxItems} items
+            </span>
           )}
         </div>
       </div>

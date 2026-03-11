@@ -3,7 +3,13 @@
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 export default function TestTheme() {
   const { theme, setTheme, systemTheme } = useTheme();
@@ -20,7 +26,7 @@ export default function TestTheme() {
   const currentTheme = theme === 'system' ? systemTheme : theme;
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
+    <div className='container mx-auto py-8 space-y-6'>
       <Card>
         <CardHeader>
           <CardTitle>Theme Test Page</CardTitle>
@@ -28,30 +34,30 @@ export default function TestTheme() {
             Test the dark/light mode implementation
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className='space-y-4'>
           <div>
-            <p className="text-sm text-muted-foreground mb-2">
+            <p className='text-sm text-muted-foreground mb-2'>
               Current theme: <strong>{currentTheme}</strong>
             </p>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className='text-sm text-muted-foreground mb-4'>
               Selected: <strong>{theme}</strong>
             </p>
           </div>
-          
-          <div className="flex gap-2">
-            <Button 
+
+          <div className='flex gap-2'>
+            <Button
               variant={theme === 'light' ? 'default' : 'outline'}
               onClick={() => setTheme('light')}
             >
               Light
             </Button>
-            <Button 
+            <Button
               variant={theme === 'dark' ? 'default' : 'outline'}
               onClick={() => setTheme('dark')}
             >
               Dark
             </Button>
-            <Button 
+            <Button
               variant={theme === 'system' ? 'default' : 'outline'}
               onClick={() => setTheme('system')}
             >
@@ -59,20 +65,20 @@ export default function TestTheme() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mt-6'>
             <Card>
               <CardHeader>
-                <CardTitle className="text-primary">Primary Colors</CardTitle>
+                <CardTitle className='text-primary'>Primary Colors</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <div className="bg-primary text-primary-foreground p-2 rounded">
+                <div className='space-y-2'>
+                  <div className='bg-primary text-primary-foreground p-2 rounded'>
                     Primary Background
                   </div>
-                  <div className="bg-secondary text-secondary-foreground p-2 rounded">
+                  <div className='bg-secondary text-secondary-foreground p-2 rounded'>
                     Secondary Background
                   </div>
-                  <div className="bg-muted text-muted-foreground p-2 rounded">
+                  <div className='bg-muted text-muted-foreground p-2 rounded'>
                     Muted Background
                   </div>
                 </div>
@@ -81,19 +87,17 @@ export default function TestTheme() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-accent">Accent Colors</CardTitle>
+                <CardTitle className='text-accent'>Accent Colors</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <div className="bg-accent text-accent-foreground p-2 rounded">
+                <div className='space-y-2'>
+                  <div className='bg-accent text-accent-foreground p-2 rounded'>
                     Accent Background
                   </div>
-                  <div className="bg-destructive text-destructive-foreground p-2 rounded">
+                  <div className='bg-destructive text-destructive-foreground p-2 rounded'>
                     Destructive Background
                   </div>
-                  <div className="border p-2 rounded">
-                    Border Example
-                  </div>
+                  <div className='border p-2 rounded'>Border Example</div>
                 </div>
               </CardContent>
             </Card>

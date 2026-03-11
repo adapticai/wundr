@@ -16,7 +16,7 @@ test.describe('Runtime Errors Detection', () => {
 
   test.beforeEach(async ({ page }) => {
     testUtils = new TestUtilities(page);
-    
+
     // Clear error arrays
     jsErrors = [];
     consoleErrors = [];
@@ -24,27 +24,32 @@ test.describe('Runtime Errors Detection', () => {
     uncaughtExceptions = [];
 
     // Set up comprehensive error monitoring
-    page.on('pageerror', (error) => {
+    page.on('pageerror', error => {
       jsErrors.push(`${page.url()}: ${error.message}`);
       console.log(`JavaScript Error on ${page.url()}: ${error.message}`);
     });
 
-    page.on('console', (msg) => {
+    page.on('console', msg => {
       if (msg.type() === 'error') {
         consoleErrors.push(`${page.url()}: ${msg.text()}`);
         console.log(`Console Error on ${page.url()}: ${msg.text()}`);
       }
     });
 
-    page.on('response', (response) => {
+    page.on('response', response => {
       if (!response.ok() && response.status() >= 400) {
-        networkErrors.push(`${response.url()} - ${response.status()} ${response.statusText()}`);
+        networkErrors.push(
+          `${response.url()} - ${response.status()} ${response.statusText()}`
+        );
       }
     });
 
     // Monitor for uncaught promise rejections
-    page.on('pageerror', (error) => {
-      if (error.message.includes('unhandled') || error.message.includes('rejected')) {
+    page.on('pageerror', error => {
+      if (
+        error.message.includes('unhandled') ||
+        error.message.includes('rejected')
+      ) {
         uncaughtExceptions.push(`Unhandled: ${error.message}`);
       }
     });
@@ -52,7 +57,11 @@ test.describe('Runtime Errors Detection', () => {
 
   test.afterEach(async () => {
     // Report errors found during test
-    if (jsErrors.length > 0 || consoleErrors.length > 0 || networkErrors.length > 0) {
+    if (
+      jsErrors.length > 0 ||
+      consoleErrors.length > 0 ||
+      networkErrors.length > 0
+    ) {
       console.log('\n=== ERRORS DETECTED IN TEST ===');
       console.log(`JavaScript Errors: ${jsErrors.length}`);
       console.log(`Console Errors: ${consoleErrors.length}`);
@@ -61,23 +70,24 @@ test.describe('Runtime Errors Detection', () => {
     }
   });
 
-  test('should monitor for JavaScript errors during basic navigation', async ({ page }) => {
+  test('should monitor for JavaScript errors during basic navigation', async ({
+    page,
+  }) => {
     const routes = TEST_CONFIG.routes.webClient.slice(0, 8); // Test first 8 routes
     const routeErrors: Record<string, string[]> = {};
 
     for (const route of routes) {
       const errorsBeforeNavigation = jsErrors.length;
-      
+
       try {
         await page.goto(`${TEST_CONFIG.dashboards.webClient.baseURL}${route}`);
         await page.waitForLoadState('networkidle');
         await page.waitForTimeout(1000); // Wait for any async operations
-        
+
         const errorsAfterNavigation = jsErrors.slice(errorsBeforeNavigation);
         if (errorsAfterNavigation.length > 0) {
           routeErrors[route] = errorsAfterNavigation;
         }
-        
       } catch (_error) {
         routeErrors[route] = [`Navigation error: ${_error}`];
       }
@@ -97,13 +107,15 @@ test.describe('Runtime Errors Detection', () => {
 
   test('should detect React/component rendering errors', async ({ page }) => {
     const reactErrors: string[] = [];
-    
+
     // Monitor for React-specific errors
-    page.on('pageerror', (error) => {
-      if (error.message.includes('React') || 
-          error.message.includes('Cannot read prop') ||
-          error.message.includes('undefined is not a function') ||
-          error.message.includes('Cannot access before initialization')) {
+    page.on('pageerror', error => {
+      if (
+        error.message.includes('React') ||
+        error.message.includes('Cannot read prop') ||
+        error.message.includes('undefined is not a function') ||
+        error.message.includes('Cannot access before initialization')
+      ) {
         reactErrors.push(`React Error: ${error.message}`);
       }
     });
@@ -113,7 +125,7 @@ test.describe('Runtime Errors Detection', () => {
       '/dashboard/analysis',
       '/dashboard/visualizations',
       '/dashboard/performance',
-      '/dashboard/reports'
+      '/dashboard/reports',
     ];
 
     for (const route of componentHeavyRoutes) {
@@ -132,27 +144,33 @@ test.describe('Runtime Errors Detection', () => {
     const apiErrors: string[] = [];
     const apiCallsMonitored: string[] = [];
 
-    page.on('response', (response) => {
+    page.on('response', response => {
       const url = response.url();
-      
+
       if (url.includes('/api/')) {
         apiCallsMonitored.push(url);
-        
+
         if (!response.ok()) {
-          apiErrors.push(`API Error: ${url} - ${response.status()} ${response.statusText()}`);
+          apiErrors.push(
+            `API Error: ${url} - ${response.status()} ${response.statusText()}`
+          );
         }
       }
     });
 
     // Navigate to pages that make API calls
-    await page.goto(`${TEST_CONFIG.dashboards.webClient.baseURL}/dashboard/analysis`);
+    await page.goto(
+      `${TEST_CONFIG.dashboards.webClient.baseURL}/dashboard/analysis`
+    );
     await page.waitForTimeout(3000);
-    
-    await page.goto(`${TEST_CONFIG.dashboards.webClient.baseURL}/dashboard/performance`);
+
+    await page.goto(
+      `${TEST_CONFIG.dashboards.webClient.baseURL}/dashboard/performance`
+    );
     await page.waitForTimeout(3000);
 
     console.log(`API calls monitored: ${apiCallsMonitored.length}`);
-    
+
     if (apiErrors.length > 0) {
       console.log('API Errors Found:', apiErrors);
     }
@@ -161,21 +179,29 @@ test.describe('Runtime Errors Detection', () => {
     expect(apiErrors.length).toBeLessThan(10);
   });
 
-  test('should detect memory leaks and performance issues', async ({ page }) => {
+  test('should detect memory leaks and performance issues', async ({
+    page,
+  }) => {
     // Navigate to dashboard and interact with components
     await page.goto(`${TEST_CONFIG.dashboards.webClient.baseURL}/dashboard`);
-    
+
     // Get initial memory usage
     const initialMemory = await page.evaluate(() => {
-      return (performance as any).memory ? (performance as any).memory.usedJSHeapSize : null;
+      return (performance as any).memory
+        ? (performance as any).memory.usedJSHeapSize
+        : null;
     });
 
     // Perform memory-intensive operations
     for (let i = 0; i < 5; i++) {
-      await page.goto(`${TEST_CONFIG.dashboards.webClient.baseURL}/dashboard/analysis`);
+      await page.goto(
+        `${TEST_CONFIG.dashboards.webClient.baseURL}/dashboard/analysis`
+      );
       await page.waitForTimeout(1000);
-      
-      await page.goto(`${TEST_CONFIG.dashboards.webClient.baseURL}/dashboard/visualizations`);
+
+      await page.goto(
+        `${TEST_CONFIG.dashboards.webClient.baseURL}/dashboard/visualizations`
+      );
       await page.waitForTimeout(1000);
     }
 
@@ -188,18 +214,21 @@ test.describe('Runtime Errors Detection', () => {
 
     // Get final memory usage
     const finalMemory = await page.evaluate(() => {
-      return (performance as any).memory ? (performance as any).memory.usedJSHeapSize : null;
+      return (performance as any).memory
+        ? (performance as any).memory.usedJSHeapSize
+        : null;
     });
 
     if (initialMemory && finalMemory) {
       const memoryIncrease = finalMemory - initialMemory;
       console.log(`Memory usage change: ${memoryIncrease} bytes`);
-      
+
       // Flag if memory increased significantly (potential leak)
-      if (memoryIncrease > 50 * 1024 * 1024) { // 50MB
+      if (memoryIncrease > 50 * 1024 * 1024) {
+        // 50MB
         console.warn('Potential memory leak detected');
       }
-      
+
       expect(memoryIncrease).toBeLessThan(100 * 1024 * 1024); // 100MB threshold
     } else {
       console.log('Memory monitoring not available in this browser');
@@ -208,25 +237,25 @@ test.describe('Runtime Errors Detection', () => {
 
   test('should handle user interactions without errors', async ({ page }) => {
     await page.goto(`${TEST_CONFIG.dashboards.webClient.baseURL}/dashboard`);
-    
+
     const interactionErrors: string[] = [];
-    
+
     // Monitor errors during interactions
     const errorsBeforeInteractions = jsErrors.length;
-    
+
     // Try clicking various interactive elements
     const interactiveElements = [
       'button:not([disabled])',
       'a[href]',
       '[role="button"]:not([disabled])',
       'input:not([disabled])',
-      '[tabindex]:not([tabindex="-1"])'
+      '[tabindex]:not([tabindex="-1"])',
     ];
 
     for (const selector of interactiveElements) {
       try {
         const elements = await page.locator(selector).all();
-        
+
         // Test first few elements of each type
         for (const element of elements.slice(0, 2)) {
           try {
@@ -242,7 +271,7 @@ test.describe('Runtime Errors Detection', () => {
     }
 
     const errorsAfterInteractions = jsErrors.slice(errorsBeforeInteractions);
-    
+
     if (errorsAfterInteractions.length > 0) {
       console.log('Interaction Errors:', errorsAfterInteractions);
     }
@@ -250,28 +279,34 @@ test.describe('Runtime Errors Detection', () => {
     expect(errorsAfterInteractions.length).toBeLessThan(5);
   });
 
-  test('should validate form handling and validation errors', async ({ page }) => {
-    await page.goto(`${TEST_CONFIG.dashboards.webClient.baseURL}/dashboard/settings`);
-    
+  test('should validate form handling and validation errors', async ({
+    page,
+  }) => {
+    await page.goto(
+      `${TEST_CONFIG.dashboards.webClient.baseURL}/dashboard/settings`
+    );
+
     const formErrors: string[] = [];
     const formsFound = await page.locator('form').count();
-    
+
     console.log(`Forms found: ${formsFound}`);
-    
+
     if (formsFound > 0) {
       // Try submitting forms without filling them (should trigger validation)
       const forms = await page.locator('form').all();
-      
+
       for (const form of forms.slice(0, 2)) {
         try {
-          const submitButton = form.locator('button[type="submit"], input[type="submit"]');
-          
-          if (await submitButton.count() > 0) {
+          const submitButton = form.locator(
+            'button[type="submit"], input[type="submit"]'
+          );
+
+          if ((await submitButton.count()) > 0) {
             const errorsBeforeSubmit = jsErrors.length;
-            
+
             await submitButton.first().click();
             await page.waitForTimeout(1000);
-            
+
             const errorsAfterSubmit = jsErrors.slice(errorsBeforeSubmit);
             if (errorsAfterSubmit.length > 0) {
               formErrors.push(...errorsAfterSubmit);
@@ -301,22 +336,22 @@ test.describe('Runtime Errors Detection', () => {
         totalConsoleErrors: 0,
         totalNetworkErrors: 0,
         totalUncaughtExceptions: 0,
-        criticalErrors: 0
+        criticalErrors: 0,
       },
       errorsByType: {
         javascript: [] as string[],
         console: [] as string[],
         network: [] as string[],
-        uncaught: [] as string[]
+        uncaught: [] as string[],
       },
-      recommendations: [] as string[]
+      recommendations: [] as string[],
     };
 
     const startTime = Date.now();
-    
+
     // Comprehensive error detection across multiple routes
     const routesToTest = TEST_CONFIG.routes.webClient.slice(0, 6);
-    
+
     for (const route of routesToTest) {
       try {
         await page.goto(`${TEST_CONFIG.dashboards.webClient.baseURL}${route}`);
@@ -327,40 +362,51 @@ test.describe('Runtime Errors Detection', () => {
     }
 
     errorReport.testDuration = Date.now() - startTime;
-    
+
     // Compile error summary
     errorReport.summary.totalJSErrors = jsErrors.length;
     errorReport.summary.totalConsoleErrors = consoleErrors.length;
     errorReport.summary.totalNetworkErrors = networkErrors.length;
     errorReport.summary.totalUncaughtExceptions = uncaughtExceptions.length;
-    
+
     errorReport.errorsByType.javascript = [...new Set(jsErrors)];
     errorReport.errorsByType.console = [...new Set(consoleErrors)];
     errorReport.errorsByType.network = [...new Set(networkErrors)];
     errorReport.errorsByType.uncaught = [...new Set(uncaughtExceptions)];
 
     // Count critical errors
-    const criticalKeywords = ['cannot read', 'undefined is not', 'null is not', 'failed to fetch'];
-    errorReport.summary.criticalErrors = jsErrors.filter(error => 
+    const criticalKeywords = [
+      'cannot read',
+      'undefined is not',
+      'null is not',
+      'failed to fetch',
+    ];
+    errorReport.summary.criticalErrors = jsErrors.filter(error =>
       criticalKeywords.some(keyword => error.toLowerCase().includes(keyword))
     ).length;
 
     // Generate recommendations
     if (errorReport.summary.totalJSErrors > 5) {
-      errorReport.recommendations.push('High number of JavaScript errors detected. Review code for null checks and error handling.');
+      errorReport.recommendations.push(
+        'High number of JavaScript errors detected. Review code for null checks and error handling.'
+      );
     }
-    
+
     if (errorReport.summary.totalNetworkErrors > 10) {
-      errorReport.recommendations.push('Multiple network errors detected. Check API endpoints and error handling.');
+      errorReport.recommendations.push(
+        'Multiple network errors detected. Check API endpoints and error handling.'
+      );
     }
-    
+
     if (errorReport.summary.criticalErrors > 0) {
-      errorReport.recommendations.push('Critical runtime errors found. These should be addressed immediately.');
+      errorReport.recommendations.push(
+        'Critical runtime errors found. These should be addressed immediately.'
+      );
     }
 
     console.log('\n=== COMPREHENSIVE ERROR REPORT ===');
     console.log(JSON.stringify(errorReport.summary, null, 2));
-    
+
     if (errorReport.recommendations.length > 0) {
       console.log('\nRECOMMENDATIONS:');
       errorReport.recommendations.forEach((rec, index) => {

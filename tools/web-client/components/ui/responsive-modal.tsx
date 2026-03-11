@@ -5,7 +5,12 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useMediaQuery, BREAKPOINTS } from '@/hooks/use-media-query';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer';
 import {
   Dialog,
   DialogContent,
@@ -69,9 +74,7 @@ export function ResponsiveModal({
   contentClassName,
   breakpoint = 'md',
 }: ResponsiveModalProps) {
-  const isDesktop = useMediaQuery(
-    `(min-width: ${BREAKPOINTS[breakpoint]}px)`
-  );
+  const isDesktop = useMediaQuery(`(min-width: ${BREAKPOINTS[breakpoint]}px)`);
 
   // Prevent rendering mismatch on initial load
   const [isMounted, setIsMounted] = useState(false);
@@ -89,10 +92,10 @@ export function ResponsiveModal({
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
         <DrawerContent className={className}>
-          <DrawerHeader className="text-left">
+          <DrawerHeader className='text-left'>
             <DrawerTitle>{title}</DrawerTitle>
             {description && (
-              <p className="text-sm text-muted-foreground mt-1.5">
+              <p className='text-sm text-muted-foreground mt-1.5'>
                 {description}
               </p>
             )}
@@ -103,7 +106,7 @@ export function ResponsiveModal({
           </div>
 
           {footer && (
-            <div className="border-t p-4 mt-4 space-y-2 sm:space-y-0 sm:flex gap-2 justify-end">
+            <div className='border-t p-4 mt-4 space-y-2 sm:space-y-0 sm:flex gap-2 justify-end'>
               {footer}
             </div>
           )}
@@ -119,7 +122,7 @@ export function ResponsiveModal({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description && (
-            <p className="text-sm text-muted-foreground mt-1.5">
+            <p className='text-sm text-muted-foreground mt-1.5'>
               {description}
             </p>
           )}

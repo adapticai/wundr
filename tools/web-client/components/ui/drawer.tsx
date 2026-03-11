@@ -9,7 +9,9 @@ interface DrawerContextType {
   setIsOpen: (open: boolean) => void;
 }
 
-const DrawerContext = React.createContext<DrawerContextType | undefined>(undefined);
+const DrawerContext = React.createContext<DrawerContextType | undefined>(
+  undefined
+);
 
 function useDrawer() {
   const context = React.useContext(DrawerContext);
@@ -56,19 +58,19 @@ export function Drawer({ open, onOpenChange, children }: DrawerProps) {
     <DrawerContext.Provider value={{ isOpen: open, setIsOpen: onOpenChange }}>
       {open && (
         <div
-          className="fixed inset-0 z-50 bg-black/80 md:hidden"
-          onClick={(e) => {
+          className='fixed inset-0 z-50 bg-black/80 md:hidden'
+          onClick={e => {
             if (e.target === e.currentTarget) {
               onOpenChange(false);
             }
           }}
-          onKeyDown={(e) => {
+          onKeyDown={e => {
             if (e.key === 'Escape') {
               onOpenChange(false);
             }
           }}
-          role="dialog"
-          aria-modal="true"
+          role='dialog'
+          aria-modal='true'
         >
           {children}
         </div>
@@ -133,24 +135,24 @@ export function DrawerContent({ children, className }: DrawerContentProps) {
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      role="dialog"
-      aria-modal="true"
+      role='dialog'
+      aria-modal='true'
     >
       {/* Drag indicator */}
-      <div className="flex justify-center pt-2 pb-2">
-        <div className="h-1 w-12 rounded-full bg-muted" aria-hidden="true" />
+      <div className='flex justify-center pt-2 pb-2'>
+        <div className='h-1 w-12 rounded-full bg-muted' aria-hidden='true' />
       </div>
 
       {/* Close button for keyboard/non-touch users */}
       <button
         onClick={() => setIsOpen(false)}
-        className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none md:hidden"
-        aria-label="Close"
+        className='absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none md:hidden'
+        aria-label='Close'
       >
-        <X className="h-4 w-4" />
+        <X className='h-4 w-4' />
       </button>
 
-      <div className="pt-2">{children}</div>
+      <div className='pt-2'>{children}</div>
     </div>
   );
 }
@@ -191,13 +193,12 @@ interface DrawerDescriptionProps {
   children: React.ReactNode;
 }
 
-export function DrawerDescription({ className, children }: DrawerDescriptionProps) {
+export function DrawerDescription({
+  className,
+  children,
+}: DrawerDescriptionProps) {
   return (
-    <p
-      className={cn('text-sm text-muted-foreground', className)}
-    >
-      {children}
-    </p>
+    <p className={cn('text-sm text-muted-foreground', className)}>{children}</p>
   );
 }
 

@@ -41,7 +41,10 @@ export type ServiceTemplateType =
 /**
  * Template difficulty levels
  */
-export type ServiceTemplateDifficulty = 'beginner' | 'intermediate' | 'advanced';
+export type ServiceTemplateDifficulty =
+  | 'beginner'
+  | 'intermediate'
+  | 'advanced';
 
 /**
  * Service template definition
@@ -758,7 +761,10 @@ export type GenerationProgressHandler = (progress: {
 /**
  * Mock service template for testing and development
  */
-export interface MockServiceTemplate extends Omit<ServiceTemplate, 'createdAt' | 'updatedAt' | 'lastUpdated'> {
+export interface MockServiceTemplate extends Omit<
+  ServiceTemplate,
+  'createdAt' | 'updatedAt' | 'lastUpdated'
+> {
   /** Creation timestamp as string for easier mocking */
   createdAt: string;
   /** Last update timestamp as string for easier mocking */
@@ -770,7 +776,9 @@ export interface MockServiceTemplate extends Omit<ServiceTemplate, 'createdAt' |
 /**
  * Template factory function type
  */
-export type TemplateFactory<T = ServiceTemplate> = (overrides?: Partial<T>) => T;
+export type TemplateFactory<T = ServiceTemplate> = (
+  overrides?: Partial<T>
+) => T;
 
 /**
  * Template validation result

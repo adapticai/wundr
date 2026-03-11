@@ -63,12 +63,12 @@ export function MobileNavDrawer({
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className={className}>
-        <DrawerHeader className="flex items-center justify-between px-4 py-3">
-          <h2 className="text-lg font-semibold">{title}</h2>
+        <DrawerHeader className='flex items-center justify-between px-4 py-3'>
+          <h2 className='text-lg font-semibold'>{title}</h2>
         </DrawerHeader>
 
-        <nav className="space-y-1 px-2 pb-4">
-          {items.map((item) => (
+        <nav className='space-y-1 px-2 pb-4'>
+          {items.map(item => (
             <Link
               key={item.href}
               href={item.href}
@@ -91,13 +91,13 @@ export function MobileNavDrawer({
               }}
             >
               {item.icon && (
-                <span className="flex-shrink-0 h-5 w-5 flex items-center justify-center">
+                <span className='flex-shrink-0 h-5 w-5 flex items-center justify-center'>
                   {item.icon}
                 </span>
               )}
-              <span className="flex-1 font-medium text-sm">{item.label}</span>
+              <span className='flex-1 font-medium text-sm'>{item.label}</span>
               {item.badge !== undefined && (
-                <span className="ml-auto bg-primary text-primary-foreground text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                <span className='ml-auto bg-primary text-primary-foreground text-xs font-semibold px-2.5 py-0.5 rounded-full'>
                   {item.badge}
                 </span>
               )}
@@ -151,7 +151,7 @@ export function MobileNavToggle({
         className
       )}
     >
-      <Menu className="h-5 w-5" />
+      <Menu className='h-5 w-5' />
     </button>
   );
 }

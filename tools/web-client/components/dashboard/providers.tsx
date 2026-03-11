@@ -7,9 +7,7 @@ import { AnalysisProvider } from '@/lib/contexts';
 export function DashboardProviders({ children }: { children: ReactNode }) {
   return (
     <ConfigProvider>
-      <AnalysisProvider>
-        {children}
-      </AnalysisProvider>
+      <AnalysisProvider>{children}</AnalysisProvider>
     </ConfigProvider>
   );
 }

@@ -14,36 +14,36 @@ test.describe('Missing Components Validation', () => {
     testUtils = new TestUtilities(page);
   });
 
-  test('should validate essential page structure components', async ({ page }) => {
+  test('should validate essential page structure components', async ({
+    page,
+  }) => {
     const routes = TEST_CONFIG.routes.webClient.slice(0, 10);
     const missingComponentsByRoute: Record<string, string[]> = {};
 
     const essentialComponents = {
       'Layout Components': [
         'header, [role="banner"]',
-        'nav, [role="navigation"]', 
+        'nav, [role="navigation"]',
         'main, [role="main"]',
-        'footer, [role="contentinfo"]'
+        'footer, [role="contentinfo"]',
       ],
-      'Interactive Elements': [
-        'button',
-        'a[href]',
-        'input, textarea, select'
-      ],
+      'Interactive Elements': ['button', 'a[href]', 'input, textarea, select'],
       'Content Structure': [
         'h1, h2, h3, h4, h5, h6',
-        'p, div, section, article'
-      ]
+        'p, div, section, article',
+      ],
     };
 
     for (const route of routes) {
       try {
         await page.goto(`${TEST_CONFIG.dashboards.webClient.baseURL}${route}`);
         await page.waitForLoadState('networkidle');
-        
+
         const missingComponents: string[] = [];
 
-        for (const [category, selectors] of Object.entries(essentialComponents)) {
+        for (const [category, selectors] of Object.entries(
+          essentialComponents
+        )) {
           for (const selector of selectors) {
             const count = await page.locator(selector).count();
             if (count === 0) {
@@ -55,7 +55,6 @@ test.describe('Missing Components Validation', () => {
         if (missingComponents.length > 0) {
           missingComponentsByRoute[route] = missingComponents;
         }
-
       } catch (_error) {
         missingComponentsByRoute[route] = [`Navigation Error: ${_error}`];
       }
@@ -79,11 +78,13 @@ test.describe('Missing Components Validation', () => {
     const renderingFailures: string[] = [];
 
     // Monitor for React error boundaries or failed renders
-    page.on('console', (msg) => {
-      if (msg.type() === 'error' && 
-          (msg.text().includes('React') || 
-           msg.text().includes('component') ||
-           msg.text().includes('render'))) {
+    page.on('console', msg => {
+      if (
+        msg.type() === 'error' &&
+        (msg.text().includes('React') ||
+          msg.text().includes('component') ||
+          msg.text().includes('render'))
+      ) {
         componentErrors.push(`Component Error: ${msg.text()}`);
       }
     });
@@ -91,33 +92,41 @@ test.describe('Missing Components Validation', () => {
     // Test component-heavy routes
     const componentRoutes = [
       '/dashboard/analysis',
-      '/dashboard/visualizations', 
+      '/dashboard/visualizations',
       '/dashboard/performance',
-      '/dashboard/reports'
+      '/dashboard/reports',
     ];
 
     for (const route of componentRoutes) {
       await page.goto(`${TEST_CONFIG.dashboards.webClient.baseURL}${route}`);
       await page.waitForTimeout(2000); // Wait for component mounting
-      
+
       // Check for error boundary messages
-      const errorBoundaryText = await page.locator('text=/error boundary|something went wrong|failed to render/i').count();
+      const errorBoundaryText = await page
+        .locator('text=/error boundary|something went wrong|failed to render/i')
+        .count();
       if (errorBoundaryText > 0) {
         renderingFailures.push(`Error boundary detected on ${route}`);
       }
 
       // Check for empty/broken component containers
-      const emptyContainers = await page.locator('[class*="error"], [class*="empty"], .component-error').count();
+      const emptyContainers = await page
+        .locator('[class*="error"], [class*="empty"], .component-error')
+        .count();
       if (emptyContainers > 0) {
-        const emptyTexts = await page.locator('[class*="error"], [class*="empty"], .component-error').allTextContents();
-        renderingFailures.push(`Empty containers on ${route}: ${emptyTexts.join(', ')}`);
+        const emptyTexts = await page
+          .locator('[class*="error"], [class*="empty"], .component-error')
+          .allTextContents();
+        renderingFailures.push(
+          `Empty containers on ${route}: ${emptyTexts.join(', ')}`
+        );
       }
     }
 
     if (componentErrors.length > 0) {
       console.log('Component Errors:', componentErrors);
     }
-    
+
     if (renderingFailures.length > 0) {
       console.log('Rendering Failures:', renderingFailures);
     }
@@ -127,29 +136,29 @@ test.describe('Missing Components Validation', () => {
 
   test('should validate dashboard-specific components', async ({ page }) => {
     await page.goto(`${TEST_CONFIG.dashboards.webClient.baseURL}/dashboard`);
-    
+
     const dashboardComponents = {
       'Charts & Visualizations': [
-        'canvas', 
+        'canvas',
         'svg',
         '.recharts-wrapper',
         '.chart-container',
-        '.visualization'
+        '.visualization',
       ],
       'Data Display': [
         'table',
         '.data-table',
         '.summary-card',
         '.metric-card',
-        '.stats-card'
+        '.stats-card',
       ],
       'Navigation & Controls': [
         '.sidebar',
         '.nav-menu',
         '.tab-list',
         '[role="tab"]',
-        '.dropdown'
-      ]
+        '.dropdown',
+      ],
     };
 
     const missingDashboardComponents: string[] = [];
@@ -157,7 +166,7 @@ test.describe('Missing Components Validation', () => {
 
     for (const [category, selectors] of Object.entries(dashboardComponents)) {
       let categoryFound = false;
-      
+
       for (const selector of selectors) {
         const count = await page.locator(selector).count();
         if (count > 0) {
@@ -166,20 +175,25 @@ test.describe('Missing Components Validation', () => {
           break; // Found at least one component in this category
         }
       }
-      
+
       if (!categoryFound) {
         missingDashboardComponents.push(category);
       }
     }
 
     console.log('Found Dashboard Components:', foundComponents);
-    
+
     if (missingDashboardComponents.length > 0) {
-      console.log('Missing Dashboard Component Categories:', missingDashboardComponents);
+      console.log(
+        'Missing Dashboard Component Categories:',
+        missingDashboardComponents
+      );
     }
 
     // Should have most dashboard component categories
-    expect(missingDashboardComponents.length).toBeLessThan(Object.keys(dashboardComponents).length * 0.5);
+    expect(missingDashboardComponents.length).toBeLessThan(
+      Object.keys(dashboardComponents).length * 0.5
+    );
   });
 
   test('should check for missing images and media', async ({ page }) => {
@@ -189,7 +203,7 @@ test.describe('Missing Components Validation', () => {
     for (const route of routes) {
       await page.goto(`${TEST_CONFIG.dashboards.webClient.baseURL}${route}`);
       await page.waitForTimeout(1000);
-      
+
       const routeIssues: string[] = [];
 
       // Check for broken images
@@ -197,12 +211,12 @@ test.describe('Missing Components Validation', () => {
       for (const img of images) {
         const src = await img.getAttribute('src');
         const alt = await img.getAttribute('alt');
-        
+
         // Check for missing src
         if (!src || src === '' || src === '#') {
           routeIssues.push(`Image with missing src: ${alt || 'no alt text'}`);
         }
-        
+
         // Check for missing alt text
         if (!alt) {
           routeIssues.push(`Image missing alt text: ${src}`);
@@ -210,7 +224,9 @@ test.describe('Missing Components Validation', () => {
       }
 
       // Check for broken background images (CSS)
-      const elementsWithBg = await page.locator('[style*="background-image"]').all();
+      const elementsWithBg = await page
+        .locator('[style*="background-image"]')
+        .all();
       for (const element of elementsWithBg) {
         const style = await element.getAttribute('style');
         if (style && style.includes('url(') && !style.includes('data:')) {
@@ -220,7 +236,9 @@ test.describe('Missing Components Validation', () => {
       }
 
       // Check for missing icons
-      const iconElements = await page.locator('[class*="icon"], .lucide, svg[class]').count();
+      const iconElements = await page
+        .locator('[class*="icon"], .lucide, svg[class]')
+        .count();
       if (iconElements === 0) {
         routeIssues.push('No icon elements found');
       }
@@ -243,46 +261,52 @@ test.describe('Missing Components Validation', () => {
   });
 
   test('should validate form components and inputs', async ({ page }) => {
-    const routes = ['/dashboard/settings', '/dashboard/upload', '/dashboard/scripts'];
+    const routes = [
+      '/dashboard/settings',
+      '/dashboard/upload',
+      '/dashboard/scripts',
+    ];
     const formIssues: Record<string, string[]> = {};
 
     for (const route of routes) {
       try {
         await page.goto(`${TEST_CONFIG.dashboards.webClient.baseURL}${route}`);
         await page.waitForTimeout(1000);
-        
+
         const routeIssues: string[] = [];
-        
+
         // Check for forms
         const forms = await page.locator('form').all();
-        
+
         for (const form of forms) {
           // Check for inputs without labels
           const inputs = await form.locator('input, textarea, select').all();
-          
+
           for (const input of inputs) {
             const type = await input.getAttribute('type');
             const id = await input.getAttribute('id');
             const ariaLabel = await input.getAttribute('aria-label');
             const placeholder = await input.getAttribute('placeholder');
-            
+
             // Skip hidden inputs
             if (type === 'hidden') continue;
-            
+
             // Check for proper labeling
             let hasLabel = false;
             if (id) {
               const label = await page.locator(`label[for="${id}"]`).count();
               hasLabel = label > 0;
             }
-            
+
             if (!hasLabel && !ariaLabel && !placeholder) {
               routeIssues.push(`Input without proper labeling: type="${type}"`);
             }
           }
 
           // Check for submit buttons
-          const submitButtons = await form.locator('button[type="submit"], input[type="submit"]').count();
+          const submitButtons = await form
+            .locator('button[type="submit"], input[type="submit"]')
+            .count();
           if (submitButtons === 0) {
             routeIssues.push('Form without submit button');
           }
@@ -291,7 +315,6 @@ test.describe('Missing Components Validation', () => {
         if (routeIssues.length > 0) {
           formIssues[route] = routeIssues;
         }
-
       } catch (_error) {
         formIssues[route] = [`Route error: ${_error}`];
       }
@@ -309,49 +332,67 @@ test.describe('Missing Components Validation', () => {
     expect(totalFormIssues).toBeLessThan(15);
   });
 
-  test('should check for loading states and skeleton components', async ({ page }) => {
-    await page.goto(`${TEST_CONFIG.dashboards.webClient.baseURL}/dashboard/analysis`);
-    
+  test('should check for loading states and skeleton components', async ({
+    page,
+  }) => {
+    await page.goto(
+      `${TEST_CONFIG.dashboards.webClient.baseURL}/dashboard/analysis`
+    );
+
     // Quickly check for loading indicators
-    const loadingStates = await page.locator('.loading, .spinner, .skeleton, [aria-busy="true"], .loader').count();
-    
+    const loadingStates = await page
+      .locator('.loading, .spinner, .skeleton, [aria-busy="true"], .loader')
+      .count();
+
     // Navigate to a data-heavy route and check for loading states
-    await page.goto(`${TEST_CONFIG.dashboards.webClient.baseURL}/dashboard/performance`);
+    await page.goto(
+      `${TEST_CONFIG.dashboards.webClient.baseURL}/dashboard/performance`
+    );
     await page.waitForTimeout(100); // Catch loading state quickly
-    
-    const loadingStatesPerf = await page.locator('.loading, .spinner, .skeleton, [aria-busy="true"], .loader').count();
-    
-    console.log(`Loading indicators found: Analysis (${loadingStates}), Performance (${loadingStatesPerf})`);
-    
+
+    const loadingStatesPerf = await page
+      .locator('.loading, .spinner, .skeleton, [aria-busy="true"], .loader')
+      .count();
+
+    console.log(
+      `Loading indicators found: Analysis (${loadingStates}), Performance (${loadingStatesPerf})`
+    );
+
     // It's good to have loading states, but not required
     const totalLoadingStates = loadingStates + loadingStatesPerf;
-    
+
     // Wait for content to load
     await page.waitForTimeout(3000);
-    
+
     // Check that loading states are replaced with content
-    const persistentLoading = await page.locator('.loading, .spinner, [aria-busy="true"]').count();
-    
+    const persistentLoading = await page
+      .locator('.loading, .spinner, [aria-busy="true"]')
+      .count();
+
     if (persistentLoading > 0) {
-      console.log('Warning: Persistent loading indicators found, possible stuck loading states');
+      console.log(
+        'Warning: Persistent loading indicators found, possible stuck loading states'
+      );
     }
-    
+
     // Loading states should not persist indefinitely
     expect(persistentLoading).toBeLessThan(3);
   });
 
-  test('should validate accessibility components and ARIA attributes', async ({ page }) => {
+  test('should validate accessibility components and ARIA attributes', async ({
+    page,
+  }) => {
     await page.goto(`${TEST_CONFIG.dashboards.webClient.baseURL}/dashboard`);
-    
+
     const accessibilityIssues: string[] = [];
-    
+
     // Check for buttons without accessible names
     const buttons = await page.locator('button').all();
     for (const button of buttons) {
       const text = await button.textContent();
       const ariaLabel = await button.getAttribute('aria-label');
       const ariaLabelledBy = await button.getAttribute('aria-labelledby');
-      
+
       if (!text?.trim() && !ariaLabel && !ariaLabelledBy) {
         accessibilityIssues.push('Button without accessible name found');
       }
@@ -363,34 +404,38 @@ test.describe('Missing Components Validation', () => {
       const alt = await img.getAttribute('alt');
       const ariaLabel = await img.getAttribute('aria-label');
       const role = await img.getAttribute('role');
-      
+
       if (!alt && !ariaLabel && role !== 'presentation') {
         accessibilityIssues.push('Image without alt text found');
       }
     }
 
     // Check for form inputs without labels
-    const inputs = await page.locator('input:not([type="hidden"]), textarea, select').all();
+    const inputs = await page
+      .locator('input:not([type="hidden"]), textarea, select')
+      .all();
     for (const input of inputs) {
       const id = await input.getAttribute('id');
       const ariaLabel = await input.getAttribute('aria-label');
       const ariaLabelledBy = await input.getAttribute('aria-labelledby');
-      
+
       let hasLabel = false;
       if (id) {
         const label = await page.locator(`label[for="${id}"]`).count();
         hasLabel = label > 0;
       }
-      
+
       if (!hasLabel && !ariaLabel && !ariaLabelledBy) {
         accessibilityIssues.push('Input without proper labeling found');
       }
     }
 
     // Check for heading hierarchy
-    const headings = await page.locator('h1, h2, h3, h4, h5, h6').allTextContents();
+    const headings = await page
+      .locator('h1, h2, h3, h4, h5, h6')
+      .allTextContents();
     console.log(`Heading structure: ${headings.length} headings found`);
-    
+
     if (headings.length === 0) {
       accessibilityIssues.push('No headings found on page');
     }
@@ -412,13 +457,13 @@ test.describe('Missing Components Validation', () => {
         totalIssuesFound: 0,
         criticalMissing: 0,
         accessibilityIssues: 0,
-        mediaIssues: 0
+        mediaIssues: 0,
       },
       details: {
         missingByRoute: {} as Record<string, string[]>,
         criticalComponents: [] as string[],
-        recommendations: [] as string[]
-      }
+        recommendations: [] as string[],
+      },
     };
 
     const routesToTest = TEST_CONFIG.routes.webClient.slice(0, 6);
@@ -453,30 +498,37 @@ test.describe('Missing Components Validation', () => {
         if (routeIssues.length > 0) {
           report.details.missingByRoute[route] = routeIssues;
         }
-
       } catch (_error) {
         report.details.missingByRoute[route] = [`Navigation error: ${_error}`];
       }
     }
 
-    report.summary.totalIssuesFound = Object.values(report.details.missingByRoute).flat().length;
+    report.summary.totalIssuesFound = Object.values(
+      report.details.missingByRoute
+    ).flat().length;
 
     // Generate recommendations
     if (report.summary.criticalMissing > 0) {
-      report.details.recommendations.push('Critical components missing. Review component rendering and routing.');
+      report.details.recommendations.push(
+        'Critical components missing. Review component rendering and routing.'
+      );
     }
-    
+
     if (report.summary.accessibilityIssues > 5) {
-      report.details.recommendations.push('Multiple accessibility issues found. Add alt text and proper labeling.');
+      report.details.recommendations.push(
+        'Multiple accessibility issues found. Add alt text and proper labeling.'
+      );
     }
-    
+
     if (report.summary.totalIssuesFound > 20) {
-      report.details.recommendations.push('High number of component issues. Consider comprehensive component audit.');
+      report.details.recommendations.push(
+        'High number of component issues. Consider comprehensive component audit.'
+      );
     }
 
     console.log('\n=== MISSING COMPONENTS REPORT ===');
     console.log(JSON.stringify(report.summary, null, 2));
-    
+
     if (report.details.recommendations.length > 0) {
       console.log('\nRECOMMENDATIONS:');
       report.details.recommendations.forEach((rec, index) => {

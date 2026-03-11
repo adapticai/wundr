@@ -2,7 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -61,18 +67,33 @@ export default function AnalysisOverviewPage() {
 
     try {
       // Load data from all analysis endpoints concurrently
-      const [entitiesRes, duplicatesRes, dependenciesRes, circularRes] = await Promise.all([
-        fetch('/api/analysis/entities').catch(() => null),
-        fetch('/api/analysis/duplicates').catch(() => null),
-        fetch('/api/analysis/dependencies').catch(() => null),
-        fetch('/api/analysis/circular').catch(() => null),
-      ]);
+      const [entitiesRes, duplicatesRes, dependenciesRes, circularRes] =
+        await Promise.all([
+          fetch('/api/analysis/entities').catch(() => null),
+          fetch('/api/analysis/duplicates').catch(() => null),
+          fetch('/api/analysis/dependencies').catch(() => null),
+          fetch('/api/analysis/circular').catch(() => null),
+        ]);
 
       const summaryData: AnalysisSummary = {
         entities: { total: 0, averageComplexity: 0, highComplexityCount: 0 },
-        duplicates: { totalClusters: 0, totalDuplicates: 0, criticalClusters: 0 },
-        dependencies: { total: 0, outdated: 0, vulnerable: 0, circularCount: 0 },
-        circular: { totalDependencies: 0, circularDependencies: 0, criticalIssues: 0, healthScore: 100 },
+        duplicates: {
+          totalClusters: 0,
+          totalDuplicates: 0,
+          criticalClusters: 0,
+        },
+        dependencies: {
+          total: 0,
+          outdated: 0,
+          vulnerable: 0,
+          circularCount: 0,
+        },
+        circular: {
+          totalDependencies: 0,
+          circularDependencies: 0,
+          criticalIssues: 0,
+          healthScore: 100,
+        },
       };
 
       // Process entities data
@@ -82,8 +103,10 @@ export default function AnalysisOverviewPage() {
           if (entitiesData.success && entitiesData.data?.stats) {
             summaryData.entities = {
               total: entitiesData.data.stats.total || 0,
-              averageComplexity: entitiesData.data.stats.averages?.complexity || 0,
-              highComplexityCount: entitiesData.data.stats.byComplexity?.high || 0,
+              averageComplexity:
+                entitiesData.data.stats.averages?.complexity || 0,
+              highComplexityCount:
+                entitiesData.data.stats.byComplexity?.high || 0,
             };
           }
         } catch (_e) {
@@ -99,7 +122,10 @@ export default function AnalysisOverviewPage() {
             summaryData.duplicates = {
               totalClusters: duplicatesData.data.stats.totalClusters || 0,
               totalDuplicates: duplicatesData.data.stats.totalDuplicates || 0,
-              criticalClusters: duplicatesData.data.clusters?.filter((c: any) => 'severity' in c && c.severity === 'critical').length || 0,
+              criticalClusters:
+                duplicatesData.data.clusters?.filter(
+                  (c: any) => 'severity' in c && c.severity === 'critical'
+                ).length || 0,
             };
           }
         } catch (_e) {
@@ -133,8 +159,10 @@ export default function AnalysisOverviewPage() {
             summaryData.circular = {
               totalDependencies: circularData.data.nodes?.length || 0,
               circularDependencies: circularDeps.length,
-              criticalIssues: circularDeps.filter((dep: any) => dep.severity === 'critical').length,
-              healthScore: Math.max(0, 100 - (circularDeps.length * 10)),
+              criticalIssues: circularDeps.filter(
+                (dep: any) => dep.severity === 'critical'
+              ).length,
+              healthScore: Math.max(0, 100 - circularDeps.length * 10),
             };
             // Update circular count in dependencies
             summaryData.dependencies.circularCount = circularDeps.length;
@@ -159,22 +187,22 @@ export default function AnalysisOverviewPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-1 flex-col gap-4 p-4">
-        <div className="flex items-center justify-between">
+      <div className='flex flex-1 flex-col gap-4 p-4'>
+        <div className='flex items-center justify-between'>
           <div>
-            <Skeleton className="h-8 w-48 mb-2" />
-            <Skeleton className="h-4 w-96" />
+            <Skeleton className='h-8 w-48 mb-2' />
+            <Skeleton className='h-4 w-96' />
           </div>
-          <Skeleton className="h-10 w-24" />
+          <Skeleton className='h-10 w-24' />
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
           {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-32" />
+            <Skeleton key={i} className='h-32' />
           ))}
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <Skeleton className="h-64" />
-          <Skeleton className="h-64" />
+        <div className='grid gap-4 md:grid-cols-2'>
+          <Skeleton className='h-64' />
+          <Skeleton className='h-64' />
         </div>
       </div>
     );
@@ -182,13 +210,13 @@ export default function AnalysisOverviewPage() {
 
   if (error) {
     return (
-      <div className="flex flex-1 items-center justify-center p-4">
-        <div className="text-center">
-          <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
-          <h2 className="text-lg font-semibold mb-2">Analysis Failed</h2>
-          <p className="text-muted-foreground mb-4">{error}</p>
+      <div className='flex flex-1 items-center justify-center p-4'>
+        <div className='text-center'>
+          <AlertTriangle className='h-12 w-12 text-destructive mx-auto mb-4' />
+          <h2 className='text-lg font-semibold mb-2'>Analysis Failed</h2>
+          <p className='text-muted-foreground mb-4'>{error}</p>
           <Button onClick={loadAnalysisSummary}>
-            <RefreshCw className="h-4 w-4 mr-2" />
+            <RefreshCw className='h-4 w-4 mr-2' />
             Try Again
           </Button>
         </div>
@@ -218,29 +246,47 @@ export default function AnalysisOverviewPage() {
       icon: Code,
       stats: [
         { label: 'Total Entities', value: summary.entities.total },
-        { label: 'Avg Complexity', value: summary.entities.averageComplexity.toFixed(1) },
-        { label: 'High Complexity', value: summary.entities.highComplexityCount },
+        {
+          label: 'Avg Complexity',
+          value: summary.entities.averageComplexity.toFixed(1),
+        },
+        {
+          label: 'High Complexity',
+          value: summary.entities.highComplexityCount,
+        },
       ],
       color: 'blue',
       status: summary.entities.highComplexityCount > 0 ? 'warning' : 'success',
     },
     {
       title: 'Duplicate Detection',
-      description: 'Find and analyze duplicate code patterns across your codebase',
+      description:
+        'Find and analyze duplicate code patterns across your codebase',
       href: '/dashboard/analysis/duplicates',
       icon: Copy,
       stats: [
         { label: 'Total Clusters', value: summary.duplicates.totalClusters },
-        { label: 'Duplicates Found', value: summary.duplicates.totalDuplicates },
-        { label: 'Critical Issues', value: summary.duplicates.criticalClusters },
+        {
+          label: 'Duplicates Found',
+          value: summary.duplicates.totalDuplicates,
+        },
+        {
+          label: 'Critical Issues',
+          value: summary.duplicates.criticalClusters,
+        },
       ],
       color: 'orange',
-      status: summary.duplicates.criticalClusters > 0 ? 'critical' : 
-              summary.duplicates.totalClusters > 0 ? 'warning' : 'success',
+      status:
+        summary.duplicates.criticalClusters > 0
+          ? 'critical'
+          : summary.duplicates.totalClusters > 0
+            ? 'warning'
+            : 'success',
     },
     {
       title: 'Dependencies',
-      description: 'Comprehensive analysis of project dependencies and versions',
+      description:
+        'Comprehensive analysis of project dependencies and versions',
       href: '/dashboard/analysis/dependencies',
       icon: Network,
       stats: [
@@ -249,8 +295,12 @@ export default function AnalysisOverviewPage() {
         { label: 'Vulnerabilities', value: summary.dependencies.vulnerable },
       ],
       color: 'green',
-      status: summary.dependencies.vulnerable > 0 ? 'critical' :
-              summary.dependencies.outdated > 0 ? 'warning' : 'success',
+      status:
+        summary.dependencies.vulnerable > 0
+          ? 'critical'
+          : summary.dependencies.outdated > 0
+            ? 'warning'
+            : 'success',
     },
     {
       title: 'Circular Dependencies',
@@ -259,94 +309,133 @@ export default function AnalysisOverviewPage() {
       icon: GitBranch,
       stats: [
         { label: 'Total Modules', value: summary.circular.totalDependencies },
-        { label: 'Circular Issues', value: summary.circular.circularDependencies },
+        {
+          label: 'Circular Issues',
+          value: summary.circular.circularDependencies,
+        },
         { label: 'Health Score', value: `${summary.circular.healthScore}%` },
       ],
       color: 'purple',
-      status: summary.circular.criticalIssues > 0 ? 'critical' :
-              summary.circular.circularDependencies > 0 ? 'warning' : 'success',
+      status:
+        summary.circular.criticalIssues > 0
+          ? 'critical'
+          : summary.circular.circularDependencies > 0
+            ? 'warning'
+            : 'success',
     },
   ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'critical': return 'text-red-600';
-      case 'warning': return 'text-yellow-600';
-      case 'success': return 'text-green-600';
-      default: return 'text-gray-600';
+      case 'critical':
+        return 'text-red-600';
+      case 'warning':
+        return 'text-yellow-600';
+      case 'success':
+        return 'text-green-600';
+      default:
+        return 'text-gray-600';
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'critical': return <Badge variant="destructive">Issues Found</Badge>;
-      case 'warning': return <Badge variant="secondary">Needs Attention</Badge>;
-      case 'success': return <Badge variant="outline" className="text-green-600 border-green-200">Healthy</Badge>;
-      default: return <Badge variant="outline">Unknown</Badge>;
+      case 'critical':
+        return <Badge variant='destructive'>Issues Found</Badge>;
+      case 'warning':
+        return <Badge variant='secondary'>Needs Attention</Badge>;
+      case 'success':
+        return (
+          <Badge variant='outline' className='text-green-600 border-green-200'>
+            Healthy
+          </Badge>
+        );
+      default:
+        return <Badge variant='outline'>Unknown</Badge>;
     }
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4">
+    <div className='flex flex-1 flex-col gap-6 p-4'>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className='flex items-center justify-between'>
         <div>
-          <h1 className="text-2xl font-bold">Code Analysis Overview</h1>
-          <p className="text-muted-foreground">
-            Comprehensive analysis of your codebase including entities, duplicates, dependencies, and architecture
+          <h1 className='text-2xl font-bold'>Code Analysis Overview</h1>
+          <p className='text-muted-foreground'>
+            Comprehensive analysis of your codebase including entities,
+            duplicates, dependencies, and architecture
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={loadAnalysisSummary} disabled={loading}>
-          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+        <Button
+          variant='outline'
+          size='sm'
+          onClick={loadAnalysisSummary}
+          disabled={loading}
+        >
+          <RefreshCw
+            className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`}
+          />
           Refresh
         </Button>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
         <SummaryCard
-          title="Total Entities"
+          title='Total Entities'
           value={summary.entities.total}
           icon={FileCode}
-          description="Code entities analyzed"
+          description='Code entities analyzed'
         />
         <SummaryCard
-          title="Duplicate Clusters"
+          title='Duplicate Clusters'
           value={summary.duplicates.totalClusters}
           icon={Copy}
-          variant={summary.duplicates.criticalClusters > 0 ? "critical" : "default"}
-          description="Duplicate code patterns"
+          variant={
+            summary.duplicates.criticalClusters > 0 ? 'critical' : 'default'
+          }
+          description='Duplicate code patterns'
         />
         <SummaryCard
-          title="Dependencies"
+          title='Dependencies'
           value={summary.dependencies.total}
           icon={Network}
-          variant={summary.dependencies.vulnerable > 0 ? "critical" : 
-                   summary.dependencies.outdated > 0 ? "warning" : "default"}
-          description="Project dependencies"
+          variant={
+            summary.dependencies.vulnerable > 0
+              ? 'critical'
+              : summary.dependencies.outdated > 0
+                ? 'warning'
+                : 'default'
+          }
+          description='Project dependencies'
         />
         <SummaryCard
-          title="Circular Issues"
+          title='Circular Issues'
           value={summary.circular.circularDependencies}
           icon={Target}
-          variant={summary.circular.criticalIssues > 0 ? "critical" : "default"}
-          description="Circular dependencies"
+          variant={summary.circular.criticalIssues > 0 ? 'critical' : 'default'}
+          description='Circular dependencies'
         />
       </div>
 
       {/* Analysis Modules */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {analysisModules.map((module) => (
-          <Card key={module.href} className="group hover:shadow-md transition-all duration-200">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+      <div className='grid gap-6 md:grid-cols-2'>
+        {analysisModules.map(module => (
+          <Card
+            key={module.href}
+            className='group hover:shadow-md transition-all duration-200'
+          >
+            <CardHeader className='pb-3'>
+              <div className='flex items-center justify-between'>
+                <div className='flex items-center gap-3'>
                   <div className={`p-2 rounded-lg bg-${module.color}-100`}>
-                    <module.icon className={`h-5 w-5 text-${module.color}-600`} />
+                    <module.icon
+                      className={`h-5 w-5 text-${module.color}-600`}
+                    />
                   </div>
                   <div>
-                    <CardTitle className="text-lg">{module.title}</CardTitle>
-                    <CardDescription className="text-sm">
+                    <CardTitle className='text-lg'>{module.title}</CardTitle>
+                    <CardDescription className='text-sm'>
                       {module.description}
                     </CardDescription>
                   </div>
@@ -354,28 +443,33 @@ export default function AnalysisOverviewPage() {
                 {getStatusBadge(module.status)}
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className='space-y-4'>
               {/* Module Stats */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className='grid grid-cols-3 gap-4'>
                 {module.stats.map((stat, index) => (
-                  <div key={index} className="text-center">
-                    <div className={`text-lg font-bold ${getStatusColor(module.status)}`}>
+                  <div key={index} className='text-center'>
+                    <div
+                      className={`text-lg font-bold ${getStatusColor(module.status)}`}
+                    >
                       {stat.value}
                     </div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className='text-xs text-muted-foreground'>
                       {stat.label}
                     </div>
                   </div>
                 ))}
               </div>
-              
+
               {/* Action Button */}
-              <div className="pt-2">
-                <Button asChild className="w-full group-hover:bg-primary/90 transition-colors">
+              <div className='pt-2'>
+                <Button
+                  asChild
+                  className='w-full group-hover:bg-primary/90 transition-colors'
+                >
                   <Link href={module.href}>
-                    <Activity className="mr-2 h-4 w-4" />
+                    <Activity className='mr-2 h-4 w-4' />
                     View Analysis
-                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className='ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform' />
                   </Link>
                 </Button>
               </div>
@@ -387,8 +481,8 @@ export default function AnalysisOverviewPage() {
       {/* System Health Overview */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
+          <CardTitle className='flex items-center gap-2'>
+            <TrendingUp className='h-5 w-5' />
             System Health Overview
           </CardTitle>
           <CardDescription>
@@ -396,75 +490,109 @@ export default function AnalysisOverviewPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
-                {summary.entities.total > 0 ? 
-                  Math.round((1 - summary.entities.highComplexityCount / summary.entities.total) * 100) : 100}%
+          <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-4'>
+            <div className='text-center'>
+              <div className='text-2xl font-bold text-blue-600'>
+                {summary.entities.total > 0
+                  ? Math.round(
+                      (1 -
+                        summary.entities.highComplexityCount /
+                          summary.entities.total) *
+                        100
+                    )
+                  : 100}
+                %
               </div>
-              <div className="text-sm text-muted-foreground">Code Quality</div>
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className='text-sm text-muted-foreground'>Code Quality</div>
+              <div className='text-xs text-muted-foreground mt-1'>
                 Based on complexity metrics
               </div>
             </div>
-            
-            <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">
-                {summary.duplicates.totalClusters > 0 ? 
-                  Math.max(0, 100 - (summary.duplicates.totalClusters * 5)) : 100}%
+
+            <div className='text-center'>
+              <div className='text-2xl font-bold text-orange-600'>
+                {summary.duplicates.totalClusters > 0
+                  ? Math.max(0, 100 - summary.duplicates.totalClusters * 5)
+                  : 100}
+                %
               </div>
-              <div className="text-sm text-muted-foreground">Maintainability</div>
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className='text-sm text-muted-foreground'>
+                Maintainability
+              </div>
+              <div className='text-xs text-muted-foreground mt-1'>
                 Based on duplicate analysis
               </div>
             </div>
-            
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
-                {summary.dependencies.total > 0 ?
-                  Math.round((1 - (summary.dependencies.vulnerable + summary.dependencies.outdated) / summary.dependencies.total) * 100) : 100}%
+
+            <div className='text-center'>
+              <div className='text-2xl font-bold text-green-600'>
+                {summary.dependencies.total > 0
+                  ? Math.round(
+                      (1 -
+                        (summary.dependencies.vulnerable +
+                          summary.dependencies.outdated) /
+                          summary.dependencies.total) *
+                        100
+                    )
+                  : 100}
+                %
               </div>
-              <div className="text-sm text-muted-foreground">Security</div>
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className='text-sm text-muted-foreground'>Security</div>
+              <div className='text-xs text-muted-foreground mt-1'>
                 Based on dependency analysis
               </div>
             </div>
-            
-            <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">
+
+            <div className='text-center'>
+              <div className='text-2xl font-bold text-purple-600'>
                 {summary.circular.healthScore}%
               </div>
-              <div className="text-sm text-muted-foreground">Architecture</div>
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className='text-sm text-muted-foreground'>Architecture</div>
+              <div className='text-xs text-muted-foreground mt-1'>
                 Based on circular dependencies
               </div>
             </div>
           </div>
-          
-          <div className="mt-6 pt-4 border-t">
-            <div className="text-sm text-muted-foreground">
-              <p className="mb-2">
+
+          <div className='mt-6 pt-4 border-t'>
+            <div className='text-sm text-muted-foreground'>
+              <p className='mb-2'>
                 <strong>Recommendations:</strong>
               </p>
-              <ul className="space-y-1 list-disc list-inside">
+              <ul className='space-y-1 list-disc list-inside'>
                 {summary.entities.highComplexityCount > 0 && (
-                  <li>Consider refactoring {summary.entities.highComplexityCount} high-complexity entities</li>
+                  <li>
+                    Consider refactoring {summary.entities.highComplexityCount}{' '}
+                    high-complexity entities
+                  </li>
                 )}
                 {summary.duplicates.criticalClusters > 0 && (
-                  <li>Address {summary.duplicates.criticalClusters} critical duplicate code clusters</li>
+                  <li>
+                    Address {summary.duplicates.criticalClusters} critical
+                    duplicate code clusters
+                  </li>
                 )}
                 {summary.dependencies.vulnerable > 0 && (
-                  <li>Update {summary.dependencies.vulnerable} vulnerable dependencies</li>
+                  <li>
+                    Update {summary.dependencies.vulnerable} vulnerable
+                    dependencies
+                  </li>
                 )}
                 {summary.circular.circularDependencies > 0 && (
-                  <li>Resolve {summary.circular.circularDependencies} circular dependency issues</li>
+                  <li>
+                    Resolve {summary.circular.circularDependencies} circular
+                    dependency issues
+                  </li>
                 )}
-                {summary.entities.highComplexityCount === 0 && 
-                 summary.duplicates.criticalClusters === 0 && 
-                 summary.dependencies.vulnerable === 0 && 
-                 summary.circular.circularDependencies === 0 && (
-                  <li>Your codebase is in excellent health! Consider running regular analysis to maintain quality.</li>
-                )}
+                {summary.entities.highComplexityCount === 0 &&
+                  summary.duplicates.criticalClusters === 0 &&
+                  summary.dependencies.vulnerable === 0 &&
+                  summary.circular.circularDependencies === 0 && (
+                    <li>
+                      Your codebase is in excellent health! Consider running
+                      regular analysis to maintain quality.
+                    </li>
+                  )}
               </ul>
             </div>
           </div>

@@ -348,6 +348,41 @@ export interface AgentPreferences {
 }
 
 // =============================================================================
+// Embedding Service Interface
+// =============================================================================
+
+/**
+ * Interface for a real embedding provider used in semantic tool retrieval.
+ *
+ * Implementations must return a numeric vector of consistent dimension for
+ * every input text. The retriever uses cosine similarity over these vectors,
+ * so the magnitude of each returned vector must be greater than zero for
+ * any non-empty input.
+ *
+ * @example
+ * ```typescript
+ * class OpenAIEmbeddingService implements EmbeddingService {
+ *   async embed(text: string): Promise<number[]> {
+ *     const response = await openai.embeddings.create({
+ *       model: 'text-embedding-3-small',
+ *       input: text,
+ *     });
+ *     return response.data[0].embedding;
+ *   }
+ * }
+ * ```
+ */
+export interface EmbeddingService {
+  /**
+   * Generate a numeric embedding vector for the given text.
+   *
+   * @param text - The text to embed
+   * @returns A numeric vector whose length is consistent across all calls
+   */
+  embed(text: string): Promise<number[]>;
+}
+
+// =============================================================================
 // Intent Analysis Types
 // =============================================================================
 
@@ -490,7 +525,7 @@ export const JsonValueSchema: z.ZodType<JsonValue> = z.lazy(() =>
     JsonPrimitiveSchema,
     z.array(JsonValueSchema),
     z.record(z.string(), JsonValueSchema),
-  ]),
+  ])
 );
 
 /**
@@ -498,7 +533,7 @@ export const JsonValueSchema: z.ZodType<JsonValue> = z.lazy(() =>
  */
 export const JsonRecordSchema: z.ZodType<JsonRecord> = z.record(
   z.string(),
-  JsonValueSchema,
+  JsonValueSchema
 );
 
 /**
@@ -675,7 +710,7 @@ export const ParsedIntentSchema = z.object({
       startIndex: z.number().int().nonnegative(),
       endIndex: z.number().int().nonnegative(),
       confidence: z.number().min(0).max(1),
-    }),
+    })
   ),
   requiredCapabilities: z.array(z.string()),
   relevantCategories: z.array(ToolCategorySchema),

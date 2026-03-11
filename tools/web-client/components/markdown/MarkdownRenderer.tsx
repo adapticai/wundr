@@ -61,12 +61,22 @@ function extractDocHeaders(
 }
 
 // Type guard functions for safe property access
-function hasStringProperty(obj: unknown, prop: string): obj is Record<string, string> {
-  return typeof obj === 'object' && obj !== null && prop in obj && typeof (obj as any)[prop] === 'string';
+function hasStringProperty(
+  obj: unknown,
+  prop: string
+): obj is Record<string, string> {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    prop in obj &&
+    typeof (obj as any)[prop] === 'string'
+  );
 }
 
 function isValidDateString(value: unknown): value is string {
-  return typeof value === 'string' && value.length > 0 && !isNaN(Date.parse(value));
+  return (
+    typeof value === 'string' && value.length > 0 && !isNaN(Date.parse(value))
+  );
 }
 
 // Import highlight.js styles
@@ -329,14 +339,13 @@ export function MarkdownRenderer({
                 </div>
               )}
 
-              {(processedFrontmatter.date && isValidDateString(processedFrontmatter.date)) && (
-                <div className='flex items-center gap-1'>
-                  <CalendarIcon className='h-4 w-4' />
-                  <span>
-                    {formatDate(processedFrontmatter.date)}
-                  </span>
-                </div>
-              )}
+              {processedFrontmatter.date &&
+                isValidDateString(processedFrontmatter.date) && (
+                  <div className='flex items-center gap-1'>
+                    <CalendarIcon className='h-4 w-4' />
+                    <span>{formatDate(processedFrontmatter.date)}</span>
+                  </div>
+                )}
 
               <div className='flex items-center gap-1'>
                 <ClockIcon className='h-4 w-4' />

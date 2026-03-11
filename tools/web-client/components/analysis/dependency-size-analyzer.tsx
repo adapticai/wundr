@@ -261,7 +261,11 @@ export function DependencySizeAnalyzer({
       const downloadStats: DownloadStats = {};
 
       const enrichedDependencies: DependencyData[] = packages.map(pkg => {
-        const { vulnerabilities: _vulnerabilities, vulnerabilityCount: _vulnerabilityCount, ...pkgRest } = pkg;
+        const {
+          vulnerabilities: _vulnerabilities,
+          vulnerabilityCount: _vulnerabilityCount,
+          ...pkgRest
+        } = pkg;
         return {
           ...pkgRest,
           size: pkg.size || 0,

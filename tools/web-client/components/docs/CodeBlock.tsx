@@ -23,7 +23,7 @@ export function CodeBlock({
   showLineNumbers = false,
   className = '',
   copyable = true,
-  executable = false
+  executable = false,
 }: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
@@ -47,16 +47,22 @@ export function CodeBlock({
 
   const getLanguageColor = (lang: string) => {
     const colors = {
-      javascript: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-      typescript: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+      javascript:
+        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+      typescript:
+        'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
       bash: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
       json: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
       css: 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200',
       html: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-      python: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
-      sql: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+      python:
+        'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
+      sql: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
     };
-    return colors[lang as keyof typeof colors] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+    return (
+      colors[lang as keyof typeof colors] ||
+      'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+    );
   };
 
   const lines = children.split('\n');
@@ -65,52 +71,55 @@ export function CodeBlock({
     <div className={cn('relative group', className)}>
       {/* Header */}
       {(filename || language || copyable || executable) && (
-        <div className="flex items-center justify-between px-4 py-2 bg-muted border border-b-0 rounded-t-lg">
-          <div className="flex items-center gap-2">
+        <div className='flex items-center justify-between px-4 py-2 bg-muted border border-b-0 rounded-t-lg'>
+          <div className='flex items-center gap-2'>
             {filename && (
-              <span className="text-sm font-mono text-muted-foreground">
+              <span className='text-sm font-mono text-muted-foreground'>
                 {filename}
               </span>
             )}
             {language && (
-              <Badge variant="secondary" className={cn('text-xs', getLanguageColor(language))}>
+              <Badge
+                variant='secondary'
+                className={cn('text-xs', getLanguageColor(language))}
+              >
                 {language}
               </Badge>
             )}
           </div>
-          
-          <div className="flex items-center gap-1">
+
+          <div className='flex items-center gap-1'>
             {executable && (
               <Button
-                variant="ghost"
-                size="sm"
+                variant='ghost'
+                size='sm'
                 onClick={handleExecute}
                 disabled={isExecuting}
-                className="h-8 w-8 p-0"
-                title="Execute code"
+                className='h-8 w-8 p-0'
+                title='Execute code'
               >
                 {isExecuting ? (
-                  <div className="animate-spin h-3 w-3 border-2 border-current border-t-transparent rounded-full" />
+                  <div className='animate-spin h-3 w-3 border-2 border-current border-t-transparent rounded-full' />
                 ) : language === 'bash' ? (
-                  <Terminal className="h-3 w-3" />
+                  <Terminal className='h-3 w-3' />
                 ) : (
-                  <Play className="h-3 w-3" />
+                  <Play className='h-3 w-3' />
                 )}
               </Button>
             )}
-            
+
             {copyable && (
               <Button
-                variant="ghost"
-                size="sm"
+                variant='ghost'
+                size='sm'
                 onClick={handleCopy}
-                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                className='h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity'
                 title={copied ? 'Copied!' : 'Copy code'}
               >
                 {copied ? (
-                  <Check className="h-3 w-3 text-green-500" />
+                  <Check className='h-3 w-3 text-green-500' />
                 ) : (
-                  <Copy className="h-3 w-3" />
+                  <Copy className='h-3 w-3' />
                 )}
               </Button>
             )}
@@ -119,23 +128,28 @@ export function CodeBlock({
       )}
 
       {/* Code Content */}
-      <div className={cn(
-        'relative overflow-x-auto',
-        filename || language || copyable || executable 
-          ? 'rounded-b-lg border border-t-0' 
-          : 'rounded-lg border'
-      )}>
-        <pre className="bg-muted p-4 text-sm">
-          <code className="block">
+      <div
+        className={cn(
+          'relative overflow-x-auto',
+          filename || language || copyable || executable
+            ? 'rounded-b-lg border border-t-0'
+            : 'rounded-lg border'
+        )}
+      >
+        <pre className='bg-muted p-4 text-sm'>
+          <code className='block'>
             {showLineNumbers ? (
-              <div className="table w-full">
+              <div className='table w-full'>
                 {lines.map((line, index) => (
-                  <div key={index} className="table-row">
-                    <div className="table-cell pr-4 text-muted-foreground text-right select-none w-8">
+                  <div key={index} className='table-row'>
+                    <div className='table-cell pr-4 text-muted-foreground text-right select-none w-8'>
                       {index + 1}
                     </div>
-                    <div className="table-cell">
-                      {line || '\u00A0' /* Non-breaking space for empty lines */}
+                    <div className='table-cell'>
+                      {
+                        line ||
+                          '\u00A0' /* Non-breaking space for empty lines */
+                      }
                     </div>
                   </div>
                 ))}
@@ -149,9 +163,9 @@ export function CodeBlock({
 
       {/* Execution Result */}
       {isExecuting && (
-        <div className="mt-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-          <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-300">
-            <Terminal className="h-4 w-4" />
+        <div className='mt-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg'>
+          <div className='flex items-center gap-2 text-sm text-green-700 dark:text-green-300'>
+            <Terminal className='h-4 w-4' />
             <span>Executing...</span>
           </div>
         </div>
@@ -161,27 +175,29 @@ export function CodeBlock({
 }
 
 // Enhanced markdown code block component that integrates with our markdown renderer
-export function MarkdownCodeBlock({ 
-  children, 
-  className, 
-  ..._ 
-}: { 
-  children: string; 
-  className?: string; 
-  [key: string]: unknown; 
+export function MarkdownCodeBlock({
+  children,
+  className,
+  ..._
+}: {
+  children: string;
+  className?: string;
+  [key: string]: unknown;
 }) {
   // Extract language from className (e.g., "language-javascript" -> "javascript")
   const language = className?.replace('language-', '') || 'text';
-  
+
   // Detect if this is a bash/shell command
-  const isBashCommand = ['bash', 'sh', 'shell', 'zsh', 'fish'].includes(language);
-  
+  const isBashCommand = ['bash', 'sh', 'shell', 'zsh', 'fish'].includes(
+    language
+  );
+
   return (
     <CodeBlock
       language={language}
       executable={isBashCommand}
       showLineNumbers={children.split('\n').length > 10}
-      className="my-4"
+      className='my-4'
     >
       {children}
     </CodeBlock>

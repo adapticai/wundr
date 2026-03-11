@@ -30,7 +30,8 @@ export function LazyTreeNode({
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
   const typeInfo = getFileTypeInfo(item.name);
-  const hasChildren = item.type === 'directory' && (!hasLoadedOnce || loadedChildren.length > 0);
+  const hasChildren =
+    item.type === 'directory' && (!hasLoadedOnce || loadedChildren.length > 0);
 
   const handleSelect = useCallback(() => {
     onSelect(item);
@@ -54,12 +55,14 @@ export function LazyTreeNode({
 
   const renderIcon = () => {
     if (isLoading) {
-      return <Loader2 className="h-4 w-4 animate-spin" />;
+      return <Loader2 className='h-4 w-4 animate-spin' />;
     }
     if (item.type === 'directory') {
       return <FolderIcon className={cn('h-4 w-4', typeInfo.color)} />;
     }
-    const IconComponent = typeInfo.icon as unknown as React.ComponentType<{ className?: string }>;
+    const IconComponent = typeInfo.icon as unknown as React.ComponentType<{
+      className?: string;
+    }>;
     return <IconComponent className={cn('h-4 w-4', typeInfo.color)} />;
   };
 

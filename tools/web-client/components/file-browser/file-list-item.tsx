@@ -3,13 +3,13 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
-  MoreHorizontal, 
-  Download, 
-  Copy, 
-  Eye, 
+import {
+  MoreHorizontal,
+  Download,
+  Copy,
+  Eye,
   Edit,
-  FolderIcon 
+  FolderIcon,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -18,7 +18,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { FileSystemItem, getFileTypeInfo, formatFileSize, formatDate } from '@/lib/file-system';
+import {
+  FileSystemItem,
+  getFileTypeInfo,
+  formatFileSize,
+  formatDate,
+} from '@/lib/file-system';
 import { cn } from '@/lib/utils';
 
 export interface FileListItemProps {
@@ -82,37 +87,37 @@ export function FileListItem({
         onClick={() => onSelect(item)}
         onDoubleClick={() => onDoubleClick(item)}
       >
-        <div className="relative">
+        <div className='relative'>
           <IconComponent className={cn('h-10 w-10', typeInfo.color)} />
           {item.type === 'file' && (
-            <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className='absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity'>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
-                    variant="secondary"
-                    size="sm"
-                    className="h-6 w-6 p-0 rounded-full"
-                    onClick={(e) => e.stopPropagation()}
+                    variant='secondary'
+                    size='sm'
+                    className='h-6 w-6 p-0 rounded-full'
+                    onClick={e => e.stopPropagation()}
                   >
-                    <MoreHorizontal className="h-3 w-3" />
+                    <MoreHorizontal className='h-3 w-3' />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align='end'>
                   <DropdownMenuItem onClick={handleView}>
-                    <Eye className="h-4 w-4 mr-2" />
+                    <Eye className='h-4 w-4 mr-2' />
                     View
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleEdit}>
-                    <Edit className="h-4 w-4 mr-2" />
+                    <Edit className='h-4 w-4 mr-2' />
                     Edit
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleDownload}>
-                    <Download className="h-4 w-4 mr-2" />
+                    <Download className='h-4 w-4 mr-2' />
                     Download
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleCopyPath}>
-                    <Copy className="h-4 w-4 mr-2" />
+                    <Copy className='h-4 w-4 mr-2' />
                     Copy Path
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -120,12 +125,15 @@ export function FileListItem({
             </div>
           )}
         </div>
-        
-        <div className="text-center w-full">
-          <div className="font-medium text-sm truncate max-w-24" title={item.name}>
+
+        <div className='text-center w-full'>
+          <div
+            className='font-medium text-sm truncate max-w-24'
+            title={item.name}
+          >
             {item.name}
           </div>
-          <div className="text-xs text-muted-foreground mt-1">
+          <div className='text-xs text-muted-foreground mt-1'>
             {item.type === 'file' && item.size !== undefined && (
               <span>{formatFileSize(item.size)}</span>
             )}
@@ -147,56 +155,52 @@ export function FileListItem({
       onDoubleClick={() => onDoubleClick(item)}
     >
       <IconComponent className={cn('h-5 w-5 flex-shrink-0', typeInfo.color)} />
-      
-      <div className="flex-1 min-w-0">
-        <div className="font-medium truncate">{item.name}</div>
-        <div className="text-sm text-muted-foreground flex items-center gap-3">
-          <Badge variant="outline" className="text-xs">
+
+      <div className='flex-1 min-w-0'>
+        <div className='font-medium truncate'>{item.name}</div>
+        <div className='text-sm text-muted-foreground flex items-center gap-3'>
+          <Badge variant='outline' className='text-xs'>
             {item.type === 'directory' ? 'Folder' : typeInfo.category}
           </Badge>
-          {item.size !== undefined && (
-            <span>{formatFileSize(item.size)}</span>
-          )}
-          {item.modifiedAt && (
-            <span>{formatDate(item.modifiedAt)}</span>
-          )}
+          {item.size !== undefined && <span>{formatFileSize(item.size)}</span>}
+          {item.modifiedAt && <span>{formatDate(item.modifiedAt)}</span>}
         </div>
       </div>
-      
-      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+
+      <div className='opacity-0 group-hover:opacity-100 transition-opacity'>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0"
-              onClick={(e) => e.stopPropagation()}
+              variant='ghost'
+              size='sm'
+              className='h-8 w-8 p-0'
+              onClick={e => e.stopPropagation()}
             >
-              <MoreHorizontal className="h-4 w-4" />
+              <MoreHorizontal className='h-4 w-4' />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align='end'>
             {item.type === 'file' && (
               <DropdownMenuItem onClick={handleView}>
-                <Eye className="h-4 w-4 mr-2" />
+                <Eye className='h-4 w-4 mr-2' />
                 View
               </DropdownMenuItem>
             )}
             {item.type === 'file' && (
               <DropdownMenuItem onClick={handleEdit}>
-                <Edit className="h-4 w-4 mr-2" />
+                <Edit className='h-4 w-4 mr-2' />
                 Edit
               </DropdownMenuItem>
             )}
             {item.type === 'file' && (
               <DropdownMenuItem onClick={handleDownload}>
-                <Download className="h-4 w-4 mr-2" />
+                <Download className='h-4 w-4 mr-2' />
                 Download
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleCopyPath}>
-              <Copy className="h-4 w-4 mr-2" />
+              <Copy className='h-4 w-4 mr-2' />
               Copy Path
             </DropdownMenuItem>
           </DropdownMenuContent>

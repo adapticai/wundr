@@ -26,12 +26,12 @@ export class BasePage {
 
   async checkForJSErrors(): Promise<string[]> {
     const errors: string[] = [];
-    
-    this.page.on('pageerror', (error) => {
+
+    this.page.on('pageerror', error => {
       errors.push(`Page Error: ${error.message}`);
     });
 
-    this.page.on('console', (msg) => {
+    this.page.on('console', msg => {
       if (msg.type() === 'error') {
         errors.push(`Console Error: ${msg.text()}`);
       }
@@ -43,9 +43,11 @@ export class BasePage {
   async checkForFailedRequests(): Promise<string[]> {
     const failedRequests: string[] = [];
 
-    this.page.on('response', (response) => {
+    this.page.on('response', response => {
       if (!response.ok() && response.status() !== 404) {
-        failedRequests.push(`Failed Request: ${response.url()} - ${response.status()}`);
+        failedRequests.push(
+          `Failed Request: ${response.url()} - ${response.status()}`
+        );
       }
     });
 
@@ -102,7 +104,7 @@ export class BasePage {
     // Check for essential page elements
     await expect(this.page.locator('html')).toBeVisible();
     await expect(this.page.locator('body')).toBeVisible();
-    
+
     // Check for basic meta tags
     const title = await this.page.title();
     expect(title).toBeTruthy();
@@ -155,13 +157,13 @@ export class WebClientDashboardPage extends BasePage {
 
   async validateDashboardLayout() {
     await this.validatePageStructure();
-    
+
     // Check for sidebar navigation
-    const sidebarExists = await this.sidebar.count() > 0;
+    const sidebarExists = (await this.sidebar.count()) > 0;
     if (sidebarExists) {
       await expect(this.sidebar).toBeVisible();
     }
-    
+
     // Check for main content area
     await expect(this.mainContent).toBeVisible();
   }
@@ -172,7 +174,9 @@ export class WebClientDashboardPage extends BasePage {
   }
 
   async checkAnalysisData() {
-    const analysisCards = await this.page.locator('.analysis-card, .summary-card').count();
+    const analysisCards = await this.page
+      .locator('.analysis-card, .summary-card')
+      .count();
     return analysisCards > 0;
   }
 }

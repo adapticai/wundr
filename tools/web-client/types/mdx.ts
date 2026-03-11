@@ -135,7 +135,15 @@ export interface ListProps extends BaseMdxProps {
   /** List start number (for ordered lists) */
   start?: number;
   /** List marker style */
-  marker?: 'decimal' | 'lower-alpha' | 'upper-alpha' | 'lower-roman' | 'upper-roman' | 'disc' | 'circle' | 'square';
+  marker?:
+    | 'decimal'
+    | 'lower-alpha'
+    | 'upper-alpha'
+    | 'lower-roman'
+    | 'upper-roman'
+    | 'disc'
+    | 'circle'
+    | 'square';
 }
 
 /**
@@ -185,14 +193,16 @@ export interface DocFrontmatter {
   /** Document status */
   status?: 'draft' | 'published' | 'archived';
   /** Table of contents configuration */
-  toc?: boolean | {
-    /** Maximum heading level */
-    maxDepth?: number;
-    /** Minimum heading level */
-    minDepth?: number;
-    /** TOC title */
-    title?: string;
-  };
+  toc?:
+    | boolean
+    | {
+        /** Maximum heading level */
+        maxDepth?: number;
+        /** Minimum heading level */
+        minDepth?: number;
+        /** TOC title */
+        title?: string;
+      };
   /** SEO metadata */
   seo?: {
     /** Meta description */
@@ -298,14 +308,17 @@ export interface ApiEndpoint {
     required?: boolean;
   };
   /** Response schemas */
-  responses: Record<string | number, {
-    /** Response description */
-    description: string;
-    /** Response schema */
-    schema?: ApiSchema;
-    /** Response headers */
-    headers?: Record<string, ApiSchema>;
-  }>;
+  responses: Record<
+    string | number,
+    {
+      /** Response description */
+      description: string;
+      /** Response schema */
+      schema?: ApiSchema;
+      /** Response headers */
+      headers?: Record<string, ApiSchema>;
+    }
+  >;
   /** Operation tags */
   tags?: string[];
   /** Security requirements */

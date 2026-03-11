@@ -18,52 +18,55 @@ interface VersionSwitcherProps {
   className?: string;
 }
 
-export function VersionSwitcher({ 
-  currentVersion, 
+export function VersionSwitcher({
+  currentVersion,
   onVersionChange,
-  className = '' 
+  className = '',
 }: VersionSwitcherProps) {
-  const current = DOCS_VERSIONS.find(v => v.version === currentVersion) || DOCS_VERSIONS[0];
+  const current =
+    DOCS_VERSIONS.find(v => v.version === currentVersion) || DOCS_VERSIONS[0];
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="outline" 
+        <Button
+          variant='outline'
           className={`justify-between min-w-[140px] ${className}`}
         >
-          <div className="flex items-center gap-2">
-            <span className="font-medium">{current.label}</span>
-            {!current.deprecated && current.version === DOCS_VERSIONS[0]?.version && (
-              <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
-                Latest
-              </Badge>
-            )}
-          </div>
-          <ChevronDown className="h-4 w-4 opacity-50" />
-        </Button>
-      </DropdownMenuTrigger>
-      
-      <DropdownMenuContent align="end" className="w-56">
-        {DOCS_VERSIONS.map((version) => (
-          <DropdownMenuItem
-            key={version.version}
-            onClick={() => onVersionChange?.(version)}
-            className="flex items-center justify-between cursor-pointer"
-          >
-            <div className="flex items-center gap-2">
-              <span className="font-medium">{version.label}</span>
-              {version.deprecated && (
-                <AlertTriangle className="h-3 w-3 text-yellow-500" />
-              )}
-              {!version.deprecated && version.version === DOCS_VERSIONS[0]?.version && (
-                <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
+          <div className='flex items-center gap-2'>
+            <span className='font-medium'>{current.label}</span>
+            {!current.deprecated &&
+              current.version === DOCS_VERSIONS[0]?.version && (
+                <Badge variant='secondary' className='text-xs px-1.5 py-0.5'>
                   Latest
                 </Badge>
               )}
+          </div>
+          <ChevronDown className='h-4 w-4 opacity-50' />
+        </Button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent align='end' className='w-56'>
+        {DOCS_VERSIONS.map(version => (
+          <DropdownMenuItem
+            key={version.version}
+            onClick={() => onVersionChange?.(version)}
+            className='flex items-center justify-between cursor-pointer'
+          >
+            <div className='flex items-center gap-2'>
+              <span className='font-medium'>{version.label}</span>
+              {version.deprecated && (
+                <AlertTriangle className='h-3 w-3 text-yellow-500' />
+              )}
+              {!version.deprecated &&
+                version.version === DOCS_VERSIONS[0]?.version && (
+                  <Badge variant='secondary' className='text-xs px-1.5 py-0.5'>
+                    Latest
+                  </Badge>
+                )}
             </div>
             {current.version === version.version && (
-              <Check className="h-4 w-4 text-primary" />
+              <Check className='h-4 w-4 text-primary' />
             )}
           </DropdownMenuItem>
         ))}

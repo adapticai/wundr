@@ -3,7 +3,7 @@ import { LogoShowcase } from '@/components/logos';
 
 export default function LogosPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className='min-h-screen bg-background'>
       <LogoShowcase />
     </div>
   );

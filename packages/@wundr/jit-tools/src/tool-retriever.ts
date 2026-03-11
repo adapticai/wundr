@@ -19,6 +19,7 @@ import type {
   AgentContext,
   ParsedIntent,
   ToolCategory,
+  EmbeddingService,
 } from './types';
 
 // =============================================================================
@@ -84,6 +85,7 @@ export class JITToolRetriever extends EventEmitter {
   private registry: ToolRegistry;
   private config: JITToolConfig;
   private intentAnalyzer: IntentAnalyzer;
+  private embeddingService: EmbeddingService | null;
   private cache: Map<string, CacheEntry> = new Map();
   private embeddings: Map<string, number[]> = new Map();
 
@@ -92,11 +94,19 @@ export class JITToolRetriever extends EventEmitter {
    *
    * @param registry - Tool registry to retrieve from
    * @param config - JIT configuration options
+   * @param embeddingService - Embedding provider required when
+   *   `config.enableSemanticSearch` is `true`. If semantic search is enabled
+   *   and no service is supplied, retrieval will throw at runtime.
    */
-  constructor(registry: ToolRegistry, config: Partial<JITToolConfig> = {}) {
+  constructor(
+    registry: ToolRegistry,
+    config: Partial<JITToolConfig> = {},
+    embeddingService: EmbeddingService | null = null
+  ) {
     super();
     this.registry = registry;
     this.config = { ...DEFAULT_JIT_CONFIG, ...config };
+    this.embeddingService = embeddingService;
     this.intentAnalyzer = new IntentAnalyzer();
   }
 
@@ -115,7 +125,7 @@ export class JITToolRetriever extends EventEmitter {
   async retrieve(
     query: string,
     context?: AgentContext,
-    options: RetrievalOptions = {},
+    options: RetrievalOptions = {}
   ): Promise<ToolRetrievalResult> {
     const startTime = Date.now();
 
@@ -146,21 +156,21 @@ export class JITToolRetriever extends EventEmitter {
         candidates,
         intent,
         context,
-        options,
+        options
       );
 
       // Filter by permissions
       const permissionFiltered = this.filterByPermissions(
         scoredTools,
         context,
-        options,
+        options
       );
 
       // Filter by score threshold
       const minScore =
         options.minRelevanceScore ?? this.config.minRelevanceScore;
       const scoreFiltered = permissionFiltered.filter(
-        rt => rt.finalScore >= minScore,
+        rt => rt.finalScore >= minScore
       );
 
       // Apply token budget and max tools limit
@@ -169,7 +179,7 @@ export class JITToolRetriever extends EventEmitter {
       const finalTools = this.applyBudgetConstraints(
         scoreFiltered,
         maxTools,
-        maxBudget,
+        maxBudget
       );
 
       // Build result
@@ -180,7 +190,7 @@ export class JITToolRetriever extends EventEmitter {
         retrievalTimeMs: Date.now() - startTime,
         totalTokenCost: finalTools.reduce(
           (sum, rt) => sum + rt.tool.tokenCost,
-          0,
+          0
         ),
         metadata: {
           toolsScanned: candidates.length,
@@ -217,7 +227,7 @@ export class JITToolRetriever extends EventEmitter {
   async retrieveByCapabilities(
     capabilities: string[],
     context?: AgentContext,
-    options: RetrievalOptions = {},
+    options: RetrievalOptions = {}
   ): Promise<ToolRetrievalResult> {
     const query = `Find tools with capabilities: ${capabilities.join(', ')}`;
     return this.retrieve(query, context, options);
@@ -234,7 +244,7 @@ export class JITToolRetriever extends EventEmitter {
   async retrieveByCategories(
     categories: ToolCategory[],
     context?: AgentContext,
-    options: RetrievalOptions = {},
+    options: RetrievalOptions = {}
   ): Promise<ToolRetrievalResult> {
     const boostedOptions: RetrievalOptions = {
       ...options,
@@ -243,7 +253,7 @@ export class JITToolRetriever extends EventEmitter {
           acc[cat] = 2.0; // Double the weight for specified categories
           return acc;
         },
-        {} as Partial<Record<ToolCategory, number>>,
+        {} as Partial<Record<ToolCategory, number>>
       ),
     };
 
@@ -260,13 +270,13 @@ export class JITToolRetriever extends EventEmitter {
    */
   async getRecommendations(
     context: AgentContext,
-    options: RetrievalOptions = {},
+    options: RetrievalOptions = {}
   ): Promise<ToolRetrievalResult> {
     // Build query from agent history and preferences
     const recentTools = context.toolHistory
       .slice(0, 10)
       .filter(
-        record => record.success && record.relevanceFeedback !== 'not_helpful',
+        record => record.success && record.relevanceFeedback !== 'not_helpful'
       )
       .map(record => record.toolId);
 
@@ -292,7 +302,7 @@ export class JITToolRetriever extends EventEmitter {
     tools: ToolSpec[],
     intent: ParsedIntent,
     context?: AgentContext,
-    options: RetrievalOptions = {},
+    options: RetrievalOptions = {}
   ): Promise<RetrievedTool[]> {
     const weights = this.config.scoringWeights;
     const categoryBoosts = options.categoryBoosts || {};
@@ -311,7 +321,7 @@ export class JITToolRetriever extends EventEmitter {
       const categoryScore = this.calculateCategoryScore(
         tool,
         intent,
-        categoryBoosts,
+        categoryBoosts
       );
 
       // Calculate weighted final score
@@ -368,7 +378,7 @@ export class JITToolRetriever extends EventEmitter {
    */
   private async calculateSemanticScore(
     tool: ToolSpec,
-    intent: ParsedIntent,
+    intent: ParsedIntent
   ): Promise<number> {
     // Get or compute tool embedding
     const toolEmbedding = await this.getToolEmbedding(tool);
@@ -421,7 +431,7 @@ export class JITToolRetriever extends EventEmitter {
    */
   private calculatePermissionScore(
     tool: ToolSpec,
-    context?: AgentContext,
+    context?: AgentContext
   ): number {
     if (!context || this.config.permissionMode === 'disabled') {
       return 1.0;
@@ -432,7 +442,7 @@ export class JITToolRetriever extends EventEmitter {
 
     // Check if agent has all required permissions
     const matchedPermissions = toolPermissions.filter(p =>
-      agentPermissions.has(p),
+      agentPermissions.has(p)
     );
     const permissionRatio =
       toolPermissions.length > 0
@@ -448,7 +458,7 @@ export class JITToolRetriever extends EventEmitter {
   private calculateCategoryScore(
     tool: ToolSpec,
     intent: ParsedIntent,
-    boosts: Partial<Record<ToolCategory, number>>,
+    boosts: Partial<Record<ToolCategory, number>>
   ): number {
     let score = 0;
 
@@ -471,7 +481,7 @@ export class JITToolRetriever extends EventEmitter {
    */
   private calculateHistoryBoost(toolId: string, context: AgentContext): number {
     const relevantHistory = context.toolHistory.filter(
-      h => h.toolId === toolId,
+      h => h.toolId === toolId
     );
 
     if (relevantHistory.length === 0) {
@@ -484,7 +494,7 @@ export class JITToolRetriever extends EventEmitter {
 
     // Calculate helpfulness rate
     const helpfulCount = relevantHistory.filter(
-      h => h.relevanceFeedback === 'helpful',
+      h => h.relevanceFeedback === 'helpful'
     ).length;
     const helpfulRate = relevantHistory.some(h => h.relevanceFeedback)
       ? helpfulCount / relevantHistory.filter(h => h.relevanceFeedback).length
@@ -504,7 +514,7 @@ export class JITToolRetriever extends EventEmitter {
   private getCandidateTools(
     intent: ParsedIntent,
     context?: AgentContext,
-    options: RetrievalOptions = {},
+    options: RetrievalOptions = {}
   ): ToolSpec[] {
     // Start with all tools or filtered by category
     let candidates: ToolSpec[];
@@ -535,7 +545,7 @@ export class JITToolRetriever extends EventEmitter {
     // Filter by excluded categories
     if (this.config.excludedCategories.length > 0) {
       candidates = candidates.filter(
-        tool => !this.config.excludedCategories.includes(tool.category),
+        tool => !this.config.excludedCategories.includes(tool.category)
       );
     }
 
@@ -570,7 +580,7 @@ export class JITToolRetriever extends EventEmitter {
   private filterByPermissions(
     tools: RetrievedTool[],
     context?: AgentContext,
-    options: RetrievalOptions = {},
+    options: RetrievalOptions = {}
   ): RetrievedTool[] {
     if (
       options.bypassPermissions ||
@@ -606,7 +616,7 @@ export class JITToolRetriever extends EventEmitter {
   private applyBudgetConstraints(
     tools: RetrievedTool[],
     maxTools: number,
-    maxBudget: number,
+    maxBudget: number
   ): RetrievedTool[] {
     const result: RetrievedTool[] = [];
     let totalTokens = 0;
@@ -632,36 +642,49 @@ export class JITToolRetriever extends EventEmitter {
   // ===========================================================================
 
   /**
-   * Get or compute embedding for a tool
+   * Get or compute embedding for a tool using the configured embedding service.
+   *
+   * Throws if semantic search is enabled but no embedding service was provided.
    */
   private async getToolEmbedding(tool: ToolSpec): Promise<number[] | null> {
+    if (!this.embeddingService) {
+      throw new Error(
+        'Embedding service required for semantic tool retrieval. Configure an embedding provider.'
+      );
+    }
+
     const cacheKey = `tool:${tool.id}:${tool.metadata.updatedAt.toISOString()}`;
 
     if (this.embeddings.has(cacheKey)) {
       return this.embeddings.get(cacheKey)!;
     }
 
-    // Generate text representation of tool
     const toolText = this.toolToText(tool);
-
-    // Compute embedding (simplified - in production, use actual embedding model)
-    const embedding = this.computeSimpleEmbedding(toolText);
+    const embedding = await this.embeddingService.embed(toolText);
 
     this.embeddings.set(cacheKey, embedding);
     return embedding;
   }
 
   /**
-   * Get or compute embedding for a query
+   * Get or compute embedding for a query using the configured embedding service.
+   *
+   * Throws if semantic search is enabled but no embedding service was provided.
    */
   private async getQueryEmbedding(query: string): Promise<number[] | null> {
+    if (!this.embeddingService) {
+      throw new Error(
+        'Embedding service required for semantic tool retrieval. Configure an embedding provider.'
+      );
+    }
+
     const cacheKey = `query:${query}`;
 
     if (this.embeddings.has(cacheKey)) {
       return this.embeddings.get(cacheKey)!;
     }
 
-    const embedding = this.computeSimpleEmbedding(query);
+    const embedding = await this.embeddingService.embed(query);
     this.embeddings.set(cacheKey, embedding);
 
     return embedding;
@@ -678,35 +701,6 @@ export class JITToolRetriever extends EventEmitter {
       tool.keywords.join(' '),
       tool.category,
     ].join(' ');
-  }
-
-  /**
-   * Compute simple bag-of-words embedding
-   * In production, replace with actual embedding model from rag-utils
-   */
-  private computeSimpleEmbedding(text: string): number[] {
-    const words = text.toLowerCase().split(/\s+/);
-    const dimension = 128;
-    const embedding = new Array(dimension).fill(0);
-
-    for (const word of words) {
-      // Simple hash-based embedding
-      for (let i = 0; i < word.length; i++) {
-        const charCode = word.charCodeAt(i);
-        const index = (charCode * (i + 1)) % dimension;
-        embedding[index] += 1 / words.length;
-      }
-    }
-
-    // Normalize
-    const magnitude = Math.sqrt(embedding.reduce((sum, v) => sum + v * v, 0));
-    if (magnitude > 0) {
-      for (let i = 0; i < embedding.length; i++) {
-        embedding[i] /= magnitude;
-      }
-    }
-
-    return embedding;
   }
 
   /**
@@ -740,7 +734,7 @@ export class JITToolRetriever extends EventEmitter {
    */
   private getCachedResult(
     query: string,
-    context?: AgentContext,
+    context?: AgentContext
   ): ToolRetrievalResult | null {
     const queryHash = this.hashQuery(query, context);
     const entry = this.cache.get(queryHash);
@@ -770,7 +764,7 @@ export class JITToolRetriever extends EventEmitter {
   private cacheResult(
     query: string,
     context: AgentContext | undefined,
-    result: ToolRetrievalResult,
+    result: ToolRetrievalResult
   ): void {
     const queryHash = this.hashQuery(query, context);
 
@@ -841,7 +835,7 @@ export class JITToolRetriever extends EventEmitter {
       keywordScore: number;
       permissionScore: number;
       categoryScore: number;
-    },
+    }
   ): string[] {
     const reasons: string[] = [];
 
@@ -851,7 +845,7 @@ export class JITToolRetriever extends EventEmitter {
 
     if (scores.keywordScore > 0.5) {
       const matchingKeywords = tool.keywords.filter(k =>
-        intent.keywords.includes(k.toLowerCase()),
+        intent.keywords.includes(k.toLowerCase())
       );
       if (matchingKeywords.length > 0) {
         reasons.push(`Keywords: ${matchingKeywords.slice(0, 3).join(', ')}`);
@@ -863,7 +857,7 @@ export class JITToolRetriever extends EventEmitter {
     }
 
     const matchingCaps = tool.capabilities.filter(c =>
-      intent.requiredCapabilities.includes(c),
+      intent.requiredCapabilities.includes(c)
     );
     if (matchingCaps.length > 0) {
       reasons.push(`Capabilities: ${matchingCaps.slice(0, 3).join(', ')}`);
@@ -901,11 +895,14 @@ export class JITToolRetriever extends EventEmitter {
  *
  * @param registry - Tool registry
  * @param config - Optional configuration
+ * @param embeddingService - Embedding provider required when
+ *   `config.enableSemanticSearch` is `true`
  * @returns JITToolRetriever instance
  */
 export function createToolRetriever(
   registry: ToolRegistry,
   config?: Partial<JITToolConfig>,
+  embeddingService?: EmbeddingService | null
 ): JITToolRetriever {
-  return new JITToolRetriever(registry, config);
+  return new JITToolRetriever(registry, config, embeddingService ?? null);
 }

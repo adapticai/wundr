@@ -38,9 +38,7 @@ describe('use-media-query hooks', () => {
     it('should return true when media query matches', () => {
       window.matchMedia = createMatchMedia(true) as any;
 
-      const { result } = renderHook(() =>
-        useMediaQuery('(min-width: 768px)')
-      );
+      const { result } = renderHook(() => useMediaQuery('(min-width: 768px)'));
 
       expect(result.current).toBe(true);
     });
@@ -48,9 +46,7 @@ describe('use-media-query hooks', () => {
     it('should return false when media query does not match', () => {
       window.matchMedia = createMatchMedia(false) as any;
 
-      const { result } = renderHook(() =>
-        useMediaQuery('(min-width: 768px)')
-      );
+      const { result } = renderHook(() => useMediaQuery('(min-width: 768px)'));
 
       expect(result.current).toBe(false);
     });
@@ -71,7 +67,9 @@ describe('use-media-query hooks', () => {
 
       renderHook(() => useIsMobile());
 
-      expect(mockMatchMedia).toHaveBeenCalledWith(`(max-width: ${BREAKPOINTS.sm}px)`);
+      expect(mockMatchMedia).toHaveBeenCalledWith(
+        `(max-width: ${BREAKPOINTS.sm}px)`
+      );
     });
   });
 

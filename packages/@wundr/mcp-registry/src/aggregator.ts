@@ -35,7 +35,7 @@ import type {
 export class NoServerAvailableError extends Error {
   constructor(
     public readonly toolName: string,
-    message?: string,
+    message?: string
   ) {
     super(message ?? `No server available for tool: ${toolName}`);
     this.name = 'NoServerAvailableError';
@@ -49,10 +49,10 @@ export class ToolInvocationTimeoutError extends Error {
   constructor(
     public readonly toolName: string,
     public readonly timeoutMs: number,
-    message?: string,
+    message?: string
   ) {
     super(
-      message ?? `Tool invocation timed out after ${timeoutMs}ms: ${toolName}`,
+      message ?? `Tool invocation timed out after ${timeoutMs}ms: ${toolName}`
     );
     this.name = 'ToolInvocationTimeoutError';
   }
@@ -64,7 +64,7 @@ export class ToolInvocationTimeoutError extends Error {
 export class CircuitBreakerOpenError extends Error {
   constructor(
     public readonly serverId: string,
-    message?: string,
+    message?: string
   ) {
     super(message ?? `Circuit breaker open for server: ${serverId}`);
     this.name = 'CircuitBreakerOpenError';
@@ -79,13 +79,30 @@ export class RetryExhaustedError extends Error {
     public readonly toolName: string,
     public readonly attempts: number,
     public readonly lastError: Error,
-    message?: string,
+    message?: string
   ) {
     super(
       message ??
-        `All ${attempts} retry attempts exhausted for tool: ${toolName}`,
+        `All ${attempts} retry attempts exhausted for tool: ${toolName}`
     );
     this.name = 'RetryExhaustedError';
+  }
+}
+
+/**
+ * Error thrown when the target server has no registered transport and is not connected
+ */
+export class ServerNotConnectedError extends Error {
+  constructor(
+    public readonly serverId: string,
+    public readonly serverName: string,
+    message?: string
+  ) {
+    super(
+      message ??
+        `Server "${serverName}" (${serverId}) is not connected. Register a ServerTransport via MCPAggregator.registerServerTransport() to enable remote dispatch.`
+    );
+    this.name = 'ServerNotConnectedError';
   }
 }
 
@@ -197,6 +214,9 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
   /** Tool handler registry for direct invocation */
   private readonly toolHandlers: Map<string, ToolHandler>;
 
+  /** Per-server transport registry for remote dispatch */
+  private readonly serverTransports: Map<string, ServerTransport>;
+
   /**
    * Creates a new MCPAggregator
    *
@@ -205,7 +225,7 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
    */
   constructor(
     private readonly registry: MCPServerRegistry,
-    config: AggregatorConfig = {},
+    config: AggregatorConfig = {}
   ) {
     super();
 
@@ -232,6 +252,7 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
     this.roundRobinIndex = new Map();
     this.requestCounter = 0;
     this.toolHandlers = new Map();
+    this.serverTransports = new Map();
   }
 
   // ===========================================================================
@@ -248,7 +269,7 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
    * @throws {RetryExhaustedError} If all retries are exhausted
    */
   async invoke(
-    request: ToolInvocationRequest,
+    request: ToolInvocationRequest
   ): Promise<ToolInvocationResponse> {
     return this.invokeWithStrategy(request, this.config.defaultStrategy);
   }
@@ -262,7 +283,7 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
    */
   async invokeWithStrategy(
     request: ToolInvocationRequest,
-    strategy: RoutingStrategy,
+    strategy: RoutingStrategy
   ): Promise<ToolInvocationResponse> {
     const requestId = this.generateRequestId();
     const startTime = Date.now();
@@ -280,7 +301,7 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
         const server = await this.selectServer(
           request.name,
           strategy,
-          request.preferredServer,
+          request.preferredServer
         );
 
         if (!server) {
@@ -297,7 +318,7 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
         const result = await this.executeWithTimeout(
           request,
           server,
-          request.timeout ?? this.config.requestTimeout,
+          request.timeout ?? this.config.requestTimeout
         );
 
         const durationMs = Date.now() - startTime;
@@ -311,7 +332,7 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
           requestId,
           request.name,
           server.id,
-          durationMs,
+          durationMs
         );
 
         return {
@@ -345,7 +366,7 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
             undefined,
             undefined,
             lastError,
-            retryAttempts,
+            retryAttempts
           );
 
           // Wait before retry
@@ -364,14 +385,14 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
       request.name,
       undefined,
       durationMs,
-      lastError,
+      lastError
     );
 
     if (retryAttempts > 0) {
       throw new RetryExhaustedError(
         request.name,
         retryAttempts,
-        lastError ?? new Error('Unknown error'),
+        lastError ?? new Error('Unknown error')
       );
     }
 
@@ -385,7 +406,7 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
    * @returns Array of tool invocation responses
    */
   async invokeParallel(
-    requests: readonly ToolInvocationRequest[],
+    requests: readonly ToolInvocationRequest[]
   ): Promise<readonly ToolInvocationResponse[]> {
     return Promise.all(requests.map(req => this.invoke(req)));
   }
@@ -397,7 +418,7 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
    * @returns Array of tool invocation responses
    */
   async invokeSequential(
-    requests: readonly ToolInvocationRequest[],
+    requests: readonly ToolInvocationRequest[]
   ): Promise<readonly ToolInvocationResponse[]> {
     const results: ToolInvocationResponse[] = [];
 
@@ -432,6 +453,35 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
     this.toolHandlers.delete(toolName);
   }
 
+  /**
+   * Register a transport for a specific server to enable remote tool dispatch.
+   *
+   * The transport is responsible for forwarding the tool call to the actual
+   * MCP server process over whatever protocol the server uses (stdio, http, etc.).
+   *
+   * @example
+   * ```typescript
+   * aggregator.registerServerTransport(server.id, async (toolName, args) => {
+   *   return myMcpClient.callTool(toolName, args);
+   * });
+   * ```
+   *
+   * @param serverId - Server ID as returned by registry.register()
+   * @param transport - Transport implementation
+   */
+  registerServerTransport(serverId: string, transport: ServerTransport): void {
+    this.serverTransports.set(serverId, transport);
+  }
+
+  /**
+   * Unregister a server transport
+   *
+   * @param serverId - Server ID
+   */
+  unregisterServerTransport(serverId: string): void {
+    this.serverTransports.delete(serverId);
+  }
+
   // ===========================================================================
   // Server Selection Methods
   // ===========================================================================
@@ -447,7 +497,7 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
   async selectServer(
     toolName: string,
     strategy: RoutingStrategy,
-    preferredServer?: string,
+    preferredServer?: string
   ): Promise<MCPServerRegistration | undefined> {
     // Check preferred server first
     if (preferredServer) {
@@ -501,10 +551,10 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
    * Select server by highest priority
    */
   private selectByPriority(
-    servers: readonly MCPServerRegistration[],
+    servers: readonly MCPServerRegistration[]
   ): MCPServerRegistration {
     return [...servers].sort(
-      (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
+      (a, b) => (b.priority ?? 0) - (a.priority ?? 0)
     )[0]!;
   }
 
@@ -513,7 +563,7 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
    */
   private selectRoundRobin(
     toolName: string,
-    servers: readonly MCPServerRegistration[],
+    servers: readonly MCPServerRegistration[]
   ): MCPServerRegistration {
     const currentIndex = this.roundRobinIndex.get(toolName) ?? 0;
     const server = servers[currentIndex % servers.length]!;
@@ -525,7 +575,7 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
    * Select server with lowest latency
    */
   private selectByLeastLatency(
-    servers: readonly MCPServerRegistration[],
+    servers: readonly MCPServerRegistration[]
   ): MCPServerRegistration {
     return [...servers].sort((a, b) => {
       const aHealth = this.registry.getHealthStatus(a.id);
@@ -540,7 +590,7 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
    * Select random server
    */
   private selectRandom(
-    servers: readonly MCPServerRegistration[],
+    servers: readonly MCPServerRegistration[]
   ): MCPServerRegistration {
     const index = Math.floor(Math.random() * servers.length);
     return servers[index]!;
@@ -550,7 +600,7 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
    * Select server using health-aware strategy
    */
   private selectHealthAware(
-    servers: readonly MCPServerRegistration[],
+    servers: readonly MCPServerRegistration[]
   ): MCPServerRegistration {
     // Score each server based on health metrics
     const scored = servers.map(server => {
@@ -647,7 +697,7 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
       const elapsed = Date.now() - state.openedAt.getTime();
       timeUntilClose = Math.max(
         0,
-        this.config.circuitBreakerResetTimeout - elapsed,
+        this.config.circuitBreakerResetTimeout - elapsed
       );
     }
 
@@ -729,7 +779,7 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
    */
   private transitionCircuit(
     serverId: string,
-    newState: CircuitBreakerState,
+    newState: CircuitBreakerState
   ): void {
     const state = this.getOrCreateCircuitState(serverId);
     const previousState = state.state;
@@ -768,7 +818,7 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
    * Get or create circuit breaker state
    */
   private getOrCreateCircuitState(
-    serverId: string,
+    serverId: string
   ): CircuitBreakerInternalState {
     let state = this.circuitBreakers.get(serverId);
     if (!state) {
@@ -790,32 +840,45 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
   private lastAttemptedServerId?: string;
 
   /**
-   * Execute tool with timeout
+   * Execute tool with timeout.
+   *
+   * Dispatch priority:
+   *   1. Local ToolHandler registered via registerToolHandler() - used for
+   *      in-process tools that do not require a remote server.
+   *   2. ServerTransport registered via registerServerTransport() - used to
+   *      forward the call to the actual MCP server over its native protocol.
+   *   3. Neither available - throw ServerNotConnectedError so the caller
+   *      can either register a transport or handle the error explicitly.
    */
   private async executeWithTimeout(
     request: ToolInvocationRequest,
     server: MCPServerRegistration,
-    timeoutMs: number,
+    timeoutMs: number
   ): Promise<ToolResult> {
     this.lastAttemptedServerId = server.id;
 
-    // Check for local handler first
+    // 1. Local handler takes precedence (in-process execution)
     const handler = this.toolHandlers.get(request.name);
     if (handler) {
       return this.executeWithTimeoutInternal(
         () => handler(request.arguments ?? {}),
         timeoutMs,
-        request.name,
+        request.name
       );
     }
 
-    // Default implementation returns a placeholder result
-    // In real implementation, this would use transport to call the server
-    return this.executeWithTimeoutInternal(
-      async () => this.createPlaceholderResult(request, server),
-      timeoutMs,
-      request.name,
-    );
+    // 2. Delegate to the server's registered transport
+    const transport = this.serverTransports.get(server.id);
+    if (transport) {
+      return this.executeWithTimeoutInternal(
+        () => transport(request.name, request.arguments ?? {}, server),
+        timeoutMs,
+        request.name
+      );
+    }
+
+    // 3. No local handler and no transport registered - fail loudly
+    throw new ServerNotConnectedError(server.id, server.name);
   }
 
   /**
@@ -824,7 +887,7 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
   private async executeWithTimeoutInternal<T>(
     fn: () => Promise<T>,
     timeoutMs: number,
-    toolName: string,
+    toolName: string
   ): Promise<T> {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
@@ -844,26 +907,6 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
   }
 
   /**
-   * Create a placeholder result for demonstration
-   */
-  private createPlaceholderResult(
-    request: ToolInvocationRequest,
-    server: MCPServerRegistration,
-  ): ToolResult {
-    return {
-      content: [
-        {
-          type: 'text',
-          text: `Tool "${request.name}" would be executed on server "${server.name}"`,
-        },
-      ],
-      isError: false,
-      serverId: server.id,
-      toolName: request.name,
-    };
-  }
-
-  /**
    * Get the last attempted server ID
    */
   private getLastAttemptedServerId(): string | undefined {
@@ -875,7 +918,7 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
    */
   private serverProvidesTool(
     server: MCPServerRegistration,
-    toolName: string,
+    toolName: string
   ): boolean {
     return server.tools.some(tool => tool.name === toolName);
   }
@@ -908,7 +951,7 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
     serverId?: string,
     durationMs?: number,
     error?: Error,
-    retryAttempt?: number,
+    retryAttempt?: number
   ): void {
     const event: RequestEvent = {
       requestId,
@@ -960,10 +1003,42 @@ export class MCPAggregator extends EventEmitter<AggregatorEvents> {
 // =============================================================================
 
 /**
- * Tool handler function type
+ * Tool handler function type for in-process (local) tool execution.
  */
 export type ToolHandler = (
   args: Record<string, unknown>
+) => Promise<ToolResult>;
+
+/**
+ * Server transport function type for remote tool dispatch.
+ *
+ * Implementors are responsible for serialising the call over the appropriate
+ * protocol (stdio JSON-RPC, HTTP, WebSocket, etc.) and returning a ToolResult.
+ *
+ * @param toolName - The MCP tool name to invoke
+ * @param args - Tool arguments
+ * @param server - Full server registration (transport config, metadata, etc.)
+ * @returns Tool result from the remote server
+ *
+ * @example
+ * ```typescript
+ * // Example using the MCP SDK Client
+ * const transport: ServerTransport = async (toolName, args, server) => {
+ *   const result = await mcpClient.callTool({ name: toolName, arguments: args });
+ *   return {
+ *     content: result.content,
+ *     isError: result.isError ?? false,
+ *     serverId: server.id,
+ *     toolName,
+ *   };
+ * };
+ * aggregator.registerServerTransport(server.id, transport);
+ * ```
+ */
+export type ServerTransport = (
+  toolName: string,
+  args: Record<string, unknown>,
+  server: MCPServerRegistration
 ) => Promise<ToolResult>;
 
 /**
@@ -1003,7 +1078,7 @@ export interface AggregatorStats {
  */
 export function createMCPAggregator(
   registry: MCPServerRegistry,
-  config?: AggregatorConfig,
+  config?: AggregatorConfig
 ): MCPAggregator {
   return new MCPAggregator(registry, config);
 }

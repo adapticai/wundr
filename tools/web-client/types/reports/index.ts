@@ -15,7 +15,7 @@ export interface Report {
   schedule?: ReportSchedule;
 }
 
-export type ReportType = 
+export type ReportType =
   | 'migration-analysis'
   | 'dependency-analysis'
   | 'code-quality'
@@ -24,7 +24,7 @@ export type ReportType =
   | 'compliance-report'
   | 'custom';
 
-export type ReportStatus = 
+export type ReportStatus =
   | 'pending'
   | 'running'
   | 'completed'
@@ -55,7 +55,13 @@ export interface ReportFilters {
   fileTypes?: string[];
 }
 
-export type ExportFormat = 'pdf' | 'excel' | 'csv' | 'json' | 'html' | 'markdown';
+export type ExportFormat =
+  | 'pdf'
+  | 'excel'
+  | 'csv'
+  | 'json'
+  | 'html'
+  | 'markdown';
 
 export interface ReportSchedule {
   id: string;
@@ -78,7 +84,12 @@ export interface ReportTemplate {
   type: ReportType;
   category: 'standard' | 'custom' | 'enterprise';
   parameters: ReportParameter[];
-  sections?: Array<{ id: string; title: string; enabled: boolean; order: number }>;
+  sections?: Array<{
+    id: string;
+    title: string;
+    enabled: boolean;
+    order: number;
+  }>;
   styling?: {
     theme: string;
     colors: {
@@ -103,10 +114,20 @@ export interface ReportTemplate {
 export interface ReportParameter {
   key: string;
   label: string;
-  type: 'string' | 'number' | 'boolean' | 'select' | 'multiselect' | 'date' | 'daterange';
+  type:
+    | 'string'
+    | 'number'
+    | 'boolean'
+    | 'select'
+    | 'multiselect'
+    | 'date'
+    | 'daterange';
   required: boolean;
   defaultValue?: import('../report-parameters').ParameterValue;
-  options?: Array<{ value: import('../report-parameters').ParameterValue; label: string }>;
+  options?: Array<{
+    value: import('../report-parameters').ParameterValue;
+    label: string;
+  }>;
   validation?: {
     min?: number;
     max?: number;
@@ -188,7 +209,14 @@ export interface AnalysisEntity {
   id: string;
   name: string;
   path: string;
-  type: 'class' | 'function' | 'module' | 'component' | 'interface' | 'enum' | 'type';
+  type:
+    | 'class'
+    | 'function'
+    | 'module'
+    | 'component'
+    | 'interface'
+    | 'enum'
+    | 'type';
   dependencies: string[];
   dependents: string[];
   complexity: {
@@ -207,7 +235,12 @@ export interface AnalysisEntity {
   };
   issues: Array<{
     id: string;
-    type: 'code-smell' | 'bug' | 'vulnerability' | 'maintainability' | 'performance';
+    type:
+      | 'code-smell'
+      | 'bug'
+      | 'vulnerability'
+      | 'maintainability'
+      | 'performance';
     severity: 'low' | 'medium' | 'high' | 'critical';
     message: string;
     rule?: string;
@@ -259,7 +292,11 @@ export interface AnalysisCircularDependency {
 
 export interface AnalysisSecurityIssue {
   id: string;
-  type: 'vulnerability' | 'exposed-secret' | 'insecure-dependency' | 'code-injection';
+  type:
+    | 'vulnerability'
+    | 'exposed-secret'
+    | 'insecure-dependency'
+    | 'code-injection';
   severity: 'low' | 'medium' | 'high' | 'critical';
   cve?: string;
   cvss?: number;
@@ -299,9 +336,9 @@ export interface AnalysisMetrics {
     average: number;
     highest: number;
     distribution: {
-      low: number;     // 1-5
-      medium: number;  // 6-10
-      high: number;    // 11-20
+      low: number; // 1-5
+      medium: number; // 6-10
+      high: number; // 11-20
       veryHigh: number; // 21+
     };
   };
@@ -328,7 +365,12 @@ export interface AnalysisRecommendation {
   id: string;
   title: string;
   description: string;
-  category: 'maintainability' | 'performance' | 'security' | 'best-practices' | 'architecture';
+  category:
+    | 'maintainability'
+    | 'performance'
+    | 'security'
+    | 'best-practices'
+    | 'architecture';
   priority: 'low' | 'medium' | 'high' | 'critical';
   effort: {
     level: 'low' | 'medium' | 'high';
@@ -449,9 +491,12 @@ export interface ReportSection {
 
 export interface ReportSectionContent {
   type: 'text' | 'list' | 'code' | 'markdown' | 'callout' | 'metrics-grid';
-  content: string | string[] | {
-    [key: string]: string | number | boolean | Date | null;
-  };
+  content:
+    | string
+    | string[]
+    | {
+        [key: string]: string | number | boolean | Date | null;
+      };
   language?: string; // for code blocks
   level?: 'info' | 'warning' | 'error' | 'success'; // for callouts
 }
@@ -511,13 +556,19 @@ export interface ReportTable {
     filterable?: boolean;
   }>;
   rows: Array<{
-    [columnKey: string]: string | number | boolean | Date | null | {
-      type: 'badge' | 'progress' | 'link' | 'code';
-      value: string | number;
-      variant?: string;
-      href?: string;
-      language?: string;
-    };
+    [columnKey: string]:
+      | string
+      | number
+      | boolean
+      | Date
+      | null
+      | {
+          type: 'badge' | 'progress' | 'link' | 'code';
+          value: string | number;
+          variant?: string;
+          href?: string;
+          language?: string;
+        };
   }>;
   pagination?: {
     pageSize: number;

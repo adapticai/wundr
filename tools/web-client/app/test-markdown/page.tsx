@@ -115,20 +115,21 @@ The enhanced MarkdownRenderer component provides a robust solution for rendering
 
 export default function TestMarkdownPage() {
   return (
-    <div className="container mx-auto py-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">MarkdownRenderer Test Page</h1>
-        <p className="text-muted-foreground">
-          This page demonstrates the MarkdownRenderer component working without next-mdx-remote.
+    <div className='container mx-auto py-8'>
+      <div className='mb-6'>
+        <h1 className='text-2xl font-bold mb-2'>MarkdownRenderer Test Page</h1>
+        <p className='text-muted-foreground'>
+          This page demonstrates the MarkdownRenderer component working without
+          next-mdx-remote.
         </p>
       </div>
-      
-      <MarkdownRenderer 
+
+      <MarkdownRenderer
         content={sampleMarkdown}
         showMetadata={true}
         showTableOfContents={true}
         enableSyntaxHighlighting={true}
-        className="max-w-none"
+        className='max-w-none'
       />
     </div>
   );

@@ -395,9 +395,8 @@ export function AnalysisProvider({
 
     try {
       // Dynamic import to avoid circular dependencies
-      const { createTestFixtures } = await import(
-        '../../__tests__/fixtures/real-test-data'
-      );
+      const { createTestFixtures } =
+        await import('../../__tests__/fixtures/real-test-data');
       const fixtures = await createTestFixtures();
 
       if (mountedRef.current) {

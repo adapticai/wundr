@@ -20,7 +20,7 @@ import type {
   ScriptableContext,
   CartesianScaleOptions,
   RadialLinearScaleOptions,
-  ScaleOptions
+  ScaleOptions,
 } from 'chart.js';
 
 // =============================================================================
@@ -46,7 +46,17 @@ export interface ChartDataset {
   /** Line tension for line charts */
   tension?: number;
   /** Point styles */
-  pointStyle?: 'circle' | 'cross' | 'crossRot' | 'dash' | 'line' | 'rect' | 'rectRounded' | 'rectRot' | 'star' | 'triangle';
+  pointStyle?:
+    | 'circle'
+    | 'cross'
+    | 'crossRot'
+    | 'dash'
+    | 'line'
+    | 'rect'
+    | 'rectRounded'
+    | 'rectRot'
+    | 'star'
+    | 'triangle';
   /** Point radius */
   pointRadius?: number;
   /** Point hover radius */
@@ -74,7 +84,17 @@ export interface ChartAnimationConfig {
   /** Animation duration in milliseconds */
   duration?: number;
   /** Animation easing function */
-  easing?: 'linear' | 'easeInQuad' | 'easeOutQuad' | 'easeInOutQuad' | 'easeInCubic' | 'easeOutCubic' | 'easeInOutCubic' | 'easeInQuart' | 'easeOutQuart' | 'easeInOutQuart';
+  easing?:
+    | 'linear'
+    | 'easeInQuad'
+    | 'easeOutQuad'
+    | 'easeInOutQuad'
+    | 'easeInCubic'
+    | 'easeOutCubic'
+    | 'easeInOutCubic'
+    | 'easeInQuart'
+    | 'easeOutQuart'
+    | 'easeInOutQuart';
   /** Animate rotation for doughnut/pie charts */
   animateRotate?: boolean;
   /** Animate scale for doughnut/pie charts */
@@ -104,7 +124,10 @@ export interface TooltipOptions {
     title?: (tooltipItems: TooltipItem<ChartType>[]) => string | string[];
     label?: (tooltipItem: TooltipItem<ChartType>) => string | string[];
     footer?: (tooltipItems: TooltipItem<ChartType>[]) => string | string[];
-    labelColor?: (tooltipItem: TooltipItem<ChartType>) => { borderColor: string; backgroundColor: string };
+    labelColor?: (tooltipItem: TooltipItem<ChartType>) => {
+      borderColor: string;
+      backgroundColor: string;
+    };
   };
   /** Background color */
   backgroundColor?: string;
@@ -119,7 +142,9 @@ export interface TooltipOptions {
   /** Footer font */
   footerFont?: FontConfig;
   /** Padding */
-  padding?: number | { top: number; bottom: number; left: number; right: number };
+  padding?:
+    | number
+    | { top: number; bottom: number; left: number; right: number };
   /** Animation */
   animation?: ChartAnimationConfig;
 }
@@ -190,7 +215,13 @@ export interface FontConfig {
  */
 export interface ScaleConfig {
   /** Scale type */
-  type?: 'linear' | 'logarithmic' | 'category' | 'time' | 'timeseries' | 'radialLinear';
+  type?:
+    | 'linear'
+    | 'logarithmic'
+    | 'category'
+    | 'time'
+    | 'timeseries'
+    | 'radialLinear';
   /** Scale display */
   display?: boolean;
   /** Scale position */
@@ -201,7 +232,9 @@ export interface ScaleConfig {
     text?: string | string[];
     color?: string;
     font?: FontConfig;
-    padding?: number | { top: number; bottom: number; left: number; right: number };
+    padding?:
+      | number
+      | { top: number; bottom: number; left: number; right: number };
   };
   /** Minimum value */
   min?: number;
@@ -235,7 +268,11 @@ export interface ScaleConfig {
     stepSize?: number;
     maxTicksLimit?: number;
     precision?: number;
-    callback?: (tickValue: any, index: number, ticks: any[]) => string | number | null | undefined;
+    callback?: (
+      tickValue: any,
+      index: number,
+      ticks: any[]
+    ) => string | number | null | undefined;
     maxRotation?: number;
     minRotation?: number;
     mirror?: boolean;
@@ -276,7 +313,9 @@ export interface ChartOptions {
       text?: string | string[];
       color?: string;
       font?: FontConfig;
-      padding?: number | { top: number; bottom: number; left: number; right: number };
+      padding?:
+        | number
+        | { top: number; bottom: number; left: number; right: number };
       position?: 'top' | 'left' | 'bottom' | 'right';
     };
     subtitle?: {
@@ -284,7 +323,9 @@ export interface ChartOptions {
       text?: string | string[];
       color?: string;
       font?: FontConfig;
-      padding?: number | { top: number; bottom: number; left: number; right: number };
+      padding?:
+        | number
+        | { top: number; bottom: number; left: number; right: number };
       position?: 'top' | 'left' | 'bottom' | 'right';
     };
   };
@@ -303,12 +344,14 @@ export interface ChartOptions {
   };
   /** Layout configuration */
   layout?: {
-    padding?: number | {
-      top?: number;
-      bottom?: number;
-      left?: number;
-      right?: number;
-    };
+    padding?:
+      | number
+      | {
+          top?: number;
+          bottom?: number;
+          left?: number;
+          right?: number;
+        };
   };
   /** Element default configurations */
   elements?: {
@@ -339,14 +382,24 @@ export interface ChartOptions {
     bar?: {
       backgroundColor?: string;
       borderColor?: string;
-      borderSkipped?: 'start' | 'end' | 'middle' | 'bottom' | 'left' | 'top' | 'right' | false;
+      borderSkipped?:
+        | 'start'
+        | 'end'
+        | 'middle'
+        | 'bottom'
+        | 'left'
+        | 'top'
+        | 'right'
+        | false;
       borderWidth?: number;
-      borderRadius?: number | {
-        topLeft?: number;
-        topRight?: number;
-        bottomLeft?: number;
-        bottomRight?: number;
-      };
+      borderRadius?:
+        | number
+        | {
+            topLeft?: number;
+            topRight?: number;
+            bottomLeft?: number;
+            bottomRight?: number;
+          };
       inflateAmount?: number | 'auto';
     };
     arc?: {
@@ -414,11 +467,15 @@ export interface DoughnutChartOptions extends ChartOptions {
  */
 export interface AreaChartOptions extends LineChartOptions {
   /** Fill configuration */
-  fill?: boolean | number | string | {
-    target?: boolean | number | string;
-    above?: string;
-    below?: string;
-  };
+  fill?:
+    | boolean
+    | number
+    | string
+    | {
+        target?: boolean | number | string;
+        above?: string;
+        below?: string;
+      };
 }
 
 // =============================================================================
@@ -448,7 +505,14 @@ export interface BaseChartProps {
   /** Chart type override */
   type?: ChartType;
   /** Update mode */
-  updateMode?: 'resize' | 'reset' | 'none' | 'hide' | 'show' | 'normal' | 'active';
+  updateMode?:
+    | 'resize'
+    | 'reset'
+    | 'none'
+    | 'hide'
+    | 'show'
+    | 'normal'
+    | 'active';
   /** Fallback content when chart fails to render */
   fallbackContent?: React.ReactNode;
   /** Error handler */
@@ -616,5 +680,5 @@ export type {
   LegendItem,
   Chart,
   ChartType,
-  ScriptableContext
+  ScriptableContext,
 } from 'chart.js';

@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  ReportTemplate,
-} from '@/types/reports';
+import { ReportTemplate } from '@/types/reports';
 
 // Template storage - in a real app, this could be in a database
 const DEFAULT_TEMPLATES: Record<string, ReportTemplate> = {
   comprehensive: {
     id: 'comprehensive',
     name: 'Comprehensive Analysis Report',
-    description: 'Complete analysis including all metrics, issues, and recommendations',
+    description:
+      'Complete analysis including all metrics, issues, and recommendations',
     type: 'custom' as const,
     category: 'custom' as const,
     parameters: [],
@@ -17,7 +16,12 @@ const DEFAULT_TEMPLATES: Record<string, ReportTemplate> = {
       { id: 'quality', title: 'Code Quality', enabled: true, order: 2 },
       { id: 'dependencies', title: 'Dependencies', enabled: true, order: 3 },
       { id: 'security', title: 'Security Analysis', enabled: true, order: 4 },
-      { id: 'recommendations', title: 'Recommendations', enabled: true, order: 5 },
+      {
+        id: 'recommendations',
+        title: 'Recommendations',
+        enabled: true,
+        order: 5,
+      },
     ],
     styling: {
       theme: 'professional',
@@ -45,7 +49,12 @@ const DEFAULT_TEMPLATES: Record<string, ReportTemplate> = {
     sections: [
       { id: 'overview', title: 'Executive Overview', enabled: true, order: 1 },
       { id: 'metrics', title: 'Key Metrics', enabled: true, order: 2 },
-      { id: 'recommendations', title: 'Priority Actions', enabled: true, order: 3 },
+      {
+        id: 'recommendations',
+        title: 'Priority Actions',
+        enabled: true,
+        order: 3,
+      },
     ],
     styling: {
       theme: 'executive',
@@ -71,12 +80,32 @@ const DEFAULT_TEMPLATES: Record<string, ReportTemplate> = {
     category: 'custom' as const,
     parameters: [],
     sections: [
-      { id: 'architecture', title: 'Architecture Analysis', enabled: true, order: 1 },
-      { id: 'complexity', title: 'Complexity Metrics', enabled: true, order: 2 },
-      { id: 'dependencies', title: 'Dependency Analysis', enabled: true, order: 3 },
+      {
+        id: 'architecture',
+        title: 'Architecture Analysis',
+        enabled: true,
+        order: 1,
+      },
+      {
+        id: 'complexity',
+        title: 'Complexity Metrics',
+        enabled: true,
+        order: 2,
+      },
+      {
+        id: 'dependencies',
+        title: 'Dependency Analysis',
+        enabled: true,
+        order: 3,
+      },
       { id: 'duplicates', title: 'Code Duplication', enabled: true, order: 4 },
       { id: 'security', title: 'Security Issues', enabled: true, order: 5 },
-      { id: 'technical-debt', title: 'Technical Debt', enabled: true, order: 6 },
+      {
+        id: 'technical-debt',
+        title: 'Technical Debt',
+        enabled: true,
+        order: 6,
+      },
     ],
     styling: {
       theme: 'technical',
@@ -103,9 +132,24 @@ const DEFAULT_TEMPLATES: Record<string, ReportTemplate> = {
     parameters: [],
     sections: [
       { id: 'overview', title: 'Security Overview', enabled: true, order: 1 },
-      { id: 'vulnerabilities', title: 'Vulnerabilities', enabled: true, order: 2 },
-      { id: 'dependencies', title: 'Dependency Security', enabled: true, order: 3 },
-      { id: 'recommendations', title: 'Security Recommendations', enabled: true, order: 4 },
+      {
+        id: 'vulnerabilities',
+        title: 'Vulnerabilities',
+        enabled: true,
+        order: 2,
+      },
+      {
+        id: 'dependencies',
+        title: 'Dependency Security',
+        enabled: true,
+        order: 3,
+      },
+      {
+        id: 'recommendations',
+        title: 'Security Recommendations',
+        enabled: true,
+        order: 4,
+      },
     ],
     styling: {
       theme: 'security',
@@ -131,10 +175,30 @@ const DEFAULT_TEMPLATES: Record<string, ReportTemplate> = {
     category: 'standard' as const,
     parameters: [],
     sections: [
-      { id: 'overview', title: 'Performance Overview', enabled: true, order: 1 },
-      { id: 'complexity', title: 'Complexity Analysis', enabled: true, order: 2 },
-      { id: 'bottlenecks', title: 'Performance Bottlenecks', enabled: true, order: 3 },
-      { id: 'optimization', title: 'Optimization Opportunities', enabled: true, order: 4 },
+      {
+        id: 'overview',
+        title: 'Performance Overview',
+        enabled: true,
+        order: 1,
+      },
+      {
+        id: 'complexity',
+        title: 'Complexity Analysis',
+        enabled: true,
+        order: 2,
+      },
+      {
+        id: 'bottlenecks',
+        title: 'Performance Bottlenecks',
+        enabled: true,
+        order: 3,
+      },
+      {
+        id: 'optimization',
+        title: 'Optimization Opportunities',
+        enabled: true,
+        order: 4,
+      },
     ],
     styling: {
       theme: 'performance',
@@ -164,7 +228,12 @@ const DEFAULT_TEMPLATES: Record<string, ReportTemplate> = {
       { id: 'metrics', title: 'Quality Metrics', enabled: true, order: 2 },
       { id: 'issues', title: 'Code Issues', enabled: true, order: 3 },
       { id: 'duplicates', title: 'Code Duplication', enabled: true, order: 4 },
-      { id: 'maintainability', title: 'Maintainability', enabled: true, order: 5 },
+      {
+        id: 'maintainability',
+        title: 'Maintainability',
+        enabled: true,
+        order: 5,
+      },
     ],
     styling: {
       theme: 'quality',
@@ -193,7 +262,7 @@ export async function GET(request: NextRequest) {
     // Get specific template
     if (templateId) {
       const template = DEFAULT_TEMPLATES[templateId];
-      
+
       if (!template) {
         return NextResponse.json(
           { error: `Template '${templateId}' not found` },
@@ -222,12 +291,11 @@ export async function GET(request: NextRequest) {
       totalCount: templates.length,
       success: true,
     });
-
   } catch (_error) {
     // Error logged - details available in network tab;
-    
+
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to fetch templates',
         details: _error instanceof Error ? _error.message : 'Unknown error',
         success: false,
@@ -245,7 +313,10 @@ export async function POST(request: NextRequest) {
     // Validate template structure
     if (!template || !template.id || !template.name || !template.description) {
       return NextResponse.json(
-        { error: 'Invalid template structure. Required fields: id, name, description' },
+        {
+          error:
+            'Invalid template structure. Required fields: id, name, description',
+        },
         { status: 400 }
       );
     }
@@ -269,9 +340,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       template: newTemplate,
       success: true,
-      message: 'Template created successfully'
+      message: 'Template created successfully',
     });
-
   } catch (_error) {
     // Error logged - details available in network tab;
     return NextResponse.json(

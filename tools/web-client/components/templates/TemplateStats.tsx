@@ -188,10 +188,7 @@ export function TemplateStats({ templates }: TemplateStatsProps) {
                         {numCount} templates
                       </span>
                     </div>
-                    <Progress
-                      value={percentage}
-                      className='h-2'
-                    />
+                    <Progress value={percentage} className='h-2' />
                   </div>
                 );
               })}
@@ -223,10 +220,7 @@ export function TemplateStats({ templates }: TemplateStatsProps) {
                         {numCount} templates
                       </span>
                     </div>
-                    <Progress
-                      value={percentage}
-                      className='h-2'
-                    />
+                    <Progress value={percentage} className='h-2' />
                   </div>
                 );
               })}
@@ -296,7 +290,8 @@ export function TemplateStats({ templates }: TemplateStatsProps) {
                 </div>
                 <Badge
                   className={getDifficultyColor(
-                    (template.difficulty || 'intermediate') as ServiceTemplateDifficulty
+                    (template.difficulty ||
+                      'intermediate') as ServiceTemplateDifficulty
                   )}
                   variant='secondary'
                 >

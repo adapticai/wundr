@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { batchProcessingService as batchService, BatchStatus } from '@/lib/services/batch/BatchProcessingService';
+import {
+  batchProcessingService as batchService,
+  BatchStatus,
+} from '@/lib/services/batch/BatchProcessingService';
 
 export async function GET(
   request: NextRequest,
@@ -8,12 +11,12 @@ export async function GET(
   try {
     const { id } = await params;
     const batch = await batchService.getBatch(id);
-    
+
     if (!batch) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Batch not found'
+          error: 'Batch not found',
         },
         { status: 404 }
       );
@@ -21,15 +24,15 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      data: batch
+      data: batch,
     });
-
   } catch (_error) {
     // Error logged - details available in network tab;
     return NextResponse.json(
       {
         success: false,
-        error: _error instanceof Error ? _error.message : 'Failed to fetch batch'
+        error:
+          _error instanceof Error ? _error.message : 'Failed to fetch batch',
       },
       { status: 500 }
     );
@@ -62,7 +65,10 @@ export async function PATCH(
         // Retry logic - create a new batch with same items
         const oldBatch = await batchService.getBatch(id);
         if (!oldBatch) {
-          return NextResponse.json({ success: false, error: 'Batch not found' }, { status: 404 });
+          return NextResponse.json(
+            { success: false, error: 'Batch not found' },
+            { status: 404 }
+          );
         }
         const newBatch = await batchService.createBatch(
           `${oldBatch.name} (retry)`,
@@ -72,12 +78,12 @@ export async function PATCH(
             data: job.data,
             priority: job.priority,
             retryCount: 0,
-            maxRetries: job.maxRetries
+            maxRetries: job.maxRetries,
           }))
         );
         return NextResponse.json({
           success: true,
-          data: { newBatchId: newBatch.id }
+          data: { newBatchId: newBatch.id },
         });
       }
       case 'rollback':
@@ -88,7 +94,7 @@ export async function PATCH(
         return NextResponse.json(
           {
             success: false,
-            error: 'Invalid action'
+            error: 'Invalid action',
           },
           { status: 400 }
         );
@@ -97,15 +103,15 @@ export async function PATCH(
     const batch = await batchService.getBatch(id);
     return NextResponse.json({
       success: true,
-      data: batch
+      data: batch,
     });
-
   } catch (_error) {
     // Error logged - details available in network tab;
     return NextResponse.json(
       {
         success: false,
-        error: _error instanceof Error ? _error.message : 'Failed to update batch'
+        error:
+          _error instanceof Error ? _error.message : 'Failed to update batch',
       },
       { status: 500 }
     );
@@ -119,28 +125,28 @@ export async function DELETE(
   try {
     const { id } = await params;
     const success = await batchService.deleteBatch(id);
-    
+
     if (!success) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Batch not found'
+          error: 'Batch not found',
         },
         { status: 404 }
       );
     }
-    
+
     return NextResponse.json({
       success: true,
-      message: 'Batch deleted successfully'
+      message: 'Batch deleted successfully',
     });
-
   } catch (_error) {
     // Error logged - details available in network tab;
     return NextResponse.json(
       {
         success: false,
-        error: _error instanceof Error ? _error.message : 'Failed to delete batch'
+        error:
+          _error instanceof Error ? _error.message : 'Failed to delete batch',
       },
       { status: 500 }
     );

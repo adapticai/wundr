@@ -25,30 +25,30 @@ export function BreadcrumbNavigation({
   return (
     <div className={cn('flex items-center gap-1 overflow-x-auto', className)}>
       <Button
-        variant="ghost"
-        size="sm"
-        className="h-6 w-6 p-0 flex-shrink-0"
+        variant='ghost'
+        size='sm'
+        className='h-6 w-6 p-0 flex-shrink-0'
         onClick={() => onNavigate('/')}
       >
-        <Home className="h-3 w-3" />
+        <Home className='h-3 w-3' />
       </Button>
-      
+
       {items.map((item, index) => (
         <React.Fragment key={item.path}>
-          <ChevronRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+          <ChevronRight className='h-3 w-3 text-muted-foreground flex-shrink-0' />
           <Button
-            variant="ghost"
-            size="sm"
+            variant='ghost'
+            size='sm'
             className={cn(
               'h-6 px-2 text-sm whitespace-nowrap',
-              item.isLast 
-                ? 'font-medium text-foreground cursor-default' 
+              item.isLast
+                ? 'font-medium text-foreground cursor-default'
                 : 'text-muted-foreground hover:text-foreground'
             )}
             onClick={() => !item.isLast && onNavigate(item.path)}
             disabled={item.isLast}
           >
-            {index === 0 && <Folder className="h-3 w-3 mr-1" />}
+            {index === 0 && <Folder className='h-3 w-3 mr-1' />}
             {item.name}
           </Button>
         </React.Fragment>

@@ -6,10 +6,10 @@ import { useState, useEffect } from 'react';
  * Media query breakpoints matching Tailwind CSS defaults
  */
 export const BREAKPOINTS = {
-  sm: 640,   // Mobile
-  md: 768,   // Tablet
-  lg: 1024,  // Desktop
-  xl: 1280,  // Large desktop
+  sm: 640, // Mobile
+  md: 768, // Tablet
+  lg: 1024, // Desktop
+  xl: 1280, // Large desktop
 } as const;
 
 export type Breakpoint = keyof typeof BREAKPOINTS;
@@ -145,7 +145,9 @@ export function useTouchDevice(): boolean {
  * @returns 'portrait' or 'landscape' or null
  */
 export function useOrientation(): 'portrait' | 'landscape' | null {
-  const [orientation, setOrientation] = useState<'portrait' | 'landscape' | null>(null);
+  const [orientation, setOrientation] = useState<
+    'portrait' | 'landscape' | null
+  >(null);
 
   useEffect(() => {
     const handleOrientationChange = () => {
@@ -159,7 +161,8 @@ export function useOrientation(): 'portrait' | 'landscape' | null {
     handleOrientationChange();
     window.addEventListener('orientationchange', handleOrientationChange);
 
-    return () => window.removeEventListener('orientationchange', handleOrientationChange);
+    return () =>
+      window.removeEventListener('orientationchange', handleOrientationChange);
   }, []);
 
   return orientation;

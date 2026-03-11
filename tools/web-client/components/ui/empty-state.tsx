@@ -8,7 +8,13 @@ import { Button } from '@/components/ui/button';
 interface EmptyStateAction {
   label: string;
   onClick: () => void;
-  variant?: 'default' | 'outline' | 'secondary' | 'ghost' | 'destructive' | 'link';
+  variant?:
+    | 'default'
+    | 'outline'
+    | 'secondary'
+    | 'ghost'
+    | 'destructive'
+    | 'link';
 }
 
 interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {

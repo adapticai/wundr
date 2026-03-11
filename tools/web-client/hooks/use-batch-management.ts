@@ -6,7 +6,13 @@ export interface BatchJob {
   id: string;
   name: string;
   description: string;
-  status: 'pending' | 'running' | 'completed' | 'failed' | 'paused' | 'cancelled';
+  status:
+    | 'pending'
+    | 'running'
+    | 'completed'
+    | 'failed'
+    | 'paused'
+    | 'cancelled';
   progress: number;
   createdAt: Date;
   startedAt?: Date;
@@ -104,18 +110,20 @@ export const useBatchManagement = () => {
       try {
         setLoading(true);
         setError(null);
-        
+
         const [active, history, scheduled] = await Promise.all([
           fetchActiveBatches(),
           fetchBatchHistory(),
-          fetchSchedules()
+          fetchSchedules(),
         ]);
-        
+
         setActiveBatches(active);
         setBatchHistory(history);
         setSchedules(scheduled);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load batch data');
+        setError(
+          err instanceof Error ? err.message : 'Failed to load batch data'
+        );
       } finally {
         setLoading(false);
       }
@@ -134,124 +142,140 @@ export const useBatchManagement = () => {
       templates: batch.templateIds || batch.templates || [], // Backward compatibility
       config: batch.config || {
         backupStrategy: 'auto',
-        conflictResolution: 'interactive'
-      }
+        conflictResolution: 'interactive',
+      },
     };
   }, []);
 
   // Batch operations
-  const createBatch = useCallback(async (request: CreateBatchRequest): Promise<BatchJob> => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await fetch('/api/batches', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(request)
+  const createBatch = useCallback(
+    async (request: CreateBatchRequest): Promise<BatchJob> => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch('/api/batches', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(request),
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+          throw new Error(data.error || 'Failed to create batch');
+        }
+
+        const newBatch = transformBatch(data.data);
+
+        // Update local state
+        if (newBatch.status === 'running' || newBatch.status === 'pending') {
+          setActiveBatches(prev => [...prev, newBatch]);
+        }
+
+        return newBatch;
+      } catch (err) {
+        const error =
+          err instanceof Error ? err.message : 'Failed to create batch';
+        setError(error);
+        throw new Error(error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [transformBatch]
+  );
+
+  const pauseBatch = useCallback(
+    async (batchId: string): Promise<void> => {
+      const response = await fetch(`/api/batches/${batchId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'pause' }),
       });
-      
+
+      if (!response.ok) {
+        throw new Error('Failed to pause batch');
+      }
+
       const data = await response.json();
-      
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to create batch');
+      if (data.success) {
+        const updatedBatch = transformBatch(data.data);
+        setActiveBatches(prev =>
+          prev.map(batch => (batch.id === batchId ? updatedBatch : batch))
+        );
       }
-      
-      const newBatch = transformBatch(data.data);
-      
-      // Update local state
-      if (newBatch.status === 'running' || newBatch.status === 'pending') {
-        setActiveBatches(prev => [...prev, newBatch]);
+    },
+    [transformBatch]
+  );
+
+  const resumeBatch = useCallback(
+    async (batchId: string): Promise<void> => {
+      const response = await fetch(`/api/batches/${batchId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'resume' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to resume batch');
       }
-      
-      return newBatch;
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to create batch';
-      setError(error);
-      throw new Error(error);
-    } finally {
-      setLoading(false);
-    }
-  }, [transformBatch]);
 
-  const pauseBatch = useCallback(async (batchId: string): Promise<void> => {
-    const response = await fetch(`/api/batches/${batchId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'pause' })
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to pause batch');
-    }
-    
-    const data = await response.json();
-    if (data.success) {
-      const updatedBatch = transformBatch(data.data);
-      setActiveBatches(prev => 
-        prev.map(batch => batch.id === batchId ? updatedBatch : batch)
-      );
-    }
-  }, [transformBatch]);
+      const data = await response.json();
+      if (data.success) {
+        const updatedBatch = transformBatch(data.data);
+        setActiveBatches(prev =>
+          prev.map(batch => (batch.id === batchId ? updatedBatch : batch))
+        );
+      }
+    },
+    [transformBatch]
+  );
 
-  const resumeBatch = useCallback(async (batchId: string): Promise<void> => {
-    const response = await fetch(`/api/batches/${batchId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'resume' })
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to resume batch');
-    }
-    
-    const data = await response.json();
-    if (data.success) {
-      const updatedBatch = transformBatch(data.data);
-      setActiveBatches(prev => 
-        prev.map(batch => batch.id === batchId ? updatedBatch : batch)
-      );
-    }
-  }, [transformBatch]);
+  const stopBatch = useCallback(
+    async (batchId: string): Promise<void> => {
+      const response = await fetch(`/api/batches/${batchId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'cancel' }),
+      });
 
-  const stopBatch = useCallback(async (batchId: string): Promise<void> => {
-    const response = await fetch(`/api/batches/${batchId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'cancel' })
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to stop batch');
-    }
-    
-    // Refresh data
-    const [active, history] = await Promise.all([
-      fetchActiveBatches(),
-      fetchBatchHistory()
-    ]);
-    
-    setActiveBatches(active);
-    setBatchHistory(history);
-  }, [fetchActiveBatches, fetchBatchHistory]);
+      if (!response.ok) {
+        throw new Error('Failed to stop batch');
+      }
 
-  const retryBatch = useCallback(async (batchId: string): Promise<void> => {
-    const response = await fetch(`/api/batches/${batchId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'retry' })
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to retry batch');
-    }
-    
-    // Refresh active batches to show the new retry
-    const active = await fetchActiveBatches();
-    setActiveBatches(active);
-  }, [fetchActiveBatches]);
+      // Refresh data
+      const [active, history] = await Promise.all([
+        fetchActiveBatches(),
+        fetchBatchHistory(),
+      ]);
+
+      setActiveBatches(active);
+      setBatchHistory(history);
+    },
+    [fetchActiveBatches, fetchBatchHistory]
+  );
+
+  const retryBatch = useCallback(
+    async (batchId: string): Promise<void> => {
+      const response = await fetch(`/api/batches/${batchId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'retry' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to retry batch');
+      }
+
+      // Refresh active batches to show the new retry
+      const active = await fetchActiveBatches();
+      setActiveBatches(active);
+    },
+    [fetchActiveBatches]
+  );
 
   const rollbackBatch = useCallback(async (batchId: string): Promise<void> => {
     setLoading(true);
@@ -259,9 +283,9 @@ export const useBatchManagement = () => {
       const response = await fetch(`/api/batches/${batchId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'rollback' })
+        body: JSON.stringify({ action: 'rollback' }),
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to rollback batch');
       }
@@ -272,42 +296,51 @@ export const useBatchManagement = () => {
 
   const deleteBatch = useCallback(async (batchId: string): Promise<void> => {
     const response = await fetch(`/api/batches/${batchId}`, {
-      method: 'DELETE'
+      method: 'DELETE',
     });
-    
+
     if (!response.ok) {
       throw new Error('Failed to delete batch');
     }
-    
+
     // Remove from local state
     setBatchHistory(prev => prev.filter(batch => batch.id !== batchId));
     setActiveBatches(prev => prev.filter(batch => batch.id !== batchId));
   }, []);
 
   // Schedule operations
-  const createSchedule = useCallback(async (schedule: Omit<BatchSchedule, 'id'>): Promise<BatchSchedule> => {
-    const newSchedule: BatchSchedule = {
-      ...schedule,
-      id: `sched-${Date.now()}`
-    };
-    
-    setSchedules(prev => [...prev, newSchedule]);
-    return newSchedule;
-  }, []);
+  const createSchedule = useCallback(
+    async (schedule: Omit<BatchSchedule, 'id'>): Promise<BatchSchedule> => {
+      const newSchedule: BatchSchedule = {
+        ...schedule,
+        id: `sched-${Date.now()}`,
+      };
 
-  const toggleSchedule = useCallback(async (scheduleId: string): Promise<void> => {
-    setSchedules(prev => 
-      prev.map(schedule => 
-        schedule.id === scheduleId 
-          ? { ...schedule, enabled: !schedule.enabled }
-          : schedule
-      )
-    );
-  }, []);
+      setSchedules(prev => [...prev, newSchedule]);
+      return newSchedule;
+    },
+    []
+  );
 
-  const deleteSchedule = useCallback(async (scheduleId: string): Promise<void> => {
-    setSchedules(prev => prev.filter(schedule => schedule.id !== scheduleId));
-  }, []);
+  const toggleSchedule = useCallback(
+    async (scheduleId: string): Promise<void> => {
+      setSchedules(prev =>
+        prev.map(schedule =>
+          schedule.id === scheduleId
+            ? { ...schedule, enabled: !schedule.enabled }
+            : schedule
+        )
+      );
+    },
+    []
+  );
+
+  const deleteSchedule = useCallback(
+    async (scheduleId: string): Promise<void> => {
+      setSchedules(prev => prev.filter(schedule => schedule.id !== scheduleId));
+    },
+    []
+  );
 
   // Real-time progress updates using polling
   useEffect(() => {
@@ -315,9 +348,11 @@ export const useBatchManagement = () => {
       try {
         const active = await fetchActiveBatches();
         setActiveBatches(active);
-        
+
         // Check if any batches completed
-        const completedBatches = active.filter(batch => batch.status === 'completed');
+        const completedBatches = active.filter(
+          batch => batch.status === 'completed'
+        );
         if (completedBatches.length > 0) {
           // Refresh history to include completed batches
           const history = await fetchBatchHistory();
@@ -338,7 +373,7 @@ export const useBatchManagement = () => {
     schedules,
     loading,
     error,
-    
+
     // Operations
     createBatch,
     pauseBatch,
@@ -347,17 +382,17 @@ export const useBatchManagement = () => {
     retryBatch,
     rollbackBatch,
     deleteBatch,
-    
+
     // Schedule operations
     createSchedule,
     toggleSchedule,
     deleteSchedule,
-    
+
     // Refresh data
     refresh: () => {
       fetchActiveBatches().then(setActiveBatches);
       fetchBatchHistory().then(setBatchHistory);
       fetchSchedules().then(setSchedules);
-    }
+    },
   };
 };

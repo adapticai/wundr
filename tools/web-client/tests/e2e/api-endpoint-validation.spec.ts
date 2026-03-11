@@ -19,24 +19,24 @@ test.describe('API Endpoint Validation', () => {
       // Core analysis endpoints
       '/api/analysis',
       '/api/analysis/circular',
-      '/api/analysis/dependencies', 
+      '/api/analysis/dependencies',
       '/api/analysis/duplicates',
       '/api/analysis/entities',
       '/api/analysis/scan',
       '/api/analysis/sample',
-      
+
       // File system endpoints
       '/api/files',
       '/api/files/list',
       '/api/files/read',
       '/api/files/write',
-      
+
       // Performance and quality
       '/api/performance',
       '/api/quality',
       '/api/git',
       '/api/git-activity',
-      
+
       // Configuration and reports
       '/api/config',
       '/api/config/load',
@@ -45,23 +45,23 @@ test.describe('API Endpoint Validation', () => {
       '/api/reports/generate',
       '/api/reports/export',
       '/api/reports/templates',
-      
+
       // Services and scripts
       '/api/services',
       '/api/scripts',
       '/api/scripts/executions',
       '/api/batches',
       '/api/templates',
-      
+
       // WebSocket and real-time
-      '/api/websocket'
+      '/api/websocket',
     ];
 
     const endpointResults = {
       healthy: [] as string[],
       unhealthy: [] as string[],
       errors: [] as string[],
-      notImplemented: [] as string[]
+      notImplemented: [] as string[],
     };
 
     console.log(`Testing ${apiEndpoints.length} API endpoints...`);
@@ -70,7 +70,7 @@ test.describe('API Endpoint Validation', () => {
       try {
         const url = `${TEST_CONFIG.dashboards.webClient.baseURL}${endpoint}`;
         const response = await page.request.get(url, { timeout: 10000 });
-        
+
         if (response.ok()) {
           endpointResults.healthy.push(endpoint);
         } else if (response.status() === 404) {
@@ -81,7 +81,6 @@ test.describe('API Endpoint Validation', () => {
         } else {
           endpointResults.unhealthy.push(`${endpoint} - ${response.status()}`);
         }
-        
       } catch (_error) {
         endpointResults.errors.push(`${endpoint} - ${_error}`);
       }
@@ -117,45 +116,68 @@ test.describe('API Endpoint Validation', () => {
     // Should have some working endpoints
     expect(endpointResults.healthy.length).toBeGreaterThan(0);
     // Should not have too many unhealthy endpoints (excluding not implemented)
-    expect(endpointResults.unhealthy.length + endpointResults.errors.length).toBeLessThan(10);
+    expect(
+      endpointResults.unhealthy.length + endpointResults.errors.length
+    ).toBeLessThan(10);
   });
 
-  test('should validate API response formats and data integrity', async ({ page }) => {
+  test('should validate API response formats and data integrity', async ({
+    page,
+  }) => {
     const endpointsToValidate = [
       { endpoint: '/api/analysis', expectsArray: false, expectsObject: true },
       { endpoint: '/api/files/list', expectsArray: true, expectsObject: false },
-      { endpoint: '/api/performance', expectsArray: false, expectsObject: true },
-      { endpoint: '/api/config', expectsArray: false, expectsObject: true }
+      {
+        endpoint: '/api/performance',
+        expectsArray: false,
+        expectsObject: true,
+      },
+      { endpoint: '/api/config', expectsArray: false, expectsObject: true },
     ];
 
     const dataValidationIssues: string[] = [];
 
-    for (const { endpoint, expectsArray, expectsObject } of endpointsToValidate) {
+    for (const {
+      endpoint,
+      expectsArray,
+      expectsObject,
+    } of endpointsToValidate) {
       try {
         const url = `${TEST_CONFIG.dashboards.webClient.baseURL}${endpoint}`;
         const response = await page.request.get(url);
-        
+
         if (response.ok()) {
           const contentType = response.headers()['content-type'] || '';
-          
+
           if (contentType.includes('application/json')) {
             try {
               const data = await response.json();
-              
+
               // Validate data structure
               if (expectsArray && !Array.isArray(data)) {
-                dataValidationIssues.push(`${endpoint}: Expected array, got ${typeof data}`);
-              } else if (expectsObject && (typeof data !== 'object' || Array.isArray(data))) {
-                dataValidationIssues.push(`${endpoint}: Expected object, got ${typeof data}`);
+                dataValidationIssues.push(
+                  `${endpoint}: Expected array, got ${typeof data}`
+                );
+              } else if (
+                expectsObject &&
+                (typeof data !== 'object' || Array.isArray(data))
+              ) {
+                dataValidationIssues.push(
+                  `${endpoint}: Expected object, got ${typeof data}`
+                );
               }
-              
+
               // Check for common required fields
               if (expectsObject && data && typeof data === 'object') {
-                if (!data.hasOwnProperty('timestamp') && !data.hasOwnProperty('data')) {
-                  console.log(`${endpoint}: No timestamp or data field (may be normal)`);
+                if (
+                  !data.hasOwnProperty('timestamp') &&
+                  !data.hasOwnProperty('data')
+                ) {
+                  console.log(
+                    `${endpoint}: No timestamp or data field (may be normal)`
+                  );
                 }
               }
-              
             } catch (jsonError) {
               dataValidationIssues.push(`${endpoint}: Invalid JSON response`);
             }
@@ -165,7 +187,6 @@ test.describe('API Endpoint Validation', () => {
         } else {
           console.log(`${endpoint}: Not available (${response.status()})`);
         }
-        
       } catch (_error) {
         console.log(`${endpoint}: Request failed - ${_error}`);
       }
@@ -178,12 +199,18 @@ test.describe('API Endpoint Validation', () => {
     expect(dataValidationIssues.length).toBeLessThan(5);
   });
 
-  test('should test API endpoints with different HTTP methods', async ({ page }) => {
+  test('should test API endpoints with different HTTP methods', async ({
+    page,
+  }) => {
     const methodTests = [
       { endpoint: '/api/analysis/scan', method: 'POST', expectSuccess: true },
       { endpoint: '/api/config/save', method: 'POST', expectSuccess: true },
       { endpoint: '/api/files/write', method: 'POST', expectSuccess: false }, // May require body
-      { endpoint: '/api/reports/generate', method: 'POST', expectSuccess: false } // May require body
+      {
+        endpoint: '/api/reports/generate',
+        method: 'POST',
+        expectSuccess: false,
+      }, // May require body
     ];
 
     const methodIssues: string[] = [];
@@ -191,28 +218,33 @@ test.describe('API Endpoint Validation', () => {
     for (const { endpoint, method, expectSuccess } of methodTests) {
       try {
         const url = `${TEST_CONFIG.dashboards.webClient.baseURL}${endpoint}`;
-        
+
         let response;
         if (method === 'POST') {
-          response = await page.request.post(url, { 
+          response = await page.request.post(url, {
             data: {},
-            timeout: 10000 
+            timeout: 10000,
           });
         } else {
           response = await page.request.get(url);
         }
 
         if (expectSuccess && !response.ok()) {
-          methodIssues.push(`${method} ${endpoint}: Expected success, got ${response.status()}`);
+          methodIssues.push(
+            `${method} ${endpoint}: Expected success, got ${response.status()}`
+          );
         } else if (!expectSuccess && response.ok()) {
-          console.log(`${method} ${endpoint}: Unexpectedly succeeded (may be good)`);
+          console.log(
+            `${method} ${endpoint}: Unexpectedly succeeded (may be good)`
+          );
         }
 
         console.log(`${method} ${endpoint}: ${response.status()}`);
-        
       } catch (_error) {
         if (expectSuccess) {
-          methodIssues.push(`${method} ${endpoint}: Request failed - ${_error}`);
+          methodIssues.push(
+            `${method} ${endpoint}: Request failed - ${_error}`
+          );
         } else {
           console.log(`${method} ${endpoint}: Request failed as expected`);
         }
@@ -231,17 +263,19 @@ test.describe('API Endpoint Validation', () => {
     const apiErrors: string[] = [];
 
     // Monitor network requests
-    page.on('response', (response) => {
+    page.on('response', response => {
       const url = response.url();
       if (url.includes('/api/')) {
         apiCalls.push({
           url: url,
           status: response.status(),
-          method: response.request().method()
+          method: response.request().method(),
         });
 
         if (!response.ok()) {
-          apiErrors.push(`${response.request().method()} ${url} - ${response.status()}`);
+          apiErrors.push(
+            `${response.request().method()} ${url} - ${response.status()}`
+          );
         }
       }
     });
@@ -251,7 +285,7 @@ test.describe('API Endpoint Validation', () => {
       '/dashboard/analysis',
       '/dashboard/performance',
       '/dashboard/files',
-      '/dashboard/quality'
+      '/dashboard/quality',
     ];
 
     for (const route of routesWithApiCalls) {
@@ -260,15 +294,18 @@ test.describe('API Endpoint Validation', () => {
     }
 
     console.log(`\nAPI Calls Monitored: ${apiCalls.length}`);
-    
+
     if (apiCalls.length > 0) {
       console.log('API Call Summary:');
-      const callSummary = apiCalls.reduce((acc, call) => {
-        const key = `${call.method} ${call.url.split('/api/')[1]?.split('?')[0]}`;
-        acc[key] = (acc[key] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
-      
+      const callSummary = apiCalls.reduce(
+        (acc, call) => {
+          const key = `${call.method} ${call.url.split('/api/')[1]?.split('?')[0]}`;
+          acc[key] = (acc[key] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>
+      );
+
       Object.entries(callSummary).forEach(([call, count]) => {
         console.log(`  ${call}: ${count} calls`);
       });
@@ -284,19 +321,29 @@ test.describe('API Endpoint Validation', () => {
     expect(apiErrors.length).toBeLessThan(10);
   });
 
-  test('should validate API error handling and status codes', async ({ page }) => {
+  test('should validate API error handling and status codes', async ({
+    page,
+  }) => {
     const errorTestEndpoints = [
       { endpoint: '/api/nonexistent', expectedStatus: 404 },
-      { endpoint: '/api/files/read', method: 'POST', expectedStatus: [400, 405] }, // Bad request or method not allowed
-      { endpoint: '/api/analysis/invalid-type', expectedStatus: [400, 404] }
+      {
+        endpoint: '/api/files/read',
+        method: 'POST',
+        expectedStatus: [400, 405],
+      }, // Bad request or method not allowed
+      { endpoint: '/api/analysis/invalid-type', expectedStatus: [400, 404] },
     ];
 
     const errorHandlingIssues: string[] = [];
 
-    for (const { endpoint, method = 'GET', expectedStatus } of errorTestEndpoints) {
+    for (const {
+      endpoint,
+      method = 'GET',
+      expectedStatus,
+    } of errorTestEndpoints) {
       try {
         const url = `${TEST_CONFIG.dashboards.webClient.baseURL}${endpoint}`;
-        
+
         let response;
         if (method === 'POST') {
           response = await page.request.post(url);
@@ -305,10 +352,14 @@ test.describe('API Endpoint Validation', () => {
         }
 
         const actualStatus = response.status();
-        const expectedStatuses = Array.isArray(expectedStatus) ? expectedStatus : [expectedStatus];
-        
+        const expectedStatuses = Array.isArray(expectedStatus)
+          ? expectedStatus
+          : [expectedStatus];
+
         if (!expectedStatuses.includes(actualStatus)) {
-          errorHandlingIssues.push(`${endpoint}: Expected ${expectedStatus}, got ${actualStatus}`);
+          errorHandlingIssues.push(
+            `${endpoint}: Expected ${expectedStatus}, got ${actualStatus}`
+          );
         } else {
           console.log(`✓ ${endpoint}: Correct error status ${actualStatus}`);
         }
@@ -318,16 +369,22 @@ test.describe('API Endpoint Validation', () => {
         if (contentType.includes('application/json')) {
           try {
             const errorData = await response.json();
-            if (!errorData.hasOwnProperty('error') && !errorData.hasOwnProperty('message')) {
-              console.log(`${endpoint}: Error response lacks standard error fields`);
+            if (
+              !errorData.hasOwnProperty('error') &&
+              !errorData.hasOwnProperty('message')
+            ) {
+              console.log(
+                `${endpoint}: Error response lacks standard error fields`
+              );
             }
           } catch (_e) {
             console.log(`${endpoint}: Non-JSON error response`);
           }
         }
-
       } catch (_error) {
-        errorHandlingIssues.push(`${endpoint}: Request failed unexpectedly - ${_error}`);
+        errorHandlingIssues.push(
+          `${endpoint}: Request failed unexpectedly - ${_error}`
+        );
       }
     }
 
@@ -343,24 +400,28 @@ test.describe('API Endpoint Validation', () => {
       '/api/analysis',
       '/api/files/list',
       '/api/performance',
-      '/api/config'
+      '/api/config',
     ];
 
-    const performanceResults: Array<{ endpoint: string; responseTime: number; status: number }> = [];
+    const performanceResults: Array<{
+      endpoint: string;
+      responseTime: number;
+      status: number;
+    }> = [];
     const slowEndpoints: string[] = [];
 
     for (const endpoint of performanceEndpoints) {
       try {
         const url = `${TEST_CONFIG.dashboards.webClient.baseURL}${endpoint}`;
         const startTime = Date.now();
-        
+
         const response = await page.request.get(url, { timeout: 15000 });
         const responseTime = Date.now() - startTime;
-        
+
         performanceResults.push({
           endpoint,
           responseTime,
-          status: response.status()
+          status: response.status(),
         });
 
         if (responseTime > 5000) {
@@ -368,15 +429,18 @@ test.describe('API Endpoint Validation', () => {
         }
 
         console.log(`${endpoint}: ${responseTime}ms - ${response.status()}`);
-        
       } catch (_error) {
         console.log(`${endpoint}: Performance test failed - ${_error}`);
       }
     }
 
-    const avgResponseTime = performanceResults.length > 0 
-      ? performanceResults.reduce((sum, result) => sum + result.responseTime, 0) / performanceResults.length
-      : 0;
+    const avgResponseTime =
+      performanceResults.length > 0
+        ? performanceResults.reduce(
+            (sum, result) => sum + result.responseTime,
+            0
+          ) / performanceResults.length
+        : 0;
 
     console.log(`\nAPI Performance Summary:`);
     console.log(`Average Response Time: ${avgResponseTime.toFixed(2)}ms`);
@@ -388,7 +452,9 @@ test.describe('API Endpoint Validation', () => {
 
     // API performance thresholds
     expect(avgResponseTime).toBeLessThan(10000); // 10 seconds average
-    expect(slowEndpoints.length).toBeLessThan(performanceEndpoints.length * 0.5); // Less than 50% slow
+    expect(slowEndpoints.length).toBeLessThan(
+      performanceEndpoints.length * 0.5
+    ); // Less than 50% slow
   });
 
   test('should validate WebSocket connectivity', async ({ page }) => {
@@ -397,20 +463,20 @@ test.describe('API Endpoint Validation', () => {
     const wsErrors: string[] = [];
 
     // Monitor WebSocket connections
-    page.on('websocket', (ws) => {
+    page.on('websocket', ws => {
       wsConnectionAttempted = true;
       console.log(`WebSocket connection attempt: ${ws.url()}`);
-      
+
       ws.on('open' as any, () => {
         wsConnected = true;
         console.log('WebSocket connected successfully');
       });
-      
+
       ws.on('close' as any, () => {
         console.log('WebSocket connection closed');
       });
-      
-      ws.on('socketerror', (error) => {
+
+      ws.on('socketerror', error => {
         wsErrors.push(`WebSocket error: ${error}`);
       });
     });
@@ -421,7 +487,7 @@ test.describe('API Endpoint Validation', () => {
 
     console.log(`WebSocket connection attempted: ${wsConnectionAttempted}`);
     console.log(`WebSocket connected: ${wsConnected}`);
-    
+
     if (wsErrors.length > 0) {
       console.log('WebSocket Errors:', wsErrors);
     }
@@ -432,23 +498,29 @@ test.describe('API Endpoint Validation', () => {
     }
   });
 
-  test('should test API authentication and security headers', async ({ page }) => {
-    const securityTestEndpoints = ['/api/config', '/api/analysis', '/api/files/list'];
+  test('should test API authentication and security headers', async ({
+    page,
+  }) => {
+    const securityTestEndpoints = [
+      '/api/config',
+      '/api/analysis',
+      '/api/files/list',
+    ];
     const securityIssues: string[] = [];
 
     for (const endpoint of securityTestEndpoints) {
       try {
         const url = `${TEST_CONFIG.dashboards.webClient.baseURL}${endpoint}`;
         const response = await page.request.get(url);
-        
+
         const headers = response.headers();
-        
+
         // Check for security headers (nice to have)
         const securityHeaders = [
           'x-content-type-options',
-          'x-frame-options', 
+          'x-frame-options',
           'x-xss-protection',
-          'content-security-policy'
+          'content-security-policy',
         ];
 
         let securityHeadersPresent = 0;
@@ -458,13 +530,14 @@ test.describe('API Endpoint Validation', () => {
           }
         });
 
-        console.log(`${endpoint}: ${securityHeadersPresent}/${securityHeaders.length} security headers`);
+        console.log(
+          `${endpoint}: ${securityHeadersPresent}/${securityHeaders.length} security headers`
+        );
 
         // Check for CORS headers if needed
         if (headers['access-control-allow-origin']) {
           console.log(`${endpoint}: CORS enabled`);
         }
-
       } catch (_error) {
         console.log(`${endpoint}: Security test failed - ${_error}`);
       }
@@ -485,22 +558,26 @@ test.describe('API Endpoint Validation', () => {
         notImplementedEndpoints: 0,
         avgResponseTime: 0,
         apiCallsDuringUsage: 0,
-        criticalFailures: 0
+        criticalFailures: 0,
       },
       details: {
         workingEndpoints: [] as string[],
         failedEndpoints: [] as string[],
         slowEndpoints: [] as string[],
         dataValidationIssues: [] as string[],
-        performanceMetrics: {} as Record<string, number>
+        performanceMetrics: {} as Record<string, number>,
       },
-      recommendations: [] as string[]
+      recommendations: [] as string[],
     };
 
     // Test core API endpoints
     const coreEndpoints = [
-      '/api/analysis', '/api/files/list', '/api/performance', 
-      '/api/quality', '/api/config', '/api/services'
+      '/api/analysis',
+      '/api/files/list',
+      '/api/performance',
+      '/api/quality',
+      '/api/config',
+      '/api/services',
     ];
 
     report.summary.totalEndpointsChecked = coreEndpoints.length;
@@ -517,23 +594,26 @@ test.describe('API Endpoint Validation', () => {
           report.summary.healthyEndpoints++;
           report.details.workingEndpoints.push(endpoint);
           totalResponseTime += responseTime;
-          
+
           if (responseTime > 5000) {
-            report.details.slowEndpoints.push(`${endpoint} (${responseTime}ms)`);
+            report.details.slowEndpoints.push(
+              `${endpoint} (${responseTime}ms)`
+            );
           }
-          
+
           report.details.performanceMetrics[endpoint] = responseTime;
         } else if (response.status() === 404) {
           report.summary.notImplementedEndpoints++;
         } else {
           report.summary.unhealthyEndpoints++;
-          report.details.failedEndpoints.push(`${endpoint} - ${response.status()}`);
-          
+          report.details.failedEndpoints.push(
+            `${endpoint} - ${response.status()}`
+          );
+
           if (response.status() >= 500) {
             report.summary.criticalFailures++;
           }
         }
-
       } catch (_error) {
         report.summary.unhealthyEndpoints++;
         report.details.failedEndpoints.push(`${endpoint} - ${_error}`);
@@ -541,13 +621,14 @@ test.describe('API Endpoint Validation', () => {
       }
     }
 
-    report.summary.avgResponseTime = report.summary.healthyEndpoints > 0 
-      ? totalResponseTime / report.summary.healthyEndpoints 
-      : 0;
+    report.summary.avgResponseTime =
+      report.summary.healthyEndpoints > 0
+        ? totalResponseTime / report.summary.healthyEndpoints
+        : 0;
 
     // Test API calls during usage
     const apiCalls: string[] = [];
-    page.on('response', (response) => {
+    page.on('response', response => {
       if (response.url().includes('/api/')) {
         apiCalls.push(response.url());
       }
@@ -555,29 +636,37 @@ test.describe('API Endpoint Validation', () => {
 
     await page.goto(`${TEST_CONFIG.dashboards.webClient.baseURL}/dashboard`);
     await page.waitForTimeout(3000);
-    
+
     report.summary.apiCallsDuringUsage = apiCalls.length;
 
     // Generate recommendations
     if (report.summary.criticalFailures > 0) {
-      report.recommendations.push('Critical API failures detected. Review server configuration and error handling.');
+      report.recommendations.push(
+        'Critical API failures detected. Review server configuration and error handling.'
+      );
     }
-    
+
     if (report.summary.avgResponseTime > 5000) {
-      report.recommendations.push('High average API response time. Consider performance optimization.');
+      report.recommendations.push(
+        'High average API response time. Consider performance optimization.'
+      );
     }
-    
+
     if (report.summary.healthyEndpoints === 0) {
-      report.recommendations.push('No working API endpoints found. Check backend server status.');
+      report.recommendations.push(
+        'No working API endpoints found. Check backend server status.'
+      );
     }
-    
+
     if (report.details.slowEndpoints.length > 2) {
-      report.recommendations.push('Multiple slow API endpoints detected. Investigate performance bottlenecks.');
+      report.recommendations.push(
+        'Multiple slow API endpoints detected. Investigate performance bottlenecks.'
+      );
     }
 
     console.log('\n=== COMPREHENSIVE API HEALTH REPORT ===');
     console.log(JSON.stringify(report.summary, null, 2));
-    
+
     if (report.recommendations.length > 0) {
       console.log('\nRECOMMENDATIONS:');
       report.recommendations.forEach((rec, index) => {
@@ -587,6 +676,8 @@ test.describe('API Endpoint Validation', () => {
 
     // Test assertions
     expect(report.summary.criticalFailures).toBeLessThan(3);
-    expect(report.summary.healthyEndpoints + report.summary.notImplementedEndpoints).toBeGreaterThan(0);
+    expect(
+      report.summary.healthyEndpoints + report.summary.notImplementedEndpoints
+    ).toBeGreaterThan(0);
   });
 });

@@ -1,209 +1,197 @@
-'use client'
+'use client';
 
-import * as React from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { 
-  CheckCircle, 
-  XCircle, 
-  AlertCircle, 
+import * as React from 'react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  CheckCircle,
+  XCircle,
+  AlertCircle,
   Clock,
   Shield,
   Zap,
   Code,
   FileText,
   TrendingUp,
-  TrendingDown
-} from 'lucide-react'
-import { cn } from '@/lib/utils'
+  TrendingDown,
+  ServerCrash,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface HealthMetric {
-  name: string
-  value: number
-  status: 'excellent' | 'good' | 'warning' | 'critical'
-  description: string
-  trend: 'up' | 'down' | 'stable'
-  details?: string[]
+  name: string;
+  value: number;
+  status: 'excellent' | 'good' | 'warning' | 'critical';
+  description: string;
+  trend: 'up' | 'down' | 'stable';
+  details?: string[];
 }
 
 interface Issue {
-  id: string
-  type: 'security' | 'performance' | 'quality' | 'maintenance'
-  severity: 'low' | 'medium' | 'high' | 'critical'
-  title: string
-  description: string
-  file?: string
-  line?: number
-  suggestion?: string
+  id: string;
+  type: 'security' | 'performance' | 'quality' | 'maintenance';
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  title: string;
+  description: string;
+  file?: string;
+  line?: number;
+  suggestion?: string;
 }
 
-const healthMetrics: HealthMetric[] = [
-  {
-    name: 'Code Quality',
-    value: 87,
-    status: 'good',
-    description: 'Overall code quality score based on complexity, maintainability, and best practices',
-    trend: 'up',
-    details: [
-      'Low cyclomatic complexity',
-      'Good test coverage',
-      'Minimal code duplication'
-    ]
-  },
-  {
-    name: 'Security Score',
-    value: 92,
-    status: 'excellent',
-    description: 'Security assessment based on known vulnerabilities and best practices',
-    trend: 'up',
-    details: [
-      'No critical vulnerabilities',
-      'Dependencies up to date',
-      'Security headers configured'
-    ]
-  },
-  {
-    name: 'Performance',
-    value: 78,
-    status: 'warning',
-    description: 'Application performance metrics including load times and memory usage',
-    trend: 'down',
-    details: [
-      'Build time could be improved',
-      'Some heavy dependencies',
-      'Memory usage within limits'
-    ]
-  },
-  {
-    name: 'Maintainability',
-    value: 82,
-    status: 'good',
-    description: 'How easy it is to maintain and extend the codebase',
-    trend: 'stable',
-    details: [
-      'Well-documented APIs',
-      'Consistent coding style',
-      'Modular architecture'
-    ]
-  }
-]
+interface ServerHealthResponse {
+  status: 'healthy' | 'degraded' | 'unhealthy';
+  version: string;
+  timestamp: string;
+  uptime: number;
+  checks: {
+    database?: 'ok' | 'error';
+    memory?: 'ok' | 'warning' | 'error';
+  };
+}
 
-const issues: Issue[] = [
-  {
-    id: '1',
-    type: 'security',
-    severity: 'high',
-    title: 'Outdated dependency with known vulnerability',
-    description: 'lodash@4.17.20 has a prototype pollution vulnerability',
-    file: 'package.json',
-    suggestion: 'Update to lodash@4.17.21 or higher'
-  },
-  {
-    id: '2',
-    type: 'performance',
-    severity: 'medium',
-    title: 'Large bundle size in dashboard package',
-    description: 'Bundle size exceeds recommended threshold (>500kb)',
-    file: 'packages/@wundr/dashboard/dist/bundle.js',
-    suggestion: 'Consider code splitting or removing unused dependencies'
-  },
-  {
-    id: '3',
-    type: 'quality',
-    severity: 'low',
-    title: 'High cyclomatic complexity in utility functions',
-    description: 'Function parseConfig has complexity score of 12',
-    file: 'src/utils/config.ts',
-    line: 45,
-    suggestion: 'Break down into smaller, focused functions'
-  },
-  {
-    id: '4',
-    type: 'maintenance',
-    severity: 'medium',
-    title: 'Missing error handling in API calls',
-    description: 'Several API endpoints lack proper error handling',
-    file: 'src/api/client.ts',
-    suggestion: 'Add try-catch blocks and user-friendly error messages'
+type FetchState = 'idle' | 'loading' | 'success' | 'error';
+
+function serverStatusToMetricStatus(
+  status: ServerHealthResponse['status']
+): HealthMetric['status'] {
+  switch (status) {
+    case 'healthy':
+      return 'excellent';
+    case 'degraded':
+      return 'warning';
+    case 'unhealthy':
+      return 'critical';
   }
-]
+}
+
+function memoryCheckToDetails(memory?: 'ok' | 'warning' | 'error'): string[] {
+  switch (memory) {
+    case 'ok':
+      return ['Memory usage is within normal limits'];
+    case 'warning':
+      return ['Memory usage is elevated (above 75%)'];
+    case 'error':
+      return ['Memory usage is critically high (above 90%)'];
+    default:
+      return ['Memory status unavailable'];
+  }
+}
+
+function formatUptime(seconds: number): string {
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (days > 0) return `${days}d ${hours}h ${minutes}m`;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+}
 
 function getStatusColor(status: HealthMetric['status']) {
   switch (status) {
-    case 'excellent': return 'text-green-600'
-    case 'good': return 'text-blue-600'
-    case 'warning': return 'text-orange-600'
-    case 'critical': return 'text-red-600'
+    case 'excellent':
+      return 'text-green-600';
+    case 'good':
+      return 'text-blue-600';
+    case 'warning':
+      return 'text-orange-600';
+    case 'critical':
+      return 'text-red-600';
   }
 }
 
 function getStatusIcon(status: HealthMetric['status']) {
   switch (status) {
-    case 'excellent': return CheckCircle
-    case 'good': return CheckCircle
-    case 'warning': return AlertCircle
-    case 'critical': return XCircle
+    case 'excellent':
+      return CheckCircle;
+    case 'good':
+      return CheckCircle;
+    case 'warning':
+      return AlertCircle;
+    case 'critical':
+      return XCircle;
   }
 }
 
 function getIssueIcon(type: Issue['type']) {
   switch (type) {
-    case 'security': return Shield
-    case 'performance': return Zap
-    case 'quality': return Code
-    case 'maintenance': return FileText
+    case 'security':
+      return Shield;
+    case 'performance':
+      return Zap;
+    case 'quality':
+      return Code;
+    case 'maintenance':
+      return FileText;
   }
 }
 
 function getSeverityColor(severity: Issue['severity']) {
   switch (severity) {
-    case 'low': return 'text-green-600 border-green-200'
-    case 'medium': return 'text-orange-600 border-orange-200'
-    case 'high': return 'text-red-600 border-red-200'
-    case 'critical': return 'text-red-700 border-red-300'
+    case 'low':
+      return 'text-green-600 border-green-200';
+    case 'medium':
+      return 'text-orange-600 border-orange-200';
+    case 'high':
+      return 'text-red-600 border-red-200';
+    case 'critical':
+      return 'text-red-700 border-red-300';
   }
 }
 
 function HealthMetricCard({ metric }: { metric: HealthMetric }) {
-  const StatusIcon = getStatusIcon(metric.status)
-  const TrendIcon = metric.trend === 'up' ? TrendingUp : 
-                    metric.trend === 'down' ? TrendingDown : Clock
+  const StatusIcon = getStatusIcon(metric.status);
+  const TrendIcon =
+    metric.trend === 'up'
+      ? TrendingUp
+      : metric.trend === 'down'
+        ? TrendingDown
+        : Clock;
 
   return (
     <Card>
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">{metric.name}</CardTitle>
-          <div className="flex items-center space-x-2">
-            <StatusIcon className={cn('h-5 w-5', getStatusColor(metric.status))} />
-            <TrendIcon className={cn('h-4 w-4', {
-              'text-green-500': metric.trend === 'up',
-              'text-red-500': metric.trend === 'down',
-              'text-gray-500': metric.trend === 'stable'
-            })} />
+      <CardHeader className='pb-4'>
+        <div className='flex items-center justify-between'>
+          <CardTitle className='text-lg'>{metric.name}</CardTitle>
+          <div className='flex items-center space-x-2'>
+            <StatusIcon
+              className={cn('h-5 w-5', getStatusColor(metric.status))}
+            />
+            <TrendIcon
+              className={cn('h-4 w-4', {
+                'text-green-500': metric.trend === 'up',
+                'text-red-500': metric.trend === 'down',
+                'text-gray-500': metric.trend === 'stable',
+              })}
+            />
           </div>
         </div>
         <CardDescription>{metric.description}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
+      <CardContent className='space-y-4'>
+        <div className='space-y-2'>
+          <div className='flex justify-between text-sm'>
             <span>Score</span>
-            <span className="font-medium">{metric.value}/100</span>
+            <span className='font-medium'>{metric.value}/100</span>
           </div>
-          <Progress value={metric.value} className="h-2" />
+          <Progress value={metric.value} className='h-2' />
         </div>
-        
+
         {metric.details && (
-          <div className="space-y-1">
-            <p className="text-sm font-medium">Key Points:</p>
-            <ul className="text-xs text-muted-foreground space-y-1">
+          <div className='space-y-1'>
+            <p className='text-sm font-medium'>Key Points:</p>
+            <ul className='text-xs text-muted-foreground space-y-1'>
               {metric.details.map((detail, index) => (
-                <li key={index} className="flex items-center space-x-2">
-                  <div className="h-1 w-1 rounded-full bg-muted-foreground flex-shrink-0" />
+                <li key={index} className='flex items-center space-x-2'>
+                  <div className='h-1 w-1 rounded-full bg-muted-foreground flex-shrink-0' />
                   <span>{detail}</span>
                 </li>
               ))}
@@ -212,121 +200,261 @@ function HealthMetricCard({ metric }: { metric: HealthMetric }) {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }
 
 function IssueCard({ issue }: { issue: Issue }) {
-  const Icon = getIssueIcon(issue.type)
-  
+  const Icon = getIssueIcon(issue.type);
+
   return (
-    <Card className="mb-4">
-      <CardContent className="pt-6">
-        <div className="flex items-start space-x-3">
-          <Icon className="h-5 w-5 mt-0.5 text-muted-foreground" />
-          <div className="flex-1 space-y-2">
-            <div className="flex items-center justify-between">
-              <h4 className="text-sm font-medium">{issue.title}</h4>
-              <Badge variant="outline" className={cn('text-xs', getSeverityColor(issue.severity))}>
+    <Card className='mb-4'>
+      <CardContent className='pt-6'>
+        <div className='flex items-start space-x-3'>
+          <Icon className='h-5 w-5 mt-0.5 text-muted-foreground' />
+          <div className='flex-1 space-y-2'>
+            <div className='flex items-center justify-between'>
+              <h4 className='text-sm font-medium'>{issue.title}</h4>
+              <Badge
+                variant='outline'
+                className={cn('text-xs', getSeverityColor(issue.severity))}
+              >
                 {issue.severity}
               </Badge>
             </div>
-            <p className="text-sm text-muted-foreground">{issue.description}</p>
+            <p className='text-sm text-muted-foreground'>{issue.description}</p>
             {issue.file && (
-              <p className="text-xs text-muted-foreground">
-                📁 {issue.file}
+              <p className='text-xs text-muted-foreground'>
+                {issue.file}
                 {issue.line && ` (line ${issue.line})`}
               </p>
             )}
             {issue.suggestion && (
-              <div className="mt-2 p-2 bg-muted rounded-md">
-                <p className="text-xs font-medium text-muted-foreground mb-1">💡 Suggestion:</p>
-                <p className="text-xs text-muted-foreground">{issue.suggestion}</p>
+              <div className='mt-2 p-2 bg-muted rounded-md'>
+                <p className='text-xs font-medium text-muted-foreground mb-1'>
+                  Suggestion:
+                </p>
+                <p className='text-xs text-muted-foreground'>
+                  {issue.suggestion}
+                </p>
               </div>
             )}
           </div>
         </div>
       </CardContent>
     </Card>
-  )
+  );
+}
+
+function UnavailablePlaceholder({ label }: { label: string }) {
+  return (
+    <Card>
+      <CardContent className='flex flex-col items-center justify-center py-10 space-y-3'>
+        <ServerCrash className='h-8 w-8 text-muted-foreground opacity-50' />
+        <p className='text-sm text-muted-foreground'>{label} unavailable</p>
+        <p className='text-xs text-muted-foreground'>
+          No data source is configured for this metric.
+        </p>
+      </CardContent>
+    </Card>
+  );
 }
 
 export function ProjectHealth() {
-  const overallHealth = Math.round(
-    healthMetrics.reduce((sum, metric) => sum + metric.value, 0) / healthMetrics.length
-  )
+  const [fetchState, setFetchState] = React.useState<FetchState>('idle');
+  const [serverHealth, setServerHealth] =
+    React.useState<ServerHealthResponse | null>(null);
+  const [fetchError, setFetchError] = React.useState<string | null>(null);
 
-  const issuesByType = issues.reduce((acc, issue) => {
-    if (!acc[issue.type]) acc[issue.type] = []
-    acc[issue.type].push(issue)
-    return acc
-  }, {} as Record<string, Issue[]>)
+  React.useEffect(() => {
+    let cancelled = false;
+
+    async function fetchHealth() {
+      setFetchState('loading');
+      setFetchError(null);
+
+      try {
+        const response = await fetch('/api/health');
+        if (!response.ok) {
+          throw new Error(
+            `Health endpoint responded with status ${response.status}`
+          );
+        }
+        const data: ServerHealthResponse = await response.json();
+        if (!cancelled) {
+          setServerHealth(data);
+          setFetchState('success');
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setFetchError(
+            err instanceof Error ? err.message : 'Failed to fetch health data'
+          );
+          setFetchState('error');
+        }
+      }
+    }
+
+    fetchHealth();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Derive a single real metric from the server health response
+  const serverMetric: HealthMetric | null = React.useMemo(() => {
+    if (!serverHealth) return null;
+
+    const statusToValue: Record<ServerHealthResponse['status'], number> = {
+      healthy: 100,
+      degraded: 60,
+      unhealthy: 20,
+    };
+
+    return {
+      name: 'System Health',
+      value: statusToValue[serverHealth.status],
+      status: serverStatusToMetricStatus(serverHealth.status),
+      description: `Server is ${serverHealth.status}. Uptime: ${formatUptime(serverHealth.uptime)}. Version: ${serverHealth.version}.`,
+      trend: 'stable',
+      details: memoryCheckToDetails(serverHealth.checks.memory),
+    };
+  }, [serverHealth]);
+
+  // The overall health score is based on the single real metric we have.
+  // Code Quality, Security Score, Performance, and Maintainability have no API backing.
+  const overallHealth = serverMetric ? serverMetric.value : null;
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       {/* Overall Health Score */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+          <CardTitle className='flex items-center justify-between'>
             Project Health Score
-            <Badge variant={overallHealth >= 90 ? 'default' : overallHealth >= 80 ? 'secondary' : 'destructive'}>
-              {overallHealth}/100
-            </Badge>
+            {fetchState === 'loading' && (
+              <Badge variant='secondary'>Loading...</Badge>
+            )}
+            {fetchState === 'error' && (
+              <Badge variant='destructive'>Unavailable</Badge>
+            )}
+            {fetchState === 'success' && overallHealth !== null && (
+              <Badge
+                variant={
+                  overallHealth >= 90
+                    ? 'default'
+                    : overallHealth >= 80
+                      ? 'secondary'
+                      : 'destructive'
+                }
+              >
+                {overallHealth}/100
+              </Badge>
+            )}
           </CardTitle>
           <CardDescription>
             Comprehensive health assessment of your project
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Progress value={overallHealth} className="h-3" />
+          {fetchState === 'loading' && (
+            <Progress value={0} className='h-3 animate-pulse' />
+          )}
+          {fetchState === 'error' && (
+            <p className='text-sm text-destructive'>{fetchError}</p>
+          )}
+          {fetchState === 'success' && overallHealth !== null && (
+            <Progress value={overallHealth} className='h-3' />
+          )}
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="metrics" className="space-y-4">
+      <Tabs defaultValue='metrics' className='space-y-4'>
         <TabsList>
-          <TabsTrigger value="metrics">Health Metrics</TabsTrigger>
-          <TabsTrigger value="issues">Issues & Recommendations</TabsTrigger>
+          <TabsTrigger value='metrics'>Health Metrics</TabsTrigger>
+          <TabsTrigger value='issues'>Issues & Recommendations</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="metrics" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            {healthMetrics.map((metric) => (
-              <HealthMetricCard key={metric.name} metric={metric} />
-            ))}
-          </div>
+        <TabsContent value='metrics' className='space-y-4'>
+          {fetchState === 'loading' && (
+            <div className='grid gap-4 md:grid-cols-2'>
+              {[1, 2, 3, 4].map(i => (
+                <Card key={i}>
+                  <CardHeader className='pb-4'>
+                    <div className='h-5 w-32 bg-muted animate-pulse rounded' />
+                    <div className='h-3 w-48 bg-muted animate-pulse rounded mt-2' />
+                  </CardHeader>
+                  <CardContent>
+                    <div className='h-2 bg-muted animate-pulse rounded' />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {fetchState === 'error' && (
+            <Card>
+              <CardContent className='flex flex-col items-center justify-center py-10 space-y-3'>
+                <ServerCrash className='h-8 w-8 text-destructive opacity-70' />
+                <p className='text-sm font-medium'>Health data unavailable</p>
+                <p className='text-xs text-muted-foreground'>{fetchError}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {fetchState === 'success' && (
+            <div className='grid gap-4 md:grid-cols-2'>
+              {serverMetric && <HealthMetricCard metric={serverMetric} />}
+              <UnavailablePlaceholder label='Code Quality' />
+              <UnavailablePlaceholder label='Security Score' />
+              <UnavailablePlaceholder label='Performance' />
+              <UnavailablePlaceholder label='Maintainability' />
+            </div>
+          )}
         </TabsContent>
 
-        <TabsContent value="issues" className="space-y-4">
-          <Tabs defaultValue="all" className="space-y-4">
+        <TabsContent value='issues' className='space-y-4'>
+          <Tabs defaultValue='all' className='space-y-4'>
             <TabsList>
-              <TabsTrigger value="all">All Issues ({issues.length})</TabsTrigger>
-              <TabsTrigger value="security">
-                Security ({issuesByType.security?.length || 0})
-              </TabsTrigger>
-              <TabsTrigger value="performance">
-                Performance ({issuesByType.performance?.length || 0})
-              </TabsTrigger>
-              <TabsTrigger value="quality">
-                Quality ({issuesByType.quality?.length || 0})
-              </TabsTrigger>
-              <TabsTrigger value="maintenance">
-                Maintenance ({issuesByType.maintenance?.length || 0})
-              </TabsTrigger>
+              <TabsTrigger value='all'>All Issues (0)</TabsTrigger>
+              <TabsTrigger value='security'>Security (0)</TabsTrigger>
+              <TabsTrigger value='performance'>Performance (0)</TabsTrigger>
+              <TabsTrigger value='quality'>Quality (0)</TabsTrigger>
+              <TabsTrigger value='maintenance'>Maintenance (0)</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="all">
-              <ScrollArea className="h-[500px]">
-                {issues.map((issue) => (
-                  <IssueCard key={issue.id} issue={issue} />
-                ))}
+            <TabsContent value='all'>
+              <ScrollArea className='h-[500px]'>
+                <Card>
+                  <CardContent className='flex flex-col items-center justify-center py-10 space-y-3'>
+                    <ServerCrash className='h-8 w-8 text-muted-foreground opacity-50' />
+                    <p className='text-sm text-muted-foreground'>
+                      Health data unavailable
+                    </p>
+                    <p className='text-xs text-muted-foreground'>
+                      No issue tracking API is configured for this project.
+                    </p>
+                  </CardContent>
+                </Card>
               </ScrollArea>
             </TabsContent>
 
-            {Object.entries(issuesByType).map(([type, typeIssues]) => (
+            {(
+              ['security', 'performance', 'quality', 'maintenance'] as const
+            ).map(type => (
               <TabsContent key={type} value={type}>
-                <ScrollArea className="h-[500px]">
-                  {typeIssues.map((issue) => (
-                    <IssueCard key={issue.id} issue={issue} />
-                  ))}
+                <ScrollArea className='h-[500px]'>
+                  <Card>
+                    <CardContent className='flex flex-col items-center justify-center py-10 space-y-3'>
+                      <ServerCrash className='h-8 w-8 text-muted-foreground opacity-50' />
+                      <p className='text-sm text-muted-foreground capitalize'>
+                        {type} data unavailable
+                      </p>
+                      <p className='text-xs text-muted-foreground'>
+                        No issue tracking API is configured for this project.
+                      </p>
+                    </CardContent>
+                  </Card>
                 </ScrollArea>
               </TabsContent>
             ))}
@@ -334,5 +462,5 @@ export function ProjectHealth() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

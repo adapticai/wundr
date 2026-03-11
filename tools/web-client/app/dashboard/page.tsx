@@ -10,7 +10,13 @@ import { DashboardCharts } from '@/components/dashboard/dashboard-charts';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import {
   FileCode,
@@ -33,27 +39,21 @@ import { format } from 'date-fns';
 import { useState, useEffect } from 'react';
 
 export default function DashboardPage() {
-  const {
-    data,
-    loading,
-    error,
-    refresh,
-    triggerAnalysis
-  } = useAnalysisData({
+  const { data, loading, error, refresh, triggerAnalysis } = useAnalysisData({
     autoRefresh: true,
     refreshInterval: 300000, // 5 minutes
-    realtime: true
+    realtime: true,
   });
 
   const [realtimeStats, setRealtimeStats] = useState<any>(null);
 
   const { isConnected, subscribe, lastMessage } = useWebSocket({
     enabled: true,
-    onMessage: (message) => {
+    onMessage: message => {
       if (message.type === 'data' && message.channel === 'dashboard') {
         setRealtimeStats(message.payload);
       }
-    }
+    },
   });
 
   useEffect(() => {
@@ -142,13 +142,15 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className='flex gap-2'>
-          <Button 
-            variant='outline' 
-            size='sm' 
-            onClick={refresh} 
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={refresh}
             disabled={isRefreshing}
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
+            />
             Refresh
           </Button>
           <Button size='sm' onClick={triggerAnalysis}>
@@ -162,7 +164,9 @@ export default function DashboardPage() {
       <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Analysis Status</CardTitle>
+            <CardTitle className='text-sm font-medium'>
+              Analysis Status
+            </CardTitle>
             <CheckCircle className='h-4 w-4 text-green-500' />
           </CardHeader>
           <CardContent>
@@ -175,25 +179,34 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Data Freshness</CardTitle>
+            <CardTitle className='text-sm font-medium'>
+              Data Freshness
+            </CardTitle>
             <Clock className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>Live</div>
             <p className='text-xs text-muted-foreground'>
-              Updated {Math.floor((Date.now() - new Date(lastUpdate).getTime()) / 1000)}s ago
+              Updated{' '}
+              {Math.floor((Date.now() - new Date(lastUpdate).getTime()) / 1000)}
+              s ago
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Critical Issues</CardTitle>
+            <CardTitle className='text-sm font-medium'>
+              Critical Issues
+            </CardTitle>
             <AlertTriangle className='h-4 w-4 text-red-500' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold text-red-600'>
-              {data.recommendations.filter(r => r.priority === 'critical').length}
+              {
+                data.recommendations.filter(r => r.priority === 'critical')
+                  .length
+              }
             </div>
             <p className='text-xs text-muted-foreground'>
               Require immediate attention
@@ -231,13 +244,18 @@ export default function DashboardPage() {
         />
         <SummaryCard
           title='Duplicate Clusters'
-          value={realtimeStats?.data?.duplicateClusters || summary.duplicateClusters}
+          value={
+            realtimeStats?.data?.duplicateClusters || summary.duplicateClusters
+          }
           icon={Copy}
           variant='critical'
         />
         <SummaryCard
           title='Circular Dependencies'
-          value={realtimeStats?.data?.circularDependencies || summary.circularDependencies}
+          value={
+            realtimeStats?.data?.circularDependencies ||
+            summary.circularDependencies
+          }
           icon={GitBranch}
           variant='warning'
         />
@@ -255,9 +273,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Enhanced Dashboard Charts with Real-time Data */}
-      <DashboardCharts 
-        data={data as any} 
-      />
+      <DashboardCharts data={data as any} />
     </div>
   );
 }

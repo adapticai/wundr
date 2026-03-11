@@ -73,7 +73,7 @@ export function TreeView({
         }
         onSelectedItemsChange(Array.from(newSelected));
       } else {
-        setInternalSelectedItems((prev) => {
+        setInternalSelectedItems(prev => {
           const newSelected = new Set(prev);
           if (selected) {
             if (multiSelect) {
@@ -103,7 +103,7 @@ export function TreeView({
         }
         onExpandedItemsChange(Array.from(newExpanded));
       } else {
-        setInternalExpandedItems((prev) => {
+        setInternalExpandedItems(prev => {
           const newExpanded = new Set(prev);
           if (newExpanded.has(id)) {
             newExpanded.delete(id);
@@ -119,9 +119,13 @@ export function TreeView({
 
   const contextValue = React.useMemo(
     () => ({
-      selectedItems: onSelectedItemsChange ? selectedItemsSet : internalSelectedItems,
+      selectedItems: onSelectedItemsChange
+        ? selectedItemsSet
+        : internalSelectedItems,
       onSelectItem: handleSelectItem,
-      expandedItems: onExpandedItemsChange ? expandedItemsSet : internalExpandedItems,
+      expandedItems: onExpandedItemsChange
+        ? expandedItemsSet
+        : internalExpandedItems,
       onToggleExpanded: handleToggleExpanded,
       multiSelect,
     }),
@@ -140,7 +144,7 @@ export function TreeView({
 
   return (
     <TreeViewContext.Provider value={contextValue}>
-      <div className={cn('tree-view', className)} role="tree">
+      <div className={cn('tree-view', className)} role='tree'>
         {children}
       </div>
     </TreeViewContext.Provider>
@@ -177,7 +181,8 @@ export function TreeItem({
     throw new Error('TreeItem must be used within a TreeView');
   }
 
-  const { selectedItems, onSelectItem, expandedItems, onToggleExpanded } = context;
+  const { selectedItems, onSelectItem, expandedItems, onToggleExpanded } =
+    context;
   const isSelected = selectedItems.has(id);
   const isExpanded = expandedItems.has(id);
   const hasChildrenToRender = hasChildren && children;
@@ -216,33 +221,33 @@ export function TreeItem({
         style={{ paddingLeft: `${(level + 1) * 12}px` }}
         onClick={handleClick}
         onDoubleClick={handleDoubleClick}
-        role="treeitem"
+        role='treeitem'
         aria-selected={isSelected}
         aria-expanded={hasChildren ? isExpanded : undefined}
         aria-level={level + 1}
       >
         {hasChildren ? (
           <Button
-            variant="ghost"
-            size="sm"
-            className="h-4 w-4 p-0 hover:bg-transparent"
+            variant='ghost'
+            size='sm'
+            className='h-4 w-4 p-0 hover:bg-transparent'
             onClick={handleToggle}
             disabled={disabled}
           >
             {isExpanded ? (
-              <ChevronDown className="h-3 w-3" />
+              <ChevronDown className='h-3 w-3' />
             ) : (
-              <ChevronRight className="h-3 w-3" />
+              <ChevronRight className='h-3 w-3' />
             )}
           </Button>
         ) : (
-          <div className="h-4 w-4" />
+          <div className='h-4 w-4' />
         )}
-        {icon && <div className="flex-shrink-0">{icon}</div>}
-        <span className="flex-1 truncate text-sm">{label}</span>
+        {icon && <div className='flex-shrink-0'>{icon}</div>}
+        <span className='flex-1 truncate text-sm'>{label}</span>
       </div>
       {hasChildrenToRender && isExpanded && (
-        <div className="tree-item-children" role="group">
+        <div className='tree-item-children' role='group'>
           {children}
         </div>
       )}

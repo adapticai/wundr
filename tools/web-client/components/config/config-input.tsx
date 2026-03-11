@@ -50,81 +50,97 @@ export function ConfigInput({
   const [localError, setLocalError] = useState<string>('');
   const [isValid, setIsValid] = useState<boolean | null>(null);
   const [isTouched, setIsTouched] = useState(false);
-  
+
   const error = externalError || localError;
-  
-  const validateValue = useCallback((val: string | number) => {
-    if (!section || !field || !validateOnBlur) return;
-    
-    // Convert to appropriate type
-    let validationValue = val;
-    if (type === 'number') {
-      validationValue = typeof val === 'string' ? parseFloat(val) || 0 : val;
-    }
-    
-    // Perform validation
-    const validationResult = configValidator.validateField(field, validationValue);
-    
-    setLocalError(validationResult.errors.length > 0 ? validationResult.errors[0].message : '');
-    setIsValid(validationResult.isValid);
-  }, [section, field, type, validateOnBlur]);
-  
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    onChange(newValue);
-    
-    // Real-time validation for certain fields
-    if (isTouched && (type === 'url' || type === 'email')) {
-      validateValue(newValue);
-    }
-  }, [onChange, validateValue, isTouched, type]);
-  
+
+  const validateValue = useCallback(
+    (val: string | number) => {
+      if (!section || !field || !validateOnBlur) return;
+
+      // Convert to appropriate type
+      let validationValue = val;
+      if (type === 'number') {
+        validationValue = typeof val === 'string' ? parseFloat(val) || 0 : val;
+      }
+
+      // Perform validation
+      const validationResult = configValidator.validateField(
+        field,
+        validationValue
+      );
+
+      setLocalError(
+        validationResult.errors.length > 0
+          ? validationResult.errors[0].message
+          : ''
+      );
+      setIsValid(validationResult.isValid);
+    },
+    [section, field, type, validateOnBlur]
+  );
+
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = e.target.value;
+      onChange(newValue);
+
+      // Real-time validation for certain fields
+      if (isTouched && (type === 'url' || type === 'email')) {
+        validateValue(newValue);
+      }
+    },
+    [onChange, validateValue, isTouched, type]
+  );
+
   const handleBlur = useCallback(() => {
     setIsTouched(true);
     if (validateOnBlur) {
       validateValue(value);
     }
   }, [validateValue, value, validateOnBlur]);
-  
+
   const handleFocus = useCallback(() => {
     if (!isTouched) {
       setLocalError('');
       setIsValid(null);
     }
   }, [isTouched]);
-  
+
   // Validate on mount if value is already set
   useEffect(() => {
     if (value && section && field) {
       validateValue(value);
     }
-  }, [value, section, field, validateValue]);  // Include all dependencies
-  
+  }, [value, section, field, validateValue]); // Include all dependencies
+
   const getValidationIcon = () => {
     if (!showValidationIcon || !isTouched) return null;
-    
+
     if (error) {
-      return <AlertCircle className="h-4 w-4 text-destructive" />;
+      return <AlertCircle className='h-4 w-4 text-destructive' />;
     }
-    
+
     if (isValid && value) {
-      return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+      return <CheckCircle2 className='h-4 w-4 text-green-500' />;
     }
-    
+
     return null;
   };
-  
+
   const getInputClassName = () => {
     return cn(
       error && 'border-destructive focus-visible:ring-destructive',
-      isValid && isTouched && !error && 'border-green-500 focus-visible:ring-green-500',
+      isValid &&
+        isTouched &&
+        !error &&
+        'border-green-500 focus-visible:ring-green-500',
       showValidationIcon && 'pr-10'
     );
   };
-  
+
   const getPlaceholder = () => {
     if (placeholder) return placeholder;
-    
+
     // Auto-generate helpful placeholders
     switch (type) {
       case 'url':
@@ -143,15 +159,15 @@ export function ConfigInput({
         return `Enter ${label.toLowerCase()}`;
     }
   };
-  
+
   return (
-    <ConfigField 
-      label={label} 
-      description={description} 
+    <ConfigField
+      label={label}
+      description={description}
       error={error}
       required={required}
     >
-      <div className="relative">
+      <div className='relative'>
         <Input
           type={type}
           value={value}
@@ -170,7 +186,7 @@ export function ConfigInput({
           aria-describedby={error ? `${field}-error` : undefined}
         />
         {showValidationIcon && (
-          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+          <div className='absolute right-3 top-1/2 transform -translate-y-1/2'>
             {getValidationIcon()}
           </div>
         )}
@@ -181,17 +197,19 @@ export function ConfigInput({
 
 // Specialized config input variants for common use cases
 export function ConfigNumberInput(props: Omit<ConfigInputProps, 'type'>) {
-  return <ConfigInput {...props} type="number" />;
+  return <ConfigInput {...props} type='number' />;
 }
 
 export function ConfigUrlInput(props: Omit<ConfigInputProps, 'type'>) {
-  return <ConfigInput {...props} type="url" autoComplete="url" />;
+  return <ConfigInput {...props} type='url' autoComplete='url' />;
 }
 
 export function ConfigEmailInput(props: Omit<ConfigInputProps, 'type'>) {
-  return <ConfigInput {...props} type="email" autoComplete="email" />;
+  return <ConfigInput {...props} type='email' autoComplete='email' />;
 }
 
 export function ConfigPasswordInput(props: Omit<ConfigInputProps, 'type'>) {
-  return <ConfigInput {...props} type="password" autoComplete="current-password" />;
+  return (
+    <ConfigInput {...props} type='password' autoComplete='current-password' />
+  );
 }

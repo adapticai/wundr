@@ -79,26 +79,26 @@ const apiDocumentation: ApiDocEntry[] = [
             type: 'string',
             required: true,
             description: 'Path to the codebase directory',
-            in: 'query'
+            in: 'query',
           },
           {
             name: 'depth',
             type: 'string',
             required: false,
             description: 'Analysis depth: shallow, medium, or deep',
-            in: 'query'
-          }
+            in: 'query',
+          },
         ],
         responses: [
           {
             status: 200,
             description: 'Analysis completed successfully',
-            contentType: 'application/json'
+            contentType: 'application/json',
           },
           {
             status: 400,
-            description: 'Invalid request parameters'
-          }
+            description: 'Invalid request parameters',
+          },
         ],
         examples: [
           {
@@ -107,8 +107,8 @@ const apiDocumentation: ApiDocEntry[] = [
               method: 'POST',
               path: '/api/analysis/analyze?path=/src&depth=medium',
               headers: {
-                'Content-Type': 'application/json'
-              }
+                'Content-Type': 'application/json',
+              },
             },
             response: {
               status: 200,
@@ -116,12 +116,12 @@ const apiDocumentation: ApiDocEntry[] = [
                 status: 'success',
                 metrics: {
                   totalFiles: 150,
-                  issues: 23
-                }
-              }
-            }
-          }
-        ]
+                  issues: 23,
+                },
+              },
+            },
+          },
+        ],
       },
       {
         method: 'GET',
@@ -133,19 +133,19 @@ const apiDocumentation: ApiDocEntry[] = [
             type: 'number',
             required: false,
             description: 'Similarity threshold (0-100)',
-            in: 'query'
-          }
+            in: 'query',
+          },
         ],
         responses: [
           {
             status: 200,
             description: 'Duplicate analysis results',
-            contentType: 'application/json'
-          }
+            contentType: 'application/json',
+          },
         ],
-        examples: []
-      }
-    ]
+        examples: [],
+      },
+    ],
   },
   {
     title: 'Reports API',
@@ -164,21 +164,21 @@ const apiDocumentation: ApiDocEntry[] = [
             type: 'object',
             properties: {
               templateId: { type: 'string' },
-              format: { type: 'string', enum: ['pdf', 'html', 'json'] }
-            }
-          }
+              format: { type: 'string', enum: ['pdf', 'html', 'json'] },
+            },
+          },
         },
         responses: [
           {
             status: 201,
             description: 'Report generated successfully',
-            contentType: 'application/json'
-          }
+            contentType: 'application/json',
+          },
         ],
-        examples: []
-      }
-    ]
-  }
+        examples: [],
+      },
+    ],
+  },
 ];
 
 // API endpoint card component
@@ -188,73 +188,81 @@ function ApiEndpointCard({ endpoint }: { endpoint: APIEndpoint }) {
     POST: 'bg-blue-500',
     PUT: 'bg-yellow-500',
     DELETE: 'bg-red-500',
-    PATCH: 'bg-purple-500'
+    PATCH: 'bg-purple-500',
   };
 
   return (
-    <Card className="mb-4">
+    <Card className='mb-4'>
       <CardHeader>
-        <div className="flex items-center gap-3">
+        <div className='flex items-center gap-3'>
           <Badge className={`${methodColors[endpoint.method]} text-white`}>
             {endpoint.method}
           </Badge>
-          <code className="text-sm font-mono">{endpoint.path}</code>
+          <code className='text-sm font-mono'>{endpoint.path}</code>
         </div>
-        <p className="text-sm text-muted-foreground mt-2">{endpoint.description}</p>
+        <p className='text-sm text-muted-foreground mt-2'>
+          {endpoint.description}
+        </p>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="parameters" className="w-full">
+        <Tabs defaultValue='parameters' className='w-full'>
           <TabsList>
-            <TabsTrigger value="parameters">Parameters</TabsTrigger>
-            {endpoint.requestBody && <TabsTrigger value="request">Request Body</TabsTrigger>}
-            <TabsTrigger value="responses">Responses</TabsTrigger>
-            {endpoint.examples.length > 0 && <TabsTrigger value="examples">Examples</TabsTrigger>}
+            <TabsTrigger value='parameters'>Parameters</TabsTrigger>
+            {endpoint.requestBody && (
+              <TabsTrigger value='request'>Request Body</TabsTrigger>
+            )}
+            <TabsTrigger value='responses'>Responses</TabsTrigger>
+            {endpoint.examples.length > 0 && (
+              <TabsTrigger value='examples'>Examples</TabsTrigger>
+            )}
           </TabsList>
 
-          <TabsContent value="parameters" className="mt-4">
+          <TabsContent value='parameters' className='mt-4'>
             {endpoint.parameters && endpoint.parameters.length > 0 ? (
-              <div className="space-y-2">
+              <div className='space-y-2'>
                 {endpoint.parameters.map((param, index) => (
-                  <div key={index} className="border-l-2 pl-4 py-2">
-                    <div className="flex items-center gap-2">
-                      <code className="font-mono text-sm">{param.name}</code>
-                      <Badge variant="outline" className="text-xs">
+                  <div key={index} className='border-l-2 pl-4 py-2'>
+                    <div className='flex items-center gap-2'>
+                      <code className='font-mono text-sm'>{param.name}</code>
+                      <Badge variant='outline' className='text-xs'>
                         {param.type}
                       </Badge>
                       {param.required && (
-                        <Badge variant="destructive" className="text-xs">
+                        <Badge variant='destructive' className='text-xs'>
                           Required
                         </Badge>
                       )}
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant='secondary' className='text-xs'>
                         {param.in}
                       </Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className='text-sm text-muted-foreground mt-1'>
                       {param.description}
                     </p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-muted-foreground">No parameters</p>
+              <p className='text-muted-foreground'>No parameters</p>
             )}
           </TabsContent>
 
           {endpoint.requestBody && (
-            <TabsContent value="request" className="mt-4">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">{endpoint.requestBody.contentType}</Badge>
+            <TabsContent value='request' className='mt-4'>
+              <div className='space-y-2'>
+                <div className='flex items-center gap-2'>
+                  <Badge variant='outline'>
+                    {endpoint.requestBody.contentType}
+                  </Badge>
                   {endpoint.requestBody.required && (
-                    <Badge variant="destructive" className="text-xs">
+                    <Badge variant='destructive' className='text-xs'>
                       Required
                     </Badge>
                   )}
                 </div>
                 {endpoint.requestBody.schema && (
-                  <pre className="bg-muted p-3 rounded-md overflow-x-auto">
-                    <code className="text-xs">
+                  <pre className='bg-muted p-3 rounded-md overflow-x-auto'>
+                    <code className='text-xs'>
                       {JSON.stringify(endpoint.requestBody.schema, null, 2)}
                     </code>
                   </pre>
@@ -263,20 +271,22 @@ function ApiEndpointCard({ endpoint }: { endpoint: APIEndpoint }) {
             </TabsContent>
           )}
 
-          <TabsContent value="responses" className="mt-4">
-            <div className="space-y-3">
+          <TabsContent value='responses' className='mt-4'>
+            <div className='space-y-3'>
               {endpoint.responses.map((response, index) => (
-                <div key={index} className="border rounded-md p-3">
-                  <div className="flex items-center gap-2">
+                <div key={index} className='border rounded-md p-3'>
+                  <div className='flex items-center gap-2'>
                     <Badge
-                      variant={response.status < 300 ? 'default' : 'destructive'}
+                      variant={
+                        response.status < 300 ? 'default' : 'destructive'
+                      }
                     >
                       {response.status}
                     </Badge>
-                    <span className="text-sm">{response.description}</span>
+                    <span className='text-sm'>{response.description}</span>
                   </div>
                   {response.contentType && (
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className='text-xs text-muted-foreground mt-1'>
                       Content-Type: {response.contentType}
                     </p>
                   )}
@@ -286,21 +296,29 @@ function ApiEndpointCard({ endpoint }: { endpoint: APIEndpoint }) {
           </TabsContent>
 
           {endpoint.examples.length > 0 && (
-            <TabsContent value="examples" className="mt-4">
-              <div className="space-y-4">
+            <TabsContent value='examples' className='mt-4'>
+              <div className='space-y-4'>
                 {endpoint.examples.map((example, index) => (
-                  <div key={index} className="space-y-2">
-                    <h4 className="font-medium">{example.title}</h4>
+                  <div key={index} className='space-y-2'>
+                    <h4 className='font-medium'>{example.title}</h4>
                     {example.description && (
-                      <p className="text-sm text-muted-foreground">{example.description}</p>
+                      <p className='text-sm text-muted-foreground'>
+                        {example.description}
+                      </p>
                     )}
                     {example.request && (
                       <div>
-                        <p className="text-xs font-medium mb-1">Request:</p>
-                        <pre className="bg-muted p-3 rounded-md overflow-x-auto">
-                          <code className="text-xs">
+                        <p className='text-xs font-medium mb-1'>Request:</p>
+                        <pre className='bg-muted p-3 rounded-md overflow-x-auto'>
+                          <code className='text-xs'>
                             {`${example.request.method} ${example.request.path}
-${example.request.headers ? Object.entries(example.request.headers).map(([k, v]) => `${k}: ${v}`).join('\n') : ''}
+${
+  example.request.headers
+    ? Object.entries(example.request.headers)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join('\n')
+    : ''
+}
 ${example.request.body ? '\n' + JSON.stringify(example.request.body, null, 2) : ''}`}
                           </code>
                         </pre>
@@ -308,9 +326,9 @@ ${example.request.body ? '\n' + JSON.stringify(example.request.body, null, 2) : 
                     )}
                     {example.response && (
                       <div>
-                        <p className="text-xs font-medium mb-1">Response:</p>
-                        <pre className="bg-muted p-3 rounded-md overflow-x-auto">
-                          <code className="text-xs">
+                        <p className='text-xs font-medium mb-1'>Response:</p>
+                        <pre className='bg-muted p-3 rounded-md overflow-x-auto'>
+                          <code className='text-xs'>
                             {`Status: ${example.response.status}
 ${example.response.body ? JSON.stringify(example.response.body, null, 2) : ''}`}
                           </code>
@@ -333,22 +351,22 @@ export function ApiDocsContent() {
   const [selectedApi, setSelectedApi] = React.useState(0);
 
   return (
-    <div className="max-w-5xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-4">API Documentation</h1>
-        <p className="text-muted-foreground">
+    <div className='max-w-5xl'>
+      <div className='mb-8'>
+        <h1 className='text-3xl font-bold mb-4'>API Documentation</h1>
+        <p className='text-muted-foreground'>
           Complete reference for the Wundr Analysis API endpoints
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="md:col-span-1">
-          <Card className="sticky top-4">
+      <div className='grid grid-cols-1 md:grid-cols-4 gap-6'>
+        <div className='md:col-span-1'>
+          <Card className='sticky top-4'>
             <CardHeader>
-              <CardTitle className="text-sm">API Sections</CardTitle>
+              <CardTitle className='text-sm'>API Sections</CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
-              <nav className="space-y-1">
+            <CardContent className='p-0'>
+              <nav className='space-y-1'>
                 {apiDocumentation.map((api, index) => (
                   <button
                     key={index}
@@ -357,9 +375,9 @@ export function ApiDocsContent() {
                       selectedApi === index ? 'bg-muted font-medium' : ''
                     }`}
                   >
-                    <div className="flex items-center justify-between">
+                    <div className='flex items-center justify-between'>
                       <span>{api.title}</span>
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant='outline' className='text-xs'>
                         {api.endpoints.length}
                       </Badge>
                     </div>
@@ -370,25 +388,25 @@ export function ApiDocsContent() {
           </Card>
         </div>
 
-        <div className="md:col-span-3">
-          <div className="mb-6">
-            <h2 className="text-2xl font-semibold mb-2">
+        <div className='md:col-span-3'>
+          <div className='mb-6'>
+            <h2 className='text-2xl font-semibold mb-2'>
               {apiDocumentation[selectedApi].title}
             </h2>
-            <p className="text-muted-foreground">
+            <p className='text-muted-foreground'>
               {apiDocumentation[selectedApi].description}
             </p>
-            <div className="flex items-center gap-4 mt-4">
-              <Badge variant="secondary">
+            <div className='flex items-center gap-4 mt-4'>
+              <Badge variant='secondary'>
                 Version {apiDocumentation[selectedApi].version}
               </Badge>
-              <code className="text-sm bg-muted px-2 py-1 rounded">
+              <code className='text-sm bg-muted px-2 py-1 rounded'>
                 {apiDocumentation[selectedApi].baseUrl}
               </code>
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className='space-y-4'>
             {apiDocumentation[selectedApi].endpoints.map((endpoint, index) => (
               <ApiEndpointCard key={index} endpoint={endpoint} />
             ))}

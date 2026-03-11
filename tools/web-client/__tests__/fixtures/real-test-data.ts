@@ -3,45 +3,48 @@
  * This file contains utilities to create test data from real sources
  */
 
-import { AnalysisData } from '../types/analysis-types'
-import { CompleteAnalysisData } from '../../types/reports'
-import { createCompleteAnalysisData, createSimpleEntity } from '../utils/test-data-helpers'
+import { AnalysisData } from '../types/analysis-types';
+import { CompleteAnalysisData } from '../../types/reports';
+import {
+  createCompleteAnalysisData,
+  createSimpleEntity,
+} from '../utils/test-data-helpers';
 
 /**
  * Test database setup for integration tests
  */
 export class TestDatabase {
-  private data: Map<string, Map<string, unknown>> = new Map()
+  private data: Map<string, Map<string, unknown>> = new Map();
 
   async setup(): Promise<void> {
     // In a real implementation, this would set up a test database
-    this.data.clear()
+    this.data.clear();
   }
 
   async teardown(): Promise<void> {
-    this.data.clear()
+    this.data.clear();
   }
 
   async insert(table: string, data: unknown): Promise<string> {
-    const id = `${table}_${Date.now()}_${Math.random()}`
+    const id = `${table}_${Date.now()}_${Math.random()}`;
     if (!this.data.has(table)) {
-      this.data.set(table, new Map())
+      this.data.set(table, new Map());
     }
-    this.data.get(table)!.set(id, data)
-    return id
+    this.data.get(table)!.set(id, data);
+    return id;
   }
 
   async find(table: string, id: string): Promise<unknown> {
-    return this.data.get(table)?.get(id)
+    return this.data.get(table)?.get(id);
   }
 
   async findAll(table: string): Promise<unknown[]> {
-    const tableData = this.data.get(table)
-    return tableData ? Array.from(tableData.values()) : []
+    const tableData = this.data.get(table);
+    return tableData ? Array.from(tableData.values()) : [];
   }
 
   async delete(table: string, id: string): Promise<void> {
-    this.data.get(table)?.delete(id)
+    this.data.get(table)?.delete(id);
   }
 }
 
@@ -61,47 +64,51 @@ interface ApiResponse {
 }
 
 export class TestApiServer {
-  private routes: Map<string, (req: ApiRequest) => ApiResponse> = new Map()
+  private routes: Map<string, (req: ApiRequest) => ApiResponse> = new Map();
 
   setup(): void {
     // Mock API routes
     this.routes.set('GET /api/analysis', () => ({
       status: 200,
-      data: { entities: [], duplicates: [] }
-    }))
+      data: { entities: [], duplicates: [] },
+    }));
 
-    this.routes.set('POST /api/analysis', (req) => ({
+    this.routes.set('POST /api/analysis', req => ({
       status: 201,
-      data: { id: 'test-analysis', ...(req.body as object) }
-    }))
+      data: { id: 'test-analysis', ...(req.body as object) },
+    }));
 
     this.routes.set('GET /api/performance', () => ({
       status: 200,
-      data: []
-    }))
+      data: [],
+    }));
 
     this.routes.set('GET /api/quality', () => ({
       status: 200,
       data: {
         maintainability: 85,
         reliability: 90,
-        security: 80
-      }
-    }))
+        security: 80,
+      },
+    }));
   }
 
-  async request(method: string, path: string, body?: unknown): Promise<ApiResponse> {
-    const key = `${method} ${path}`
-    const handler = this.routes.get(key)
-    
+  async request(
+    method: string,
+    path: string,
+    body?: unknown
+  ): Promise<ApiResponse> {
+    const key = `${method} ${path}`;
+    const handler = this.routes.get(key);
+
     if (!handler) {
-      return { status: 404, error: 'Not found' }
+      return { status: 404, error: 'Not found' };
     }
 
     try {
-      return handler({ body, method, path })
+      return handler({ body, method, path });
     } catch (_error) {
-      return { status: 500, error: (_error as Error).message }
+      return { status: 500, error: (_error as Error).message };
     }
   }
 }
@@ -111,38 +118,38 @@ export class TestApiServer {
  */
 export class PerformanceTestUtils {
   static async measureRenderTime(renderFn: () => void): Promise<number> {
-    const start = performance.now()
-    renderFn()
-    const end = performance.now()
-    return end - start
+    const start = performance.now();
+    renderFn();
+    const end = performance.now();
+    return end - start;
   }
 
   static async measureMemoryUsage(fn: () => void): Promise<{
-    before: number
-    after: number
-    delta: number
+    before: number;
+    after: number;
+    delta: number;
   }> {
-    const before = (performance as any).memory?.usedJSHeapSize || 0
-    fn()
+    const before = (performance as any).memory?.usedJSHeapSize || 0;
+    fn();
     // Force garbage collection if available
     if (global.gc) {
-      global.gc()
+      global.gc();
     }
-    const after = (performance as any).memory?.usedJSHeapSize || 0
-    
+    const after = (performance as any).memory?.usedJSHeapSize || 0;
+
     return {
       before,
       after,
-      delta: after - before
-    }
+      delta: after - before,
+    };
   }
 
   static createLargeDataset(size: number) {
     return Array.from({ length: size }, (_, i) => ({
       id: `item-${i}`,
       name: `Item ${i}`,
-      data: new Array(100).fill(i).join(',')
-    }))
+      data: new Array(100).fill(i).join(','),
+    }));
   }
 }
 
@@ -150,36 +157,43 @@ export class PerformanceTestUtils {
  * E2E test utilities
  */
 export class E2ETestUtils {
-  static async waitForElement(selector: string, timeout = 5000): Promise<Element | null> {
-    return new Promise((resolve) => {
-      const startTime = Date.now()
-      
+  static async waitForElement(
+    selector: string,
+    timeout = 5000
+  ): Promise<Element | null> {
+    return new Promise(resolve => {
+      const startTime = Date.now();
+
       function check() {
-        const element = document.querySelector(selector)
+        const element = document.querySelector(selector);
         if (element) {
-          resolve(element)
+          resolve(element);
         } else if (Date.now() - startTime > timeout) {
-          resolve(null)
+          resolve(null);
         } else {
-          requestAnimationFrame(check)
+          requestAnimationFrame(check);
         }
       }
-      
-      check()
-    })
+
+      check();
+    });
   }
 
   static async simulateUserInteraction(element: Element, action: string) {
-    const event = new Event(action, { bubbles: true })
-    element.dispatchEvent(event)
-    
+    const event = new Event(action, { bubbles: true });
+    element.dispatchEvent(event);
+
     // Wait for any async updates
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise(resolve => setTimeout(resolve, 100));
   }
 
-  static createMockFile(name: string, content: string, type = 'text/plain'): File {
-    const blob = new Blob([content], { type })
-    return new File([blob], name, { type })
+  static createMockFile(
+    name: string,
+    content: string,
+    type = 'text/plain'
+  ): File {
+    const blob = new Blob([content], { type });
+    return new File([blob], name, { type });
   }
 }
 
@@ -189,18 +203,18 @@ export class E2ETestUtils {
 export class SnapshotTestUtils {
   static normalizeSnapshot(element: Element): string {
     // Remove dynamic attributes that change between test runs
-    const clone = element.cloneNode(true) as Element
-    
+    const clone = element.cloneNode(true) as Element;
+
     // Remove timestamps, IDs, and other dynamic content
     clone.querySelectorAll('[data-testid*="timestamp"]').forEach(el => {
-      el.textContent = 'TIMESTAMP'
-    })
-    
+      el.textContent = 'TIMESTAMP';
+    });
+
     clone.querySelectorAll('[id]').forEach(el => {
-      el.setAttribute('id', 'NORMALIZED_ID')
-    })
-    
-    return clone.outerHTML
+      el.setAttribute('id', 'NORMALIZED_ID');
+    });
+
+    return clone.outerHTML;
   }
 }
 
@@ -208,14 +222,15 @@ export class SnapshotTestUtils {
  * Real project fixture generator
  */
 export async function generateProjectFixtures() {
-  const projectPath = process.cwd()
-  return await createTestFixtures(projectPath)
+  const projectPath = process.cwd();
+  return await createTestFixtures(projectPath);
 }
 
 // Re-export createTestFixtures function from mock-data
 export async function createTestFixtures(projectPath?: string) {
-  const { createTestFixtures: createTestFixturesImpl } = await import('../utils/mock-data')
-  return createTestFixturesImpl(projectPath)
+  const { createTestFixtures: createTestFixturesImpl } =
+    await import('../utils/mock-data');
+  return createTestFixturesImpl(projectPath);
 }
 
 /**
@@ -231,8 +246,8 @@ export const minimalTestData: AnalysisData = {
       column: 1,
       exportType: 'named',
       dependencies: ['react'],
-      complexity: 5
-    }
+      complexity: 5,
+    },
   ],
   duplicates: [],
   circularDeps: [],
@@ -246,35 +261,36 @@ export const minimalTestData: AnalysisData = {
     duplicateClusters: 0,
     circularDependencies: 0,
     unusedExports: 0,
-    codeSmells: 0
-  }
-}
+    codeSmells: 0,
+  },
+};
 
 /**
  * Complete minimal test data for components expecting full structure
  */
-export const minimalCompleteTestData: CompleteAnalysisData = createCompleteAnalysisData({
-  entities: [
-    createSimpleEntity({
-      name: 'test-component.tsx',
-      path: 'components/test-component.tsx',
-      type: 'component',
-      dependencies: ['react'],
-      complexity: 5,
-      issues: []
-    })
-  ]
-})
+export const minimalCompleteTestData: CompleteAnalysisData =
+  createCompleteAnalysisData({
+    entities: [
+      createSimpleEntity({
+        name: 'test-component.tsx',
+        path: 'components/test-component.tsx',
+        type: 'component',
+        dependencies: ['react'],
+        complexity: 5,
+        issues: [],
+      }),
+    ],
+  });
 
 /**
  * Complex test data for integration tests
  */
 export async function getComplexTestData(): Promise<AnalysisData> {
-  const fixtures = await generateProjectFixtures()
+  const fixtures = await generateProjectFixtures();
   // Convert CompleteAnalysisData to AnalysisData format
-  const { convertToAnalysisData } = await import('../utils/mock-data')
-  return convertToAnalysisData(fixtures.analysisData)
+  const { convertToAnalysisData } = await import('../utils/mock-data');
+  return convertToAnalysisData(fixtures.analysisData);
 }
 
 // Export TestEnvironment class for imports
-export { TestEnvironment } from '../setup/test-environment'
+export { TestEnvironment } from '../setup/test-environment';

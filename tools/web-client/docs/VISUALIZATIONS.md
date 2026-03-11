@@ -1,6 +1,7 @@
 # Dashboard Visualization Components
 
-This guide covers the new visualization components added to the Wundr Dashboard, providing comprehensive analytics and insights for your codebase.
+This guide covers the new visualization components added to the Wundr Dashboard, providing
+comprehensive analytics and insights for your codebase.
 
 ## 📊 Available Visualizations
 
@@ -19,6 +20,7 @@ import { PerformanceMetrics } from '@/components/visualizations'
 ```
 
 **Features:**
+
 - Build time trends
 - Bundle size history
 - Memory usage monitoring
@@ -27,6 +29,7 @@ import { PerformanceMetrics } from '@/components/visualizations'
 - Resource utilization radar chart
 
 **Props:**
+
 - `data`: Array of performance data points
 - `realtime`: Enable live updates (optional)
 
@@ -35,16 +38,13 @@ import { PerformanceMetrics } from '@/components/visualizations'
 Multi-dimensional code quality visualization.
 
 ```tsx
-import { CodeQualityRadar } from '@/components/visualizations'
+import { CodeQualityRadar } from '@/components/visualizations';
 
-<CodeQualityRadar 
-  metrics={qualityMetrics}
-  thresholds={customThresholds}
-  showBenchmark={true}
-/>
+<CodeQualityRadar metrics={qualityMetrics} thresholds={customThresholds} showBenchmark={true} />;
 ```
 
 **Metrics Tracked:**
+
 - Maintainability
 - Reliability
 - Security
@@ -59,15 +59,16 @@ import { CodeQualityRadar } from '@/components/visualizations'
 Repository activity visualization with contribution patterns.
 
 ```tsx
-import { GitActivityHeatmap } from '@/components/visualizations'
+import { GitActivityHeatmap } from '@/components/visualizations';
 
-<GitActivityHeatmap 
+<GitActivityHeatmap
   activities={gitActivities}
   days={365} // Show last year
-/>
+/>;
 ```
 
 **Features:**
+
 - Contribution heatmap
 - Commit statistics
 - Activity streaks
@@ -78,17 +79,18 @@ import { GitActivityHeatmap } from '@/components/visualizations'
 Interactive force-directed graph for visualizing dependencies.
 
 ```tsx
-import { DependencyNetwork } from '@/components/visualizations'
+import { DependencyNetwork } from '@/components/visualizations';
 
-<DependencyNetwork 
+<DependencyNetwork
   nodes={networkNodes}
   links={networkLinks}
   interactive={true}
   showLegend={true}
-/>
+/>;
 ```
 
 **Features:**
+
 - Interactive navigation
 - Zoom and pan controls
 - Node selection
@@ -100,16 +102,13 @@ import { DependencyNetwork } from '@/components/visualizations'
 Time-series analysis with anomaly detection.
 
 ```tsx
-import { MetricsTrend } from '@/components/visualizations'
+import { MetricsTrend } from '@/components/visualizations';
 
-<MetricsTrend 
-  series={metricsSeries}
-  enableComparison={true}
-  showAnomalies={true}
-/>
+<MetricsTrend series={metricsSeries} enableComparison={true} showAnomalies={true} />;
 ```
 
 **Features:**
+
 - Multiple metric comparison
 - Percentage vs absolute views
 - Anomaly detection
@@ -123,31 +122,27 @@ import { MetricsTrend } from '@/components/visualizations'
 The dashboard provides custom hooks for data fetching:
 
 ```tsx
-import { 
-  usePerformanceData,
-  useQualityMetrics,
-  useGitActivity 
-} from '@/hooks'
+import { usePerformanceData, useQualityMetrics, useGitActivity } from '@/hooks';
 
 function MyDashboard() {
   // Fetch performance data with real-time updates
   const { data: perfData, loading: perfLoading } = usePerformanceData({
     realtime: true,
     timeRange: '24h',
-    refreshInterval: 5000
-  })
+    refreshInterval: 5000,
+  });
 
   // Fetch code quality metrics
   const { data: qualityData } = useQualityMetrics({
     repository: 'main',
-    includeHistory: true
-  })
+    includeHistory: true,
+  });
 
   // Fetch git activity
   const { data: gitData } = useGitActivity({
     days: 30,
-    repository: 'main'
-  })
+    repository: 'main',
+  });
 
   return (
     <>
@@ -155,7 +150,7 @@ function MyDashboard() {
       <CodeQualityRadar metrics={qualityData} />
       <GitActivityHeatmap activities={gitData} />
     </>
-  )
+  );
 }
 ```
 
@@ -164,22 +159,18 @@ function MyDashboard() {
 Enable real-time data streaming:
 
 ```tsx
-import { useWebSocket } from '@/hooks'
+import { useWebSocket } from '@/hooks';
 
 function RealtimeDashboard() {
-  const { 
-    connected, 
-    subscribe, 
-    unsubscribe 
-  } = useWebSocket('ws://localhost:8080')
+  const { connected, subscribe, unsubscribe } = useWebSocket('ws://localhost:8080');
 
   useEffect(() => {
-    subscribe('performance', (data) => {
+    subscribe('performance', data => {
       // Handle performance updates
-    })
+    });
 
-    return () => unsubscribe('performance')
-  }, [])
+    return () => unsubscribe('performance');
+  }, []);
 }
 ```
 
@@ -188,10 +179,10 @@ function RealtimeDashboard() {
 All visualizations support automatic theme switching:
 
 ```tsx
-import { useChartTheme } from '@/hooks/chart/useChartTheme'
+import { useChartTheme } from '@/hooks/chart/useChartTheme';
 
 // Charts automatically adapt to light/dark mode
-const chartTheme = useChartTheme()
+const chartTheme = useChartTheme();
 ```
 
 ## 📱 Responsive Design
@@ -209,15 +200,15 @@ All components are fully responsive:
 Components support dynamic imports:
 
 ```tsx
-import dynamic from 'next/dynamic'
+import dynamic from 'next/dynamic';
 
 const PerformanceMetrics = dynamic(
   () => import('@/components/visualizations').then(mod => mod.PerformanceMetrics),
-  { 
+  {
     loading: () => <VisualizationSkeleton />,
-    ssr: false 
+    ssr: false,
   }
-)
+);
 ```
 
 ### Data Caching
@@ -227,8 +218,8 @@ Built-in caching with configurable TTL:
 ```tsx
 const { data, refetch } = usePerformanceData({
   cacheTime: 300000, // 5 minutes
-  staleTime: 60000   // 1 minute
-})
+  staleTime: 60000, // 1 minute
+});
 ```
 
 ## 🛠️ Configuration
@@ -262,7 +253,7 @@ const customMetrics = {
   }
 }
 
-<CodeQualityRadar 
+<CodeQualityRadar
   metrics={data}
   customMetrics={customMetrics}
 />
@@ -273,41 +264,35 @@ const customMetrics = {
 Complete dashboard implementation:
 
 ```tsx
-import { 
+import {
   PerformanceMetrics,
   CodeQualityRadar,
   GitActivityHeatmap,
   DependencyNetwork,
-  MetricsTrend
-} from '@/components/visualizations'
+  MetricsTrend,
+} from '@/components/visualizations';
 
 export function CompleteDashboard() {
-  const { data: perfData } = usePerformanceData({ realtime: true })
-  const { data: qualityData } = useQualityMetrics()
-  const { data: gitData } = useGitActivity({ days: 365 })
-  const { data: depsData } = useDependencies()
-  const { data: trendsData } = useMetricsTrends()
+  const { data: perfData } = usePerformanceData({ realtime: true });
+  const { data: qualityData } = useQualityMetrics();
+  const { data: gitData } = useGitActivity({ days: 365 });
+  const { data: depsData } = useDependencies();
+  const { data: trendsData } = useMetricsTrends();
 
   return (
-    <div className="grid gap-6">
+    <div className='grid gap-6'>
       <PerformanceMetrics data={perfData} realtime={true} />
-      
-      <div className="grid md:grid-cols-2 gap-6">
+
+      <div className='grid md:grid-cols-2 gap-6'>
         <CodeQualityRadar metrics={qualityData} />
         <GitActivityHeatmap activities={gitData} />
       </div>
-      
-      <DependencyNetwork 
-        nodes={depsData.nodes} 
-        links={depsData.links} 
-      />
-      
-      <MetricsTrend 
-        series={trendsData}
-        enableComparison={true}
-      />
+
+      <DependencyNetwork nodes={depsData.nodes} links={depsData.links} />
+
+      <MetricsTrend series={trendsData} enableComparison={true} />
     </div>
-  )
+  );
 }
 ```
 
@@ -326,10 +311,10 @@ Enable debug logging:
 
 ```tsx
 // Enable debug mode
-localStorage.setItem('debug', 'dashboard:*')
+localStorage.setItem('debug', 'dashboard:*');
 
 // View WebSocket messages
-localStorage.setItem('debug', 'dashboard:websocket')
+localStorage.setItem('debug', 'dashboard:websocket');
 ```
 
 ## 📚 Additional Resources

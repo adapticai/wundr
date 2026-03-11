@@ -11,10 +11,14 @@ import {
   EyeIcon,
   FileTextIcon,
   CodeIcon,
-  AlertCircleIcon
+  AlertCircleIcon,
 } from 'lucide-react';
 import { MarkdownRenderer } from './MarkdownRenderer';
-import { parseMarkdown, detectFileType, formatFileSize } from '@/lib/markdown-utils';
+import {
+  parseMarkdown,
+  detectFileType,
+  formatFileSize,
+} from '@/lib/markdown-utils';
 
 interface FileContentViewerProps {
   filePath: string;
@@ -39,7 +43,7 @@ export function FileContentViewer({
   fileSize = 0,
   content = '',
   className = '',
-  maxPreviewSize = 1024 * 1024 // 1MB default
+  maxPreviewSize = 1024 * 1024, // 1MB default
 }: FileContentViewerProps) {
   const [fileContent] = useState<string>(content);
   const [isLoading, setIsLoading] = useState(!content);
@@ -55,18 +59,25 @@ export function FileContentViewer({
       switch (fileType.type) {
         case 'markdown':
         case 'text':
-          return <FileTextIcon className="h-4 w-4" />;
+          return <FileTextIcon className='h-4 w-4' />;
         case 'javascript':
         case 'typescript':
         case 'json':
-          return <CodeIcon className="h-4 w-4" />;
+          return <CodeIcon className='h-4 w-4' />;
         default:
-          return <FileIcon className="h-4 w-4" />;
+          return <FileIcon className='h-4 w-4' />;
       }
     };
 
     const isPreviewable = [
-      'markdown', 'text', 'javascript', 'typescript', 'json', 'css', 'html', 'yaml'
+      'markdown',
+      'text',
+      'javascript',
+      'typescript',
+      'json',
+      'css',
+      'html',
+      'yaml',
     ].includes(fileType.type);
 
     return {
@@ -74,7 +85,7 @@ export function FileContentViewer({
       type: fileType.type,
       size: fileSize,
       isPreviewable,
-      icon: getIcon()
+      icon: getIcon(),
     };
   };
 
@@ -110,52 +121,52 @@ export function FileContentViewer({
   };
 
   const renderFileHeader = () => (
-    <div className="flex items-center justify-between p-4 border-b">
-      <div className="flex items-center gap-3">
+    <div className='flex items-center justify-between p-4 border-b'>
+      <div className='flex items-center gap-3'>
         {fileInfo.icon}
         <div>
-          <h3 className="font-medium text-foreground">{fileInfo.name}</h3>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Badge variant="outline" className="text-xs">
+          <h3 className='font-medium text-foreground'>{fileInfo.name}</h3>
+          <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+            <Badge variant='outline' className='text-xs'>
               {fileInfo.type.toUpperCase()}
             </Badge>
             {fileSize > 0 && <span>{formatFileSize(fileSize)}</span>}
           </div>
         </div>
       </div>
-      
-      <div className="flex items-center gap-2">
+
+      <div className='flex items-center gap-2'>
         {fileContent && (
           <>
             <Button
-              variant="outline"
-              size="sm"
+              variant='outline'
+              size='sm'
               onClick={handleCopyContent}
-              className="flex items-center gap-1"
+              className='flex items-center gap-1'
             >
-              <CopyIcon className="h-3 w-3" />
+              <CopyIcon className='h-3 w-3' />
               Copy
             </Button>
             <Button
-              variant="outline"
-              size="sm"
+              variant='outline'
+              size='sm'
               onClick={handleDownload}
-              className="flex items-center gap-1"
+              className='flex items-center gap-1'
             >
-              <DownloadIcon className="h-3 w-3" />
+              <DownloadIcon className='h-3 w-3' />
               Download
             </Button>
           </>
         )}
-        
+
         {isMarkdown && fileContent && (
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={() => setShowRawContent(!showRawContent)}
-            className="flex items-center gap-1"
+            className='flex items-center gap-1'
           >
-            <EyeIcon className="h-3 w-3" />
+            <EyeIcon className='h-3 w-3' />
             {showRawContent ? 'Rendered' : 'Raw'}
           </Button>
         )}
@@ -166,11 +177,11 @@ export function FileContentViewer({
   const renderContent = () => {
     if (isLoading) {
       return (
-        <div className="p-6 space-y-3">
-          <div className="animate-pulse space-y-2">
-            <div className="h-4 bg-muted rounded w-3/4"></div>
-            <div className="h-4 bg-muted rounded w-1/2"></div>
-            <div className="h-4 bg-muted rounded w-5/6"></div>
+        <div className='p-6 space-y-3'>
+          <div className='animate-pulse space-y-2'>
+            <div className='h-4 bg-muted rounded w-3/4'></div>
+            <div className='h-4 bg-muted rounded w-1/2'></div>
+            <div className='h-4 bg-muted rounded w-5/6'></div>
           </div>
         </div>
       );
@@ -178,24 +189,27 @@ export function FileContentViewer({
 
     if (error) {
       return (
-        <div className="p-6 text-center">
-          <AlertCircleIcon className="h-12 w-12 text-destructive mx-auto mb-3" />
-          <h4 className="font-medium text-destructive mb-2">Failed to load file</h4>
-          <p className="text-sm text-muted-foreground">{error}</p>
+        <div className='p-6 text-center'>
+          <AlertCircleIcon className='h-12 w-12 text-destructive mx-auto mb-3' />
+          <h4 className='font-medium text-destructive mb-2'>
+            Failed to load file
+          </h4>
+          <p className='text-sm text-muted-foreground'>{error}</p>
         </div>
       );
     }
 
     if (isTooLarge) {
       return (
-        <div className="p-6 text-center">
-          <AlertCircleIcon className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-          <h4 className="font-medium mb-2">File too large to preview</h4>
-          <p className="text-sm text-muted-foreground mb-4">
-            Files larger than {formatFileSize(maxPreviewSize)} cannot be previewed.
+        <div className='p-6 text-center'>
+          <AlertCircleIcon className='h-12 w-12 text-muted-foreground mx-auto mb-3' />
+          <h4 className='font-medium mb-2'>File too large to preview</h4>
+          <p className='text-sm text-muted-foreground mb-4'>
+            Files larger than {formatFileSize(maxPreviewSize)} cannot be
+            previewed.
           </p>
-          <Button onClick={handleDownload} className="flex items-center gap-2">
-            <DownloadIcon className="h-4 w-4" />
+          <Button onClick={handleDownload} className='flex items-center gap-2'>
+            <DownloadIcon className='h-4 w-4' />
             Download to view
           </Button>
         </div>
@@ -204,14 +218,14 @@ export function FileContentViewer({
 
     if (!fileInfo.isPreviewable) {
       return (
-        <div className="p-6 text-center">
-          <FileIcon className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-          <h4 className="font-medium mb-2">Preview not available</h4>
-          <p className="text-sm text-muted-foreground mb-4">
+        <div className='p-6 text-center'>
+          <FileIcon className='h-12 w-12 text-muted-foreground mx-auto mb-3' />
+          <h4 className='font-medium mb-2'>Preview not available</h4>
+          <p className='text-sm text-muted-foreground mb-4'>
             This file type cannot be previewed in the browser.
           </p>
-          <Button onClick={handleDownload} className="flex items-center gap-2">
-            <DownloadIcon className="h-4 w-4" />
+          <Button onClick={handleDownload} className='flex items-center gap-2'>
+            <DownloadIcon className='h-4 w-4' />
             Download file
           </Button>
         </div>
@@ -220,8 +234,8 @@ export function FileContentViewer({
 
     if (!fileContent) {
       return (
-        <div className="p-6 text-center text-muted-foreground">
-          <FileTextIcon className="h-12 w-12 mx-auto mb-3" />
+        <div className='p-6 text-center text-muted-foreground'>
+          <FileTextIcon className='h-12 w-12 mx-auto mb-3' />
           <p>No content to display</p>
         </div>
       );
@@ -231,7 +245,7 @@ export function FileContentViewer({
     if (isMarkdown && !showRawContent) {
       // parseMarkdown is async, so we'll use the content directly for now
       return (
-        <div className="p-6">
+        <div className='p-6'>
           <MarkdownRenderer
             content={fileContent}
             frontmatter={{}}
@@ -244,9 +258,9 @@ export function FileContentViewer({
 
     // Render raw content or other file types
     return (
-      <div className="p-6">
-        <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm font-mono whitespace-pre-wrap break-words">
-          <code className="text-foreground">{fileContent}</code>
+      <div className='p-6'>
+        <pre className='bg-muted p-4 rounded-lg overflow-x-auto text-sm font-mono whitespace-pre-wrap break-words'>
+          <code className='text-foreground'>{fileContent}</code>
         </pre>
       </div>
     );

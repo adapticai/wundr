@@ -27,23 +27,64 @@ import type { RAGStore, QueryResult } from './rag/types.js';
  * Input schema for codebase analysis with RAG
  */
 export const CodebaseAnalysisRagInputSchema = z.object({
-  targetPath: z.string().describe('Root directory path of the codebase to analyze'),
-  storeName: z.string().optional().describe('Name for the RAG store (auto-generated if not provided)'),
-  forceReindex: z.boolean().optional().default(false).describe('Force reindexing even if store exists'),
-  includePatterns: z.array(z.string()).optional().default(['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx', '**/*.md', '**/*.json']).describe('File patterns to include in analysis'),
-  excludePatterns: z.array(z.string()).optional().default(['**/node_modules/**', '**/dist/**', '**/.git/**', '**/coverage/**']).describe('File patterns to exclude from analysis'),
-  analysisCategories: z.array(z.enum([
-    'architecture',
-    'patterns',
-    'dependencies',
-    'tests',
-    'security',
-  ])).optional().default(['architecture', 'patterns', 'dependencies', 'tests', 'security']).describe('Categories to analyze'),
-  maxResultsPerCategory: z.number().int().positive().optional().default(10).describe('Maximum results per analysis category'),
-  generateSummary: z.boolean().optional().default(true).describe('Generate AI-powered summary of findings'),
+  targetPath: z
+    .string()
+    .describe('Root directory path of the codebase to analyze'),
+  storeName: z
+    .string()
+    .optional()
+    .describe('Name for the RAG store (auto-generated if not provided)'),
+  forceReindex: z
+    .boolean()
+    .optional()
+    .default(false)
+    .describe('Force reindexing even if store exists'),
+  includePatterns: z
+    .array(z.string())
+    .optional()
+    .default([
+      '**/*.ts',
+      '**/*.tsx',
+      '**/*.js',
+      '**/*.jsx',
+      '**/*.md',
+      '**/*.json',
+    ])
+    .describe('File patterns to include in analysis'),
+  excludePatterns: z
+    .array(z.string())
+    .optional()
+    .default([
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.git/**',
+      '**/coverage/**',
+    ])
+    .describe('File patterns to exclude from analysis'),
+  analysisCategories: z
+    .array(
+      z.enum(['architecture', 'patterns', 'dependencies', 'tests', 'security'])
+    )
+    .optional()
+    .default(['architecture', 'patterns', 'dependencies', 'tests', 'security'])
+    .describe('Categories to analyze'),
+  maxResultsPerCategory: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .default(10)
+    .describe('Maximum results per analysis category'),
+  generateSummary: z
+    .boolean()
+    .optional()
+    .default(true)
+    .describe('Generate AI-powered summary of findings'),
 });
 
-export type CodebaseAnalysisRagInput = z.infer<typeof CodebaseAnalysisRagInputSchema>;
+export type CodebaseAnalysisRagInput = z.infer<
+  typeof CodebaseAnalysisRagInputSchema
+>;
 
 // ============================================================================
 // Output Types
@@ -129,59 +170,67 @@ export interface CodebaseAnalysisRagOutput {
  * Semantic queries for each analysis category
  */
 const CATEGORY_QUERIES: Record<string, string> = {
-  architecture: 'architecture patterns structure design system organization modules components layers services controllers models',
-  patterns: 'code patterns conventions design patterns factory singleton observer repository service pattern best practices implementation',
-  dependencies: 'external dependencies integrations imports require third-party libraries packages api endpoints external services',
-  tests: 'test files testing patterns unit tests integration tests e2e tests test utilities mocks fixtures assertions',
-  security: 'security authentication authorization encryption validation sanitization csrf xss injection secrets credentials tokens',
+  architecture:
+    'architecture patterns structure design system organization modules components layers services controllers models',
+  patterns:
+    'code patterns conventions design patterns factory singleton observer repository service pattern best practices implementation',
+  dependencies:
+    'external dependencies integrations imports require third-party libraries packages api endpoints external services',
+  tests:
+    'test files testing patterns unit tests integration tests e2e tests test utilities mocks fixtures assertions',
+  security:
+    'security authentication authorization encryption validation sanitization csrf xss injection secrets credentials tokens',
 };
 
 /**
  * Category-specific findings extractors
  */
-const CATEGORY_FINDINGS_EXTRACTORS: Record<string, (matches: Array<{ filePath: string; snippet?: string }>) => string[]> = {
-  architecture: (matches) => {
+const CATEGORY_FINDINGS_EXTRACTORS: Record<
+  string,
+  (matches: Array<{ filePath: string; snippet?: string }>) => string[]
+> = {
+  architecture: matches => {
     const findings: string[] = [];
     const patterns = new Set<string>();
 
     for (const match of matches) {
       const path = match.filePath.toLowerCase();
       if (path.includes('/src/') || path.includes('/lib/')) {
-patterns.add('Source organization');
-}
+        patterns.add('Source organization');
+      }
       if (path.includes('/components/')) {
-patterns.add('Component-based architecture');
-}
+        patterns.add('Component-based architecture');
+      }
       if (path.includes('/services/')) {
-patterns.add('Service layer pattern');
-}
+        patterns.add('Service layer pattern');
+      }
       if (path.includes('/controllers/')) {
-patterns.add('MVC/Controller pattern');
-}
+        patterns.add('MVC/Controller pattern');
+      }
       if (path.includes('/models/') || path.includes('/entities/')) {
-patterns.add('Domain model layer');
-}
+        patterns.add('Domain model layer');
+      }
       if (path.includes('/utils/') || path.includes('/helpers/')) {
-patterns.add('Utility modules');
-}
+        patterns.add('Utility modules');
+      }
       if (path.includes('/hooks/')) {
-patterns.add('React hooks pattern');
-}
+        patterns.add('React hooks pattern');
+      }
       if (path.includes('/store/') || path.includes('/redux/')) {
-patterns.add('State management');
-}
+        patterns.add('State management');
+      }
       if (path.includes('/api/') || path.includes('/routes/')) {
-patterns.add('API layer');
-}
+        patterns.add('API layer');
+      }
       if (path.includes('/middleware/')) {
-patterns.add('Middleware pattern');
-}
+        patterns.add('Middleware pattern');
+      }
     }
 
     findings.push(...Array.from(patterns).map(p => `Detected: ${p}`));
     return findings;
   },
-  patterns: (matches) => {
+  patterns: matches => {
     const findings: string[] = [];
     const patterns = new Set<string>();
 
@@ -189,40 +238,44 @@ patterns.add('Middleware pattern');
       const snippet = match.snippet?.toLowerCase() || '';
       const path = match.filePath.toLowerCase();
 
-      if (snippet.includes('export default') || snippet.includes('module.exports')) {
-patterns.add('Module exports pattern');
-}
+      if (
+        snippet.includes('export default') ||
+        snippet.includes('module.exports')
+      ) {
+        patterns.add('Module exports pattern');
+      }
       if (snippet.includes('async/await') || snippet.includes('promise')) {
-patterns.add('Async/await patterns');
-}
+        patterns.add('Async/await patterns');
+      }
       if (snippet.includes('interface ') || snippet.includes('type ')) {
-patterns.add('TypeScript type definitions');
-}
+        patterns.add('TypeScript type definitions');
+      }
       if (snippet.includes('class ')) {
-patterns.add('Class-based patterns');
-}
+        patterns.add('Class-based patterns');
+      }
       if (snippet.includes('function ') || snippet.includes('=>')) {
-patterns.add('Functional patterns');
-}
+        patterns.add('Functional patterns');
+      }
       if (path.includes('.test.') || path.includes('.spec.')) {
-patterns.add('Test file conventions');
-}
+        patterns.add('Test file conventions');
+      }
       if (snippet.includes('try {') || snippet.includes('catch')) {
-patterns.add('Error handling patterns');
-}
+        patterns.add('Error handling patterns');
+      }
     }
 
     findings.push(...Array.from(patterns).map(p => `Identified: ${p}`));
     return findings;
   },
-  dependencies: (matches) => {
+  dependencies: matches => {
     const findings: string[] = [];
     const deps = new Set<string>();
 
     for (const match of matches) {
       const snippet = match.snippet || '';
       const importMatches = snippet.match(/from ['"]([^'"]+)['"]/g) || [];
-      const requireMatches = snippet.match(/require\(['"]([^'"]+)['"]\)/g) || [];
+      const requireMatches =
+        snippet.match(/require\(['"]([^'"]+)['"]\)/g) || [];
 
       for (const imp of [...importMatches, ...requireMatches]) {
         const pkg = imp.match(/['"]([^'"]+)['"]/)?.[1];
@@ -237,11 +290,13 @@ patterns.add('Error handling patterns');
     }
 
     if (deps.size > 0) {
-      findings.push(`External packages detected: ${Array.from(deps).slice(0, 10).join(', ')}`);
+      findings.push(
+        `External packages detected: ${Array.from(deps).slice(0, 10).join(', ')}`
+      );
     }
     return findings;
   },
-  tests: (matches) => {
+  tests: matches => {
     const findings: string[] = [];
     const testTypes = new Set<string>();
 
@@ -250,26 +305,26 @@ patterns.add('Error handling patterns');
       const snippet = match.snippet?.toLowerCase() || '';
 
       if (path.includes('.test.') || path.includes('.spec.')) {
-testTypes.add('Unit tests');
-}
+        testTypes.add('Unit tests');
+      }
       if (path.includes('/e2e/') || path.includes('/integration/')) {
-testTypes.add('Integration/E2E tests');
-}
+        testTypes.add('Integration/E2E tests');
+      }
       if (snippet.includes('jest') || snippet.includes('describe(')) {
-testTypes.add('Jest framework');
-}
+        testTypes.add('Jest framework');
+      }
       if (snippet.includes('vitest')) {
-testTypes.add('Vitest framework');
-}
+        testTypes.add('Vitest framework');
+      }
       if (snippet.includes('mocha') || snippet.includes('chai')) {
-testTypes.add('Mocha/Chai framework');
-}
+        testTypes.add('Mocha/Chai framework');
+      }
       if (snippet.includes('mock') || snippet.includes('stub')) {
-testTypes.add('Mocking patterns');
-}
+        testTypes.add('Mocking patterns');
+      }
       if (snippet.includes('fixture')) {
-testTypes.add('Test fixtures');
-}
+        testTypes.add('Test fixtures');
+      }
     }
 
     findings.push(...Array.from(testTypes).map(t => `Found: ${t}`));
@@ -278,7 +333,7 @@ testTypes.add('Test fixtures');
     }
     return findings;
   },
-  security: (matches) => {
+  security: matches => {
     const findings: string[] = [];
     const securityPatterns = new Set<string>();
 
@@ -287,32 +342,36 @@ testTypes.add('Test fixtures');
       const path = match.filePath.toLowerCase();
 
       if (snippet.includes('jwt') || snippet.includes('token')) {
-securityPatterns.add('Token-based authentication');
-}
+        securityPatterns.add('Token-based authentication');
+      }
       if (snippet.includes('bcrypt') || snippet.includes('hash')) {
-securityPatterns.add('Password hashing');
-}
+        securityPatterns.add('Password hashing');
+      }
       if (snippet.includes('cors')) {
-securityPatterns.add('CORS configuration');
-}
+        securityPatterns.add('CORS configuration');
+      }
       if (snippet.includes('helmet')) {
-securityPatterns.add('Security headers (Helmet)');
-}
+        securityPatterns.add('Security headers (Helmet)');
+      }
       if (snippet.includes('sanitize') || snippet.includes('escape')) {
-securityPatterns.add('Input sanitization');
-}
-      if (snippet.includes('validate') || snippet.includes('zod') || snippet.includes('joi')) {
-securityPatterns.add('Input validation');
-}
+        securityPatterns.add('Input sanitization');
+      }
+      if (
+        snippet.includes('validate') ||
+        snippet.includes('zod') ||
+        snippet.includes('joi')
+      ) {
+        securityPatterns.add('Input validation');
+      }
       if (path.includes('auth') || path.includes('login')) {
-securityPatterns.add('Authentication modules');
-}
+        securityPatterns.add('Authentication modules');
+      }
       if (snippet.includes('rate') && snippet.includes('limit')) {
-securityPatterns.add('Rate limiting');
-}
+        securityPatterns.add('Rate limiting');
+      }
       if (snippet.includes('csrf')) {
-securityPatterns.add('CSRF protection');
-}
+        securityPatterns.add('CSRF protection');
+      }
     }
 
     findings.push(...Array.from(securityPatterns).map(s => `Detected: ${s}`));
@@ -375,7 +434,14 @@ function detectProjectType(matches: Array<{ filePath: string }>): string {
   const paths = matches.map(m => m.filePath.toLowerCase());
 
   // Check for monorepo indicators
-  if (paths.some(p => p.includes('/packages/') || p.includes('pnpm-workspace') || p.includes('lerna'))) {
+  if (
+    paths.some(
+      p =>
+        p.includes('/packages/') ||
+        p.includes('pnpm-workspace') ||
+        p.includes('lerna')
+    )
+  ) {
     return 'monorepo';
   }
 
@@ -400,48 +466,33 @@ function detectProjectType(matches: Array<{ filePath: string }>): string {
 }
 
 // ============================================================================
-// Simulated RAG Search (for when service is not available)
+// RAG Search (requires a real RAG service)
 // ============================================================================
 
 /**
- * Simulate RAG search results based on file patterns
- * This is used when the actual RAG service is not available
+ * Execute a RAG search for the given query against the target path.
+ *
+ * This function requires a real, configured RAG service.  The previous
+ * implementation returned hardcoded mock files and scores, which produced
+ * analysis reports that bore no relation to the actual codebase on disk.
+ *
+ * Callers must provide a concrete RAG service implementation.  Passing
+ * `undefined` here is a programming error and will throw immediately so
+ * the problem surfaces at the call-site rather than as silent bad output.
+ *
+ * @throws {Error} Always, until a real RAG service is integrated.
  */
-async function simulateRagSearch(
+async function executeRagSearch(
   targetPath: string,
   query: string,
-  maxResults: number,
+  maxResults: number
 ): Promise<QueryResult[]> {
-  // In a real implementation, this would call the actual RAG service
-  // For now, return simulated results based on query keywords
-  const results: QueryResult[] = [];
-
-  // Simulate finding relevant files based on query keywords
-  const queryKeywords = query.toLowerCase().split(' ');
-
-  // Generate mock results
-  const mockFiles = [
-    { path: 'src/index.ts', score: 0.85 },
-    { path: 'src/components/App.tsx', score: 0.78 },
-    { path: 'src/services/api.ts', score: 0.72 },
-    { path: 'src/utils/helpers.ts', score: 0.65 },
-    { path: 'tests/unit/app.test.ts', score: 0.60 },
-  ];
-
-  for (const file of mockFiles.slice(0, maxResults)) {
-    results.push({
-      content: `// Sample content from ${file.path}`,
-      sourcePath: `${targetPath}/${file.path}`,
-      score: file.score,
-      metadata: {
-        lineStart: 1,
-        lineEnd: 10,
-        language: file.path.endsWith('.ts') ? 'typescript' : 'javascript',
-      },
-    });
-  }
-
-  return results;
+  throw new Error(
+    `Codebase analysis requires a real RAG search backend. ` +
+      `No embedding or search service is configured. ` +
+      `Provide a concrete RAG service implementation before calling ` +
+      `analyzeCodebaseWithRag (query: "${query}", path: "${targetPath}").`
+  );
 }
 
 // ============================================================================
@@ -455,7 +506,7 @@ async function simulateRagSearch(
  * @returns Comprehensive codebase analysis report
  */
 export async function analyzeCodebaseWithRag(
-  input: CodebaseAnalysisRagInput,
+  input: CodebaseAnalysisRagInput
 ): Promise<McpToolResult<CodebaseAnalysisRagOutput>> {
   const startTime = Date.now();
   let indexingTimeMs = 0;
@@ -468,40 +519,51 @@ export async function analyzeCodebaseWithRag(
       return errorResult(
         `Input validation failed: ${validationResult.error.message}`,
         'VALIDATION_ERROR',
-        { issues: validationResult.error.issues },
+        { issues: validationResult.error.issues }
       );
     }
 
     const validInput = validationResult.data;
-    const storeName = validInput.storeName || generateStoreName(validInput.targetPath);
+    const storeName =
+      validInput.storeName || generateStoreName(validInput.targetPath);
 
     // Step 1: Create or get RAG store
     const storesResult = await listStores();
     const storeId = storeName;
 
     if (storesResult.success && storesResult.data?.stores) {
-      const existingStore = storesResult.data.stores.find(s => s.id === storeName);
+      const existingStore = storesResult.data.stores.find(
+        s => s.id === storeName
+      );
 
       if (!existingStore || validInput.forceReindex) {
         // Create new store or force reindex
         const indexStart = Date.now();
 
         if (!existingStore) {
-          const createResult = await createStore(storeName, `Codebase Analysis: ${validInput.targetPath}`, {
-            includePatterns: validInput.includePatterns,
-            excludePatterns: validInput.excludePatterns,
-          });
+          const createResult = await createStore(
+            storeName,
+            `Codebase Analysis: ${validInput.targetPath}`,
+            {
+              includePatterns: validInput.includePatterns,
+              excludePatterns: validInput.excludePatterns,
+            }
+          );
 
           if (!createResult.success) {
             return errorResult(
               `Failed to create RAG store: ${createResult.error}`,
-              'STORE_CREATE_ERROR',
+              'STORE_CREATE_ERROR'
             );
           }
         }
 
         // Sync store with source files
-        const syncResult = await syncStore(storeName, validInput.targetPath, validInput.forceReindex);
+        const syncResult = await syncStore(
+          storeName,
+          validInput.targetPath,
+          validInput.forceReindex
+        );
         if (!syncResult.success) {
           // Continue with analysis even if sync fails (store might already be populated)
           console.warn(`Store sync warning: ${syncResult.error}`);
@@ -517,7 +579,7 @@ export async function analyzeCodebaseWithRag(
     const allMatches: Array<{ filePath: string; snippet?: string }> = [];
 
     // Execute queries in parallel
-    const queryPromises = validInput.analysisCategories.map(async (category) => {
+    const queryPromises = validInput.analysisCategories.map(async category => {
       const query = CATEGORY_QUERIES[category];
       if (!query) {
         return {
@@ -529,11 +591,11 @@ export async function analyzeCodebaseWithRag(
         };
       }
 
-      // Perform RAG search (simulated for now)
-      const searchResults = await simulateRagSearch(
+      // Perform RAG search against a real search backend.
+      const searchResults = await executeRagSearch(
         validInput.targetPath,
         query,
-        validInput.maxResultsPerCategory,
+        validInput.maxResultsPerCategory
       );
 
       const matches = searchResults.map(result => ({
@@ -548,9 +610,10 @@ export async function analyzeCodebaseWithRag(
       const findings = extractor ? extractor(matches) : [];
 
       // Calculate confidence based on match scores
-      const avgScore = matches.length > 0
-        ? matches.reduce((sum, m) => sum + m.score, 0) / matches.length
-        : 0;
+      const avgScore =
+        matches.length > 0
+          ? matches.reduce((sum, m) => sum + m.score, 0) / matches.length
+          : 0;
 
       return {
         category,
@@ -572,40 +635,50 @@ export async function analyzeCodebaseWithRag(
     // Step 3: Generate consolidated summary
     const languages = detectLanguages(allMatches);
     const projectType = detectProjectType(allMatches);
-    const architecturePatterns = categoryResults
-      .find(c => c.category === 'architecture')
-      ?.findings
-      .filter(f => f.startsWith('Detected:'))
-      .map(f => f.replace('Detected: ', '')) || [];
+    const architecturePatterns =
+      categoryResults
+        .find(c => c.category === 'architecture')
+        ?.findings.filter(f => f.startsWith('Detected:'))
+        .map(f => f.replace('Detected: ', '')) || [];
 
     const testCategory = categoryResults.find(c => c.category === 'tests');
-    const securityCategory = categoryResults.find(c => c.category === 'security');
-    const hasTests = testCategory?.findings.some(f => !f.includes('Warning')) ?? false;
-    const hasSecurityMeasures = securityCategory?.findings.some(f => !f.includes('Warning')) ?? false;
+    const securityCategory = categoryResults.find(
+      c => c.category === 'security'
+    );
+    const hasTests =
+      testCategory?.findings.some(f => !f.includes('Warning')) ?? false;
+    const hasSecurityMeasures =
+      securityCategory?.findings.some(f => !f.includes('Warning')) ?? false;
 
     // Check for documentation and type definitions
-    const hasDocumentation = allMatches.some(m =>
-      m.filePath.toLowerCase().endsWith('.md') ||
-      m.filePath.toLowerCase().includes('readme'),
+    const hasDocumentation = allMatches.some(
+      m =>
+        m.filePath.toLowerCase().endsWith('.md') ||
+        m.filePath.toLowerCase().includes('readme')
     );
-    const hasTypeDefinitions = allMatches.some(m =>
-      m.filePath.endsWith('.ts') ||
-      m.filePath.endsWith('.d.ts'),
+    const hasTypeDefinitions = allMatches.some(
+      m => m.filePath.endsWith('.ts') || m.filePath.endsWith('.d.ts')
     );
 
     // Generate recommendations
     const recommendations: string[] = [];
     if (!hasTests) {
-      recommendations.push('Consider adding unit tests to improve code reliability');
+      recommendations.push(
+        'Consider adding unit tests to improve code reliability'
+      );
     }
     if (!hasDocumentation) {
-      recommendations.push('Add documentation (README, API docs) to improve maintainability');
+      recommendations.push(
+        'Add documentation (README, API docs) to improve maintainability'
+      );
     }
     if (!hasSecurityMeasures) {
       recommendations.push('Review and implement security best practices');
     }
     if (architecturePatterns.length < 3) {
-      recommendations.push('Consider implementing clearer architectural patterns');
+      recommendations.push(
+        'Consider implementing clearer architectural patterns'
+      );
     }
 
     // Generate warnings
@@ -648,14 +721,14 @@ export async function analyzeCodebaseWithRag(
 
     return successResult(
       { report },
-      warnings.length > 0 ? warnings : undefined,
+      warnings.length > 0 ? warnings : undefined
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     return errorResult(
       `Codebase analysis failed: ${errorMessage}`,
       'ANALYSIS_ERROR',
-      { stack: error instanceof Error ? error.stack : undefined },
+      { stack: error instanceof Error ? error.stack : undefined }
     );
   }
 }
@@ -665,7 +738,8 @@ export async function analyzeCodebaseWithRag(
  */
 export const codebaseAnalysisRagTool = {
   name: 'codebase-analysis-rag',
-  description: 'Analyze a codebase using RAG-enhanced semantic search to understand architecture, patterns, dependencies, tests, and security measures',
+  description:
+    'Analyze a codebase using RAG-enhanced semantic search to understand architecture, patterns, dependencies, tests, and security measures',
   inputSchema: {
     type: 'object',
     properties: {
@@ -686,22 +760,46 @@ export const codebaseAnalysisRagTool = {
         type: 'array',
         items: { type: 'string' },
         description: 'File patterns to include in analysis',
-        default: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx', '**/*.md', '**/*.json'],
+        default: [
+          '**/*.ts',
+          '**/*.tsx',
+          '**/*.js',
+          '**/*.jsx',
+          '**/*.md',
+          '**/*.json',
+        ],
       },
       excludePatterns: {
         type: 'array',
         items: { type: 'string' },
         description: 'File patterns to exclude from analysis',
-        default: ['**/node_modules/**', '**/dist/**', '**/.git/**', '**/coverage/**'],
+        default: [
+          '**/node_modules/**',
+          '**/dist/**',
+          '**/.git/**',
+          '**/coverage/**',
+        ],
       },
       analysisCategories: {
         type: 'array',
         items: {
           type: 'string',
-          enum: ['architecture', 'patterns', 'dependencies', 'tests', 'security'],
+          enum: [
+            'architecture',
+            'patterns',
+            'dependencies',
+            'tests',
+            'security',
+          ],
         },
         description: 'Categories to analyze',
-        default: ['architecture', 'patterns', 'dependencies', 'tests', 'security'],
+        default: [
+          'architecture',
+          'patterns',
+          'dependencies',
+          'tests',
+          'security',
+        ],
       },
       maxResultsPerCategory: {
         type: 'number',

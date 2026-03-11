@@ -1,6 +1,11 @@
 import fs from 'fs';
 import path from 'path';
-import { parseMarkdown, extractFrontMatter, markdownToHtml, type ParsedMarkdown } from '@/lib/markdown-utils';
+import {
+  parseMarkdown,
+  extractFrontMatter,
+  markdownToHtml,
+  type ParsedMarkdown,
+} from '@/lib/markdown-utils';
 
 interface ExtendedMarkdown {
   html: string;
@@ -26,22 +31,25 @@ interface TableOfContentsItem {
 /**
  * Read and parse a markdown file from the filesystem (server-side only)
  */
-export async function readMarkdownFile(filePath: string): Promise<ExtendedMarkdown | null> {
+export async function readMarkdownFile(
+  filePath: string
+): Promise<ExtendedMarkdown | null> {
   try {
     if (!fs.existsSync(filePath)) {
       return null;
     }
 
     const fileContent = fs.readFileSync(filePath, 'utf8');
-    const { data: metadata, content: extractedContent } = extractFrontMatter(fileContent);
+    const { data: metadata, content: extractedContent } =
+      extractFrontMatter(fileContent);
     const htmlContent = await markdownToHtml(extractedContent);
-    
+
     return {
       html: htmlContent,
       frontmatter: metadata,
       tableOfContents: [],
       wordCount: extractedContent.split(/\s+/).length,
-      readingTime: Math.ceil(extractedContent.split(/\s+/).length / 200) // Assuming 200 words per minute
+      readingTime: Math.ceil(extractedContent.split(/\s+/).length / 200), // Assuming 200 words per minute
     };
   } catch (_error) {
     // Error logged - details available in network tab;
@@ -63,10 +71,13 @@ export function getMarkdownFiles(dirPath: string, recursive = true): string[] {
 
     for (const entry of entries) {
       const fullPath = path.join(dirPath, entry.name);
-      
+
       if (entry.isDirectory() && recursive) {
         files.push(...getMarkdownFiles(fullPath, recursive));
-      } else if (entry.isFile() && (entry.name.endsWith('.md') || entry.name.endsWith('.mdx'))) {
+      } else if (
+        entry.isFile() &&
+        (entry.name.endsWith('.md') || entry.name.endsWith('.mdx'))
+      ) {
         files.push(fullPath);
       }
     }
@@ -81,11 +92,13 @@ export function getMarkdownFiles(dirPath: string, recursive = true): string[] {
 /**
  * Read multiple markdown files and return their parsed content
  */
-export async function readMultipleMarkdownFiles(filePaths: string[]): Promise<Array<{ path: string; content: ExtendedMarkdown | null }>> {
+export async function readMultipleMarkdownFiles(
+  filePaths: string[]
+): Promise<Array<{ path: string; content: ExtendedMarkdown | null }>> {
   const results = await Promise.all(
-    filePaths.map(async (filePath) => ({
+    filePaths.map(async filePath => ({
       path: filePath,
-      content: await readMarkdownFile(filePath)
+      content: await readMarkdownFile(filePath),
     }))
   );
 
@@ -103,7 +116,7 @@ export function getFileStats(filePath: string) {
       modified: stats.mtime,
       created: stats.birthtime,
       isDirectory: stats.isDirectory(),
-      isFile: stats.isFile()
+      isFile: stats.isFile(),
     };
   } catch (_error) {
     // Error logged - details available in network tab;

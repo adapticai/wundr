@@ -28,28 +28,69 @@ import type { QueryResult } from './rag/types.js';
  */
 export const RefactoringImpactInputSchema = z.object({
   targetPath: z.string().describe('Root directory path of the codebase'),
-  refactoringTarget: z.string().describe('The code element being refactored (function name, class name, module path, or pattern)'),
-  refactoringType: z.enum([
-    'rename',
-    'move',
-    'extract',
-    'inline',
-    'change-signature',
-    'restructure',
-    'deprecate',
-    'delete',
-  ]).describe('Type of refactoring operation'),
-  searchScope: z.enum(['local', 'project', 'workspace']).optional().default('project').describe('Scope of impact analysis'),
-  storeName: z.string().optional().describe('Name for the RAG store (auto-generated if not provided)'),
-  forceReindex: z.boolean().optional().default(false).describe('Force reindexing even if store exists'),
-  includePatterns: z.array(z.string()).optional().default(['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx']).describe('File patterns to include in analysis'),
-  excludePatterns: z.array(z.string()).optional().default(['**/node_modules/**', '**/dist/**', '**/.git/**']).describe('File patterns to exclude from analysis'),
-  includeTests: z.boolean().optional().default(true).describe('Include test files in impact analysis'),
-  includeDocs: z.boolean().optional().default(true).describe('Include documentation files in impact analysis'),
-  maxResults: z.number().int().positive().optional().default(50).describe('Maximum number of impacted files to return'),
+  refactoringTarget: z
+    .string()
+    .describe(
+      'The code element being refactored (function name, class name, module path, or pattern)'
+    ),
+  refactoringType: z
+    .enum([
+      'rename',
+      'move',
+      'extract',
+      'inline',
+      'change-signature',
+      'restructure',
+      'deprecate',
+      'delete',
+    ])
+    .describe('Type of refactoring operation'),
+  searchScope: z
+    .enum(['local', 'project', 'workspace'])
+    .optional()
+    .default('project')
+    .describe('Scope of impact analysis'),
+  storeName: z
+    .string()
+    .optional()
+    .describe('Name for the RAG store (auto-generated if not provided)'),
+  forceReindex: z
+    .boolean()
+    .optional()
+    .default(false)
+    .describe('Force reindexing even if store exists'),
+  includePatterns: z
+    .array(z.string())
+    .optional()
+    .default(['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'])
+    .describe('File patterns to include in analysis'),
+  excludePatterns: z
+    .array(z.string())
+    .optional()
+    .default(['**/node_modules/**', '**/dist/**', '**/.git/**'])
+    .describe('File patterns to exclude from analysis'),
+  includeTests: z
+    .boolean()
+    .optional()
+    .default(true)
+    .describe('Include test files in impact analysis'),
+  includeDocs: z
+    .boolean()
+    .optional()
+    .default(true)
+    .describe('Include documentation files in impact analysis'),
+  maxResults: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .default(50)
+    .describe('Maximum number of impacted files to return'),
 });
 
-export type RefactoringImpactInput = z.infer<typeof RefactoringImpactInputSchema>;
+export type RefactoringImpactInput = z.infer<
+  typeof RefactoringImpactInputSchema
+>;
 
 // ============================================================================
 // Output Types
@@ -202,31 +243,51 @@ function generateStoreName(targetPath: string): string {
 /**
  * Classify file type based on path
  */
-function classifyFileType(filePath: string): 'source' | 'test' | 'documentation' | 'config' | 'other' {
+function classifyFileType(
+  filePath: string
+): 'source' | 'test' | 'documentation' | 'config' | 'other' {
   const lowerPath = filePath.toLowerCase();
 
-  if (lowerPath.includes('.test.') || lowerPath.includes('.spec.') ||
-      lowerPath.includes('__tests__') || lowerPath.includes('/test/') ||
-      lowerPath.includes('/tests/')) {
+  if (
+    lowerPath.includes('.test.') ||
+    lowerPath.includes('.spec.') ||
+    lowerPath.includes('__tests__') ||
+    lowerPath.includes('/test/') ||
+    lowerPath.includes('/tests/')
+  ) {
     return 'test';
   }
 
-  if (lowerPath.endsWith('.md') || lowerPath.endsWith('.mdx') ||
-      lowerPath.endsWith('.rst') || lowerPath.includes('/docs/') ||
-      lowerPath.includes('readme')) {
+  if (
+    lowerPath.endsWith('.md') ||
+    lowerPath.endsWith('.mdx') ||
+    lowerPath.endsWith('.rst') ||
+    lowerPath.includes('/docs/') ||
+    lowerPath.includes('readme')
+  ) {
     return 'documentation';
   }
 
-  if (lowerPath.endsWith('.json') || lowerPath.endsWith('.yaml') ||
-      lowerPath.endsWith('.yml') || lowerPath.endsWith('.toml') ||
-      lowerPath.includes('config')) {
+  if (
+    lowerPath.endsWith('.json') ||
+    lowerPath.endsWith('.yaml') ||
+    lowerPath.endsWith('.yml') ||
+    lowerPath.endsWith('.toml') ||
+    lowerPath.includes('config')
+  ) {
     return 'config';
   }
 
-  if (lowerPath.endsWith('.ts') || lowerPath.endsWith('.tsx') ||
-      lowerPath.endsWith('.js') || lowerPath.endsWith('.jsx') ||
-      lowerPath.endsWith('.py') || lowerPath.endsWith('.java') ||
-      lowerPath.endsWith('.go') || lowerPath.endsWith('.rs')) {
+  if (
+    lowerPath.endsWith('.ts') ||
+    lowerPath.endsWith('.tsx') ||
+    lowerPath.endsWith('.js') ||
+    lowerPath.endsWith('.jsx') ||
+    lowerPath.endsWith('.py') ||
+    lowerPath.endsWith('.java') ||
+    lowerPath.endsWith('.go') ||
+    lowerPath.endsWith('.rs')
+  ) {
     return 'source';
   }
 
@@ -261,7 +322,11 @@ function detectLanguage(filePath: string): string | undefined {
 /**
  * Determine impact type based on relevance score and content
  */
-function determineImpactType(score: number, snippet: string, target: string): ImpactType {
+function determineImpactType(
+  score: number,
+  snippet: string,
+  target: string
+): ImpactType {
   const lowerSnippet = snippet.toLowerCase();
   const lowerTarget = target.toLowerCase();
 
@@ -291,7 +356,7 @@ function determineImpactType(score: number, snippet: string, target: string): Im
 function determineImpactSeverity(
   impactType: ImpactType,
   fileType: 'source' | 'test' | 'documentation' | 'config' | 'other',
-  score: number,
+  score: number
 ): ImpactSeverity {
   if (impactType === 'direct') {
     return fileType === 'source' ? 'high' : 'medium';
@@ -308,9 +373,10 @@ function determineImpactSeverity(
 function calculateEstimatedScope(
   directImpacts: number,
   indirectImpacts: number,
-  testsAffected: number,
+  testsAffected: number
 ): RefactoringScope {
-  const totalSignificant = directImpacts + (indirectImpacts * 0.5) + (testsAffected * 0.3);
+  const totalSignificant =
+    directImpacts + indirectImpacts * 0.5 + testsAffected * 0.3;
 
   if (totalSignificant < 5) {
     return 'small';
@@ -327,7 +393,7 @@ function calculateEstimatedScope(
 function calculateRiskLevel(
   directImpacts: number,
   highSeverityCount: number,
-  testsAffected: number,
+  testsAffected: number
 ): 'low' | 'medium' | 'high' {
   if (directImpacts > 10 || highSeverityCount > 5) {
     return 'high';
@@ -339,59 +405,35 @@ function calculateRiskLevel(
 }
 
 // ============================================================================
-// Simulated RAG Search
+// RAG Search (requires a real RAG service)
 // ============================================================================
 
 /**
- * Simulate RAG search for refactoring target
+ * Execute a RAG search for all references to the refactoring target.
+ *
+ * The previous implementation returned a fixed list of hardcoded file paths
+ * and fabricated relevance scores that had no relationship to the actual
+ * codebase.  Any impact report built on those results would be misleading.
+ *
+ * A real RAG search backend must be configured and provided before this
+ * function can return valid results.  Throwing here makes the missing
+ * dependency explicit rather than silently producing incorrect reports.
+ *
+ * @throws {Error} Always, until a real RAG service is integrated.
  */
-async function simulateRefactoringSearch(
+async function executeRefactoringSearch(
   targetPath: string,
   refactoringTarget: string,
   maxResults: number,
   includeTests: boolean,
-  includeDocs: boolean,
+  includeDocs: boolean
 ): Promise<QueryResult[]> {
-  // In a real implementation, this would call the actual RAG service
-  const results: QueryResult[] = [];
-
-  // Generate mock results based on refactoring target
-  const mockFiles = [
-    { path: 'src/index.ts', score: 0.92, type: 'source' },
-    { path: 'src/components/Component.tsx', score: 0.85, type: 'source' },
-    { path: 'src/services/service.ts', score: 0.78, type: 'source' },
-    { path: 'src/utils/helpers.ts', score: 0.72, type: 'source' },
-    { path: 'src/types/index.ts', score: 0.68, type: 'source' },
-    { path: 'tests/unit/index.test.ts', score: 0.88, type: 'test' },
-    { path: 'tests/integration/api.test.ts', score: 0.75, type: 'test' },
-    { path: 'docs/api.md', score: 0.65, type: 'doc' },
-    { path: 'README.md', score: 0.55, type: 'doc' },
-  ];
-
-  const filteredFiles = mockFiles.filter(f => {
-    if (f.type === 'test' && !includeTests) {
-return false;
-}
-    if (f.type === 'doc' && !includeDocs) {
-return false;
-}
-    return true;
-  });
-
-  for (const file of filteredFiles.slice(0, maxResults)) {
-    results.push({
-      content: `// Reference to ${refactoringTarget}\nimport { ${refactoringTarget} } from './module';`,
-      sourcePath: `${targetPath}/${file.path}`,
-      score: file.score,
-      metadata: {
-        lineStart: 1,
-        lineEnd: 10,
-        language: detectLanguage(file.path),
-      },
-    });
-  }
-
-  return results;
+  throw new Error(
+    `Refactoring impact analysis requires a real RAG search backend. ` +
+      `No embedding or search service is configured. ` +
+      `Provide a concrete RAG service implementation before calling ` +
+      `analyzeRefactoringImpact (target: "${refactoringTarget}", path: "${targetPath}").`
+  );
 }
 
 // ============================================================================
@@ -405,7 +447,7 @@ return false;
  * @returns Impact analysis report with affected files, tests, and docs
  */
 export async function analyzeRefactoringImpact(
-  input: RefactoringImpactInput,
+  input: RefactoringImpactInput
 ): Promise<McpToolResult<RefactoringImpactOutput>> {
   const startTime = Date.now();
   let wasReindexed = false;
@@ -417,39 +459,50 @@ export async function analyzeRefactoringImpact(
       return errorResult(
         `Input validation failed: ${validationResult.error.message}`,
         'VALIDATION_ERROR',
-        { issues: validationResult.error.issues },
+        { issues: validationResult.error.issues }
       );
     }
 
     const validInput = validationResult.data;
-    const storeName = validInput.storeName || generateStoreName(validInput.targetPath);
+    const storeName =
+      validInput.storeName || generateStoreName(validInput.targetPath);
 
     // Step 1: Ensure RAG store exists
     const storesResult = await listStores();
 
     if (storesResult.success && storesResult.data?.stores) {
-      const existingStore = storesResult.data.stores.find(s => s.id === storeName);
+      const existingStore = storesResult.data.stores.find(
+        s => s.id === storeName
+      );
 
       if (!existingStore || validInput.forceReindex) {
         if (!existingStore) {
-          await createStore(storeName, `Refactoring Analysis: ${validInput.refactoringTarget}`, {
-            includePatterns: validInput.includePatterns,
-            excludePatterns: validInput.excludePatterns,
-          });
+          await createStore(
+            storeName,
+            `Refactoring Analysis: ${validInput.refactoringTarget}`,
+            {
+              includePatterns: validInput.includePatterns,
+              excludePatterns: validInput.excludePatterns,
+            }
+          );
         }
 
-        await syncStore(storeName, validInput.targetPath, validInput.forceReindex);
+        await syncStore(
+          storeName,
+          validInput.targetPath,
+          validInput.forceReindex
+        );
         wasReindexed = true;
       }
     }
 
-    // Step 2: Search for all references to refactoring target
-    const searchResults = await simulateRefactoringSearch(
+    // Step 2: Search for all references to refactoring target via a real RAG backend.
+    const searchResults = await executeRefactoringSearch(
       validInput.targetPath,
       validInput.refactoringTarget,
       validInput.maxResults,
       validInput.includeTests,
-      validInput.includeDocs,
+      validInput.includeDocs
     );
 
     // Step 3: Process results into impacted files
@@ -465,28 +518,39 @@ export async function analyzeRefactoringImpact(
 
     for (const result of searchResults) {
       const fileType = classifyFileType(result.sourcePath);
-      const impactType = determineImpactType(result.score, result.content, validInput.refactoringTarget);
-      const severity = determineImpactSeverity(impactType, fileType, result.score);
+      const impactType = determineImpactType(
+        result.score,
+        result.content,
+        validInput.refactoringTarget
+      );
+      const severity = determineImpactSeverity(
+        impactType,
+        fileType,
+        result.score
+      );
 
       // Count impacts
       if (impactType === 'direct') {
-directImpacts++;
-} else if (impactType === 'indirect') {
-indirectImpacts++;
-} else {
-potentialImpacts++;
-}
+        directImpacts++;
+      } else if (impactType === 'indirect') {
+        indirectImpacts++;
+      } else {
+        potentialImpacts++;
+      }
 
       if (severity === 'high') {
-highSeverityCount++;
-}
+        highSeverityCount++;
+      }
 
       const lineStart = (result.metadata?.lineStart as number) || 1;
       const lineEnd = (result.metadata?.lineEnd as number) || 10;
       const estimatedLines = lineEnd - lineStart + 1;
       totalLinesAffected += estimatedLines;
 
-      const relativePath = result.sourcePath.replace(validInput.targetPath + '/', '');
+      const relativePath = result.sourcePath.replace(
+        validInput.targetPath + '/',
+        ''
+      );
 
       const impactedFile: ImpactedFile = {
         filePath: result.sourcePath,
@@ -495,12 +559,14 @@ highSeverityCount++;
         severity,
         relevanceScore: result.score,
         estimatedLinesAffected: estimatedLines,
-        locations: [{
-          lineStart,
-          lineEnd,
-          snippet: result.content.substring(0, 200),
-          reason: `Contains reference to ${validInput.refactoringTarget}`,
-        }],
+        locations: [
+          {
+            lineStart,
+            lineEnd,
+            snippet: result.content.substring(0, 200),
+            reason: `Contains reference to ${validInput.refactoringTarget}`,
+          },
+        ],
         fileType,
         language: detectLanguage(result.sourcePath),
       };
@@ -521,32 +587,51 @@ highSeverityCount++;
       if (fileType === 'documentation') {
         docsToUpdate.push({
           filePath: result.sourcePath,
-          affectedSections: [`Documentation mentioning ${validInput.refactoringTarget}`],
+          affectedSections: [
+            `Documentation mentioning ${validInput.refactoringTarget}`,
+          ],
           reason: `Documentation references ${validInput.refactoringTarget}`,
-          docType: result.sourcePath.toLowerCase().includes('readme') ? 'readme' :
-                   result.sourcePath.toLowerCase().includes('api') ? 'api' : 'guide',
+          docType: result.sourcePath.toLowerCase().includes('readme')
+            ? 'readme'
+            : result.sourcePath.toLowerCase().includes('api')
+              ? 'api'
+              : 'guide',
         });
       }
     }
 
     // Step 4: Calculate summary metrics
-    const estimatedScope = calculateEstimatedScope(directImpacts, indirectImpacts, testsToUpdate.length);
-    const riskLevel = calculateRiskLevel(directImpacts, highSeverityCount, testsToUpdate.length);
+    const estimatedScope = calculateEstimatedScope(
+      directImpacts,
+      indirectImpacts,
+      testsToUpdate.length
+    );
+    const riskLevel = calculateRiskLevel(
+      directImpacts,
+      highSeverityCount,
+      testsToUpdate.length
+    );
 
     // Step 5: Generate recommendations
     const recommendations: string[] = [];
 
     if (riskLevel === 'high') {
-      recommendations.push('Consider breaking this refactoring into smaller, incremental changes');
+      recommendations.push(
+        'Consider breaking this refactoring into smaller, incremental changes'
+      );
       recommendations.push('Create a detailed rollback plan before proceeding');
     }
 
     if (testsToUpdate.length > 0) {
-      recommendations.push(`Update ${testsToUpdate.length} test file(s) to reflect the changes`);
+      recommendations.push(
+        `Update ${testsToUpdate.length} test file(s) to reflect the changes`
+      );
     }
 
     if (docsToUpdate.length > 0) {
-      recommendations.push(`Update ${docsToUpdate.length} documentation file(s) after refactoring`);
+      recommendations.push(
+        `Update ${docsToUpdate.length} documentation file(s) after refactoring`
+      );
     }
 
     recommendations.push('Run full test suite after changes');
@@ -560,7 +645,9 @@ highSeverityCount++;
     }
 
     if (testsToUpdate.length === 0 && directImpacts > 0) {
-      risks.push('No tests found for affected code - consider adding tests first');
+      risks.push(
+        'No tests found for affected code - consider adding tests first'
+      );
     }
 
     if (highSeverityCount > 5) {
@@ -606,16 +693,13 @@ highSeverityCount++;
       },
     };
 
-    return successResult(
-      { report },
-      risks.length > 0 ? risks : undefined,
-    );
+    return successResult({ report }, risks.length > 0 ? risks : undefined);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     return errorResult(
       `Refactoring impact analysis failed: ${errorMessage}`,
       'ANALYSIS_ERROR',
-      { stack: error instanceof Error ? error.stack : undefined },
+      { stack: error instanceof Error ? error.stack : undefined }
     );
   }
 }
@@ -625,7 +709,8 @@ highSeverityCount++;
  */
 export const refactoringImpactTool = {
   name: 'refactoring-impact',
-  description: 'Analyze the potential impact of a refactoring operation using RAG search to find affected files, tests, and documentation',
+  description:
+    'Analyze the potential impact of a refactoring operation using RAG search to find affected files, tests, and documentation',
   inputSchema: {
     type: 'object',
     properties: {
@@ -635,11 +720,21 @@ export const refactoringImpactTool = {
       },
       refactoringTarget: {
         type: 'string',
-        description: 'The code element being refactored (function name, class name, module path, or pattern)',
+        description:
+          'The code element being refactored (function name, class name, module path, or pattern)',
       },
       refactoringType: {
         type: 'string',
-        enum: ['rename', 'move', 'extract', 'inline', 'change-signature', 'restructure', 'deprecate', 'delete'],
+        enum: [
+          'rename',
+          'move',
+          'extract',
+          'inline',
+          'change-signature',
+          'restructure',
+          'deprecate',
+          'delete',
+        ],
         description: 'Type of refactoring operation',
       },
       searchScope: {

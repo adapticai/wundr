@@ -25,7 +25,11 @@ interface SearchableContentProps {
   className?: string;
 }
 
-export function SearchableContent({ content, onNavigate, className }: SearchableContentProps) {
+export function SearchableContent({
+  content,
+  onNavigate,
+  className,
+}: SearchableContentProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
@@ -39,7 +43,7 @@ export function SearchableContent({ content, onNavigate, className }: Searchable
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      
+
       // Detect headings
       const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
       if (headingMatch) {
@@ -48,16 +52,19 @@ export function SearchableContent({ content, onNavigate, className }: Searchable
         if (level <= 2) {
           currentSection = title;
         }
-        
+
         segments.push({
           id: `heading-${segmentId++}`,
           title,
           content: title,
           section: currentSection,
-          url: `#${title.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-')}`,
+          url: `#${title
+            .toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')}`,
           type: 'heading',
           score: 0,
-          highlights: []
+          highlights: [],
         });
         continue;
       }
@@ -70,7 +77,7 @@ export function SearchableContent({ content, onNavigate, className }: Searchable
           codeLines.push(lines[i]);
           i++;
         }
-        
+
         const codeContent = codeLines.join('\n');
         if (codeContent.trim()) {
           segments.push({
@@ -81,7 +88,7 @@ export function SearchableContent({ content, onNavigate, className }: Searchable
             url: `#code-${segmentId}`,
             type: 'code',
             score: 0,
-            highlights: []
+            highlights: [],
           });
         }
         continue;
@@ -98,7 +105,7 @@ export function SearchableContent({ content, onNavigate, className }: Searchable
           url: `#list-${segmentId}`,
           type: 'list',
           score: 0,
-          highlights: []
+          highlights: [],
         });
         continue;
       }
@@ -113,7 +120,7 @@ export function SearchableContent({ content, onNavigate, className }: Searchable
           url: `#paragraph-${segmentId}`,
           type: 'paragraph',
           score: 0,
-          highlights: []
+          highlights: [],
         });
       }
     }
@@ -150,11 +157,14 @@ export function SearchableContent({ content, onNavigate, className }: Searchable
         // Content matches
         if (contentLower.includes(query)) {
           score += 1;
-          
+
           // Extract surrounding context
           const index = contentLower.indexOf(query);
           const start = Math.max(0, index - 30);
-          const end = Math.min(segment.content.length, index + query.length + 30);
+          const end = Math.min(
+            segment.content.length,
+            index + query.length + 30
+          );
           const context = segment.content.substring(start, end);
           highlights.push(`"...${context}..."`);
         }
@@ -162,7 +172,7 @@ export function SearchableContent({ content, onNavigate, className }: Searchable
         return {
           ...segment,
           score,
-          highlights
+          highlights,
         };
       })
       .filter(result => result.score > 0)
@@ -175,15 +185,33 @@ export function SearchableContent({ content, onNavigate, className }: Searchable
   // Filter by content type
   const filteredResults = useMemo(() => {
     if (selectedFilters.length === 0) return searchResults;
-    return searchResults.filter(result => selectedFilters.includes(result.type));
+    return searchResults.filter(result =>
+      selectedFilters.includes(result.type)
+    );
   }, [searchResults, selectedFilters]);
 
   const availableFilters = useMemo(() => {
     return [
-      { key: 'heading', label: 'Headings', count: searchResults.filter(r => r.type === 'heading').length },
-      { key: 'paragraph', label: 'Content', count: searchResults.filter(r => r.type === 'paragraph').length },
-      { key: 'code', label: 'Code', count: searchResults.filter(r => r.type === 'code').length },
-      { key: 'list', label: 'Lists', count: searchResults.filter(r => r.type === 'list').length }
+      {
+        key: 'heading',
+        label: 'Headings',
+        count: searchResults.filter(r => r.type === 'heading').length,
+      },
+      {
+        key: 'paragraph',
+        label: 'Content',
+        count: searchResults.filter(r => r.type === 'paragraph').length,
+      },
+      {
+        key: 'code',
+        label: 'Code',
+        count: searchResults.filter(r => r.type === 'code').length,
+      },
+      {
+        key: 'list',
+        label: 'Lists',
+        count: searchResults.filter(r => r.type === 'list').length,
+      },
     ].filter(filter => filter.count > 0);
   }, [searchResults]);
 
@@ -204,48 +232,56 @@ export function SearchableContent({ content, onNavigate, className }: Searchable
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'heading': return '📋';
-      case 'code': return '💻';
-      case 'list': return '📝';
-      default: return '📄';
+      case 'heading':
+        return '📋';
+      case 'code':
+        return '💻';
+      case 'list':
+        return '📝';
+      default:
+        return '📄';
     }
   };
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'heading': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-      case 'code': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case 'list': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+      case 'heading':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      case 'code':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'list':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
     }
   };
 
   return (
     <div className={cn('space-y-4', className)}>
       {/* Search Input */}
-      <div className="relative">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <div className='relative'>
+        <div className='relative'>
+          <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground' />
           <Input
-            placeholder="Search in this document..."
+            placeholder='Search in this document...'
             value={searchQuery}
-            onChange={(e) => {
+            onChange={e => {
               setSearchQuery(e.target.value);
               setIsSearchActive(!!e.target.value.trim());
             }}
-            className="pl-10 pr-10"
+            className='pl-10 pr-10'
           />
           {searchQuery && (
             <Button
-              variant="ghost"
-              size="sm"
+              variant='ghost'
+              size='sm'
               onClick={() => {
                 setSearchQuery('');
                 setIsSearchActive(false);
               }}
-              className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
+              className='absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0'
             >
-              <X className="h-4 w-4" />
+              <X className='h-4 w-4' />
             </Button>
           )}
         </div>
@@ -254,24 +290,28 @@ export function SearchableContent({ content, onNavigate, className }: Searchable
       {/* Search Results */}
       {isSearchActive && (
         <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm">
+          <CardHeader className='pb-3'>
+            <div className='flex items-center justify-between'>
+              <CardTitle className='text-sm'>
                 Search Results ({filteredResults.length})
               </CardTitle>
-              
+
               {/* Filters */}
               {availableFilters.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4 text-muted-foreground" />
-                  <div className="flex gap-1">
+                <div className='flex items-center gap-2'>
+                  <Filter className='h-4 w-4 text-muted-foreground' />
+                  <div className='flex gap-1'>
                     {availableFilters.map(filter => (
                       <Button
                         key={filter.key}
-                        variant={selectedFilters.includes(filter.key) ? "default" : "outline"}
-                        size="sm"
+                        variant={
+                          selectedFilters.includes(filter.key)
+                            ? 'default'
+                            : 'outline'
+                        }
+                        size='sm'
                         onClick={() => handleFilterToggle(filter.key)}
-                        className="h-6 text-xs"
+                        className='h-6 text-xs'
                       >
                         {filter.label} ({filter.count})
                       </Button>
@@ -281,10 +321,10 @@ export function SearchableContent({ content, onNavigate, className }: Searchable
               )}
             </div>
           </CardHeader>
-          
-          <CardContent className="space-y-2 max-h-96 overflow-y-auto">
+
+          <CardContent className='space-y-2 max-h-96 overflow-y-auto'>
             {filteredResults.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
+              <p className='text-sm text-muted-foreground text-center py-4'>
                 No results found for &quot;{searchQuery}&quot;
               </p>
             ) : (
@@ -292,32 +332,40 @@ export function SearchableContent({ content, onNavigate, className }: Searchable
                 <div
                   key={result.id}
                   onClick={() => handleResultClick(result)}
-                  className="p-3 rounded-lg border hover:bg-accent/50 cursor-pointer transition-colors"
+                  className='p-3 rounded-lg border hover:bg-accent/50 cursor-pointer transition-colors'
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm">{getTypeIcon(result.type)}</span>
-                        <Badge variant="secondary" className={cn('text-xs', getTypeColor(result.type))}>
+                  <div className='flex items-start justify-between gap-2'>
+                    <div className='flex-1 min-w-0'>
+                      <div className='flex items-center gap-2 mb-1'>
+                        <span className='text-sm'>
+                          {getTypeIcon(result.type)}
+                        </span>
+                        <Badge
+                          variant='secondary'
+                          className={cn('text-xs', getTypeColor(result.type))}
+                        >
                           {result.type}
                         </Badge>
                         {result.section && (
-                          <span className="text-xs text-muted-foreground">
+                          <span className='text-xs text-muted-foreground'>
                             in {result.section}
                           </span>
                         )}
                       </div>
-                      
-                      <div className="space-y-1">
+
+                      <div className='space-y-1'>
                         {result.highlights.map((highlight, index) => (
-                          <p key={index} className="text-sm text-muted-foreground line-clamp-2">
+                          <p
+                            key={index}
+                            className='text-sm text-muted-foreground line-clamp-2'
+                          >
                             {highlight.replace(/"/g, '&quot;')}
                           </p>
                         ))}
                       </div>
                     </div>
-                    
-                    <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+
+                    <ChevronRight className='h-4 w-4 text-muted-foreground flex-shrink-0' />
                   </div>
                 </div>
               ))

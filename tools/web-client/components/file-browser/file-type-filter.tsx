@@ -36,11 +36,11 @@ export function FileTypeFilter({
 
   return (
     <div className={cn('flex items-center gap-2 flex-wrap', className)}>
-      <span className="text-sm text-muted-foreground whitespace-nowrap">
+      <span className='text-sm text-muted-foreground whitespace-nowrap'>
         Filter by type:
       </span>
-      
-      <div className="flex flex-wrap gap-1">
+
+      <div className='flex flex-wrap gap-1'>
         {availableTypes.map(type => {
           const isSelected = selectedTypes.includes(type);
           return (
@@ -56,9 +56,9 @@ export function FileTypeFilter({
             >
               .{type}
               {isSelected && (
-                <X 
-                  className="ml-1 h-2 w-2" 
-                  onClick={(e) => {
+                <X
+                  className='ml-1 h-2 w-2'
+                  onClick={e => {
                     e.stopPropagation();
                     handleToggleType(type);
                   }}
@@ -67,21 +67,21 @@ export function FileTypeFilter({
             </Badge>
           );
         })}
-        
+
         {selectedTypes.length > 0 && (
           <Button
-            variant="ghost"
-            size="sm"
+            variant='ghost'
+            size='sm'
             onClick={handleClearAll}
-            className="h-6 px-2 text-xs"
+            className='h-6 px-2 text-xs'
           >
             Clear All
           </Button>
         )}
       </div>
-      
+
       {selectedTypes.length > 0 && (
-        <span className="text-xs text-muted-foreground">
+        <span className='text-xs text-muted-foreground'>
           ({selectedTypes.length} selected)
         </span>
       )}

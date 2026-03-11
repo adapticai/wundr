@@ -47,12 +47,7 @@
 // =============================================================================
 
 // Core class and factory
-export {
-  StructuredOutputGenerator,
-  createInstructor,
-  createMockLLMProvider,
-  createMockStreamingProvider,
-} from './instructor';
+export { StructuredOutputGenerator, createInstructor } from './instructor';
 
 // Retry strategies
 export {

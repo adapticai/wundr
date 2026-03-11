@@ -13,27 +13,25 @@ interface ConfigFieldProps {
   className?: string;
 }
 
-export function ConfigField({ 
-  label, 
-  description, 
-  error, 
-  required = false, 
+export function ConfigField({
+  label,
+  description,
+  error,
+  required = false,
   children,
-  className 
+  className,
 }: ConfigFieldProps) {
   return (
     <div className={cn('space-y-2', className)}>
-      <Label className="text-sm font-medium">
+      <Label className='text-sm font-medium'>
         {label}
-        {required && <span className="text-destructive ml-1">*</span>}
+        {required && <span className='text-destructive ml-1'>*</span>}
       </Label>
       {description && (
-        <p className="text-sm text-muted-foreground">{description}</p>
+        <p className='text-sm text-muted-foreground'>{description}</p>
       )}
       {children}
-      {error && (
-        <p className="text-sm text-destructive">{error}</p>
-      )}
+      {error && <p className='text-sm text-destructive'>{error}</p>}
     </div>
   );
 }

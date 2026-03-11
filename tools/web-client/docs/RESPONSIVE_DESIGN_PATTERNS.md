@@ -1,6 +1,7 @@
 # Responsive Design Patterns Guide
 
-This guide covers responsive design patterns and utilities for building mobile-first, accessible interfaces.
+This guide covers responsive design patterns and utilities for building mobile-first, accessible
+interfaces.
 
 ## Table of Contents
 
@@ -17,12 +18,12 @@ This guide covers responsive design patterns and utilities for building mobile-f
 
 We follow Tailwind CSS breakpoints:
 
-| Breakpoint | Width | Usage |
-|-----------|-------|-------|
-| `sm` | 640px | Mobile phones |
-| `md` | 768px | Tablets |
-| `lg` | 1024px | Desktop |
-| `xl` | 1280px | Large desktop |
+| Breakpoint | Width  | Usage         |
+| ---------- | ------ | ------------- |
+| `sm`       | 640px  | Mobile phones |
+| `md`       | 768px  | Tablets       |
+| `lg`       | 1024px | Desktop       |
+| `xl`       | 1280px | Large desktop |
 
 ### Import Breakpoints
 
@@ -142,7 +143,8 @@ export function MyComponent() {
 
 ## Responsive Modal
 
-The `ResponsiveModal` component automatically switches between a Drawer on mobile and a Dialog on desktop.
+The `ResponsiveModal` component automatically switches between a Drawer on mobile and a Dialog on
+desktop.
 
 ### Basic Usage
 
@@ -361,12 +363,7 @@ const gap = getResponsiveGap('sm'); // "12px"
 ```typescript
 import { isSignificantSwipe } from '@/lib/responsive-utils';
 
-function handleSwipe(
-  startX: number,
-  startY: number,
-  endX: number,
-  endY: number
-) {
+function handleSwipe(startX: number, startY: number, endX: number, endY: number) {
   const { isSwipe, direction } = isSignificantSwipe(startX, startY, endX, endY);
 
   if (isSwipe) {
@@ -390,13 +387,13 @@ function handleSwipe(
 
 Test these specific widths:
 
-| Device | Width | Breakpoint |
-|--------|-------|-----------|
-| iPhone SE | 375px | < sm |
-| iPhone 12 | 390px | < sm |
-| iPad Mini | 768px | md |
-| iPad Pro | 1024px | lg |
-| Desktop | 1920px | xl |
+| Device    | Width  | Breakpoint |
+| --------- | ------ | ---------- |
+| iPhone SE | 375px  | < sm       |
+| iPhone 12 | 390px  | < sm       |
+| iPad Mini | 768px  | md         |
+| iPad Pro  | 1024px | lg         |
+| Desktop   | 1920px | xl         |
 
 ### Touch Testing
 
@@ -509,10 +506,7 @@ if (isDesktop) {
 Ensure your HTML has the correct viewport meta tag:
 
 ```html
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0"
-/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 ```
 
 This is typically set in Next.js layout automatically.
@@ -597,6 +591,7 @@ export function Settings() {
 ### Converting Old Dialogs
 
 Before (fixed dialog):
+
 ```typescript
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
@@ -611,6 +606,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 ```
 
 After (responsive):
+
 ```typescript
 import { ResponsiveModal } from '@/components/ui/responsive-modal';
 
