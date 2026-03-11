@@ -1,14 +1,18 @@
 # @wundr.io/structured-output
 
-Pydantic/Instructor-style LLM output validation with retry loops and grammar enforcement for TypeScript.
+Pydantic/Instructor-style LLM output validation with retry loops and grammar enforcement for
+TypeScript.
 
 ## Overview
 
-`@wundr.io/structured-output` provides a robust framework for generating validated, structured output from Large Language Models (LLMs). It combines Zod schema validation with intelligent retry strategies and grammar enforcement to ensure LLM responses conform to your expected data structures.
+`@wundr.io/structured-output` provides a robust framework for generating validated, structured
+output from Large Language Models (LLMs). It combines Zod schema validation with intelligent retry
+strategies and grammar enforcement to ensure LLM responses conform to your expected data structures.
 
 ### Key Features
 
-- **Zod Schema Integration**: Define output structures using Zod schemas with full TypeScript type inference
+- **Zod Schema Integration**: Define output structures using Zod schemas with full TypeScript type
+  inference
 - **Intelligent Retry Strategies**: Multiple retry strategies with error feedback loops
 - **Grammar Enforcement**: JSON Schema, Regex, PEG, and Context-Free Grammar enforcement methods
 - **Streaming Support**: Parse partial results as they arrive from streaming LLM responses
@@ -80,7 +84,8 @@ if (result.success) {
 
 ### The Instructor Pattern
 
-The package implements the "Instructor" pattern, popularized by Python's Pydantic/Instructor library:
+The package implements the "Instructor" pattern, popularized by Python's Pydantic/Instructor
+library:
 
 1. **Define a schema** describing the expected output structure
 2. **Generate prompts** that include schema information for the LLM
@@ -141,10 +146,8 @@ Add descriptions to help the LLM understand field semantics:
 const ProductSchema = z.object({
   name: z.string().describe('Product name, max 100 characters'),
   price: z.number().positive().describe('Price in USD, excluding tax'),
-  category: z.enum(['electronics', 'clothing', 'food'])
-    .describe('Primary product category'),
-  tags: z.array(z.string()).max(5)
-    .describe('Up to 5 relevant tags for search'),
+  category: z.enum(['electronics', 'clothing', 'food']).describe('Primary product category'),
+  tags: z.array(z.string()).max(5).describe('Up to 5 relevant tags for search'),
 });
 ```
 
@@ -169,10 +172,13 @@ import {
 } from '@wundr.io/structured-output';
 
 // Create schema with description
-const schema = createObjectSchema({
-  id: z.string(),
-  name: z.string(),
-}, { description: 'User entity' });
+const schema = createObjectSchema(
+  {
+    id: z.string(),
+    name: z.string(),
+  },
+  { description: 'User entity' }
+);
 
 // Make all fields optional
 const partialSchema = makePartial(schema);
@@ -205,13 +211,13 @@ When validation fails, the instructor can retry with different strategies:
 
 ### Available Strategies
 
-| Strategy | Description | Best For |
-|----------|-------------|----------|
-| `simple` | Fixed delay between retries | Basic use cases |
-| `exponential-backoff` | Increasing delays between retries | Rate-limited APIs |
-| `adaptive` | Adjusts based on error patterns | Complex validations |
-| `error-targeted` | Focuses retry prompts on specific errors | Precision fixes |
-| `schema-guided` | Uses schema info for detailed guidance | Schema-heavy outputs |
+| Strategy              | Description                              | Best For             |
+| --------------------- | ---------------------------------------- | -------------------- |
+| `simple`              | Fixed delay between retries              | Basic use cases      |
+| `exponential-backoff` | Increasing delays between retries        | Rate-limited APIs    |
+| `adaptive`            | Adjusts based on error patterns          | Complex validations  |
+| `error-targeted`      | Focuses retry prompts on specific errors | Precision fixes      |
+| `schema-guided`       | Uses schema info for detailed guidance   | Schema-heavy outputs |
 
 ### Configuration
 
@@ -253,13 +259,14 @@ const result = await executeWithRetry(
     jitter: true,
     strategy: 'adaptive',
   },
-  (context) => console.log(`Attempt ${context.attemptNumber}`)
+  context => console.log(`Attempt ${context.attemptNumber}`)
 );
 ```
 
 ### Retry Strategy Details
 
 #### Simple Strategy
+
 ```typescript
 // Fixed delay, straightforward retries
 const instructor = createInstructor({
@@ -269,6 +276,7 @@ const instructor = createInstructor({
 ```
 
 #### Exponential Backoff
+
 ```typescript
 // Delays: 1s -> 2s -> 4s -> 8s (capped at maxDelayMs)
 const instructor = createInstructor({
@@ -278,6 +286,7 @@ const instructor = createInstructor({
 ```
 
 #### Adaptive Strategy
+
 ```typescript
 // Analyzes error types and adjusts prompts accordingly
 // - Type errors: Adds type-specific guidance
@@ -290,6 +299,7 @@ const instructor = createInstructor({
 ```
 
 #### Error-Targeted Strategy
+
 ```typescript
 // Groups errors by field path and provides focused feedback
 const instructor = createInstructor({
@@ -298,6 +308,7 @@ const instructor = createInstructor({
 ```
 
 #### Schema-Guided Strategy
+
 ```typescript
 // Progressive detail: more schema info on each retry
 const instructor = createInstructor({
@@ -311,13 +322,13 @@ Grammar enforcement ensures LLM outputs conform to structural rules before Zod v
 
 ### Enforcement Methods
 
-| Method | Description | Use Case |
-|--------|-------------|----------|
-| `json-schema` | JSON Schema validation | Default, most cases |
-| `regex` | Regex pattern matching | String formats |
-| `peg-grammar` | Parsing Expression Grammar | Complex structures |
-| `context-free-grammar` | CFG parsing | Formal language validation |
-| `none` | Skip grammar enforcement | Trust LLM output |
+| Method                 | Description                | Use Case                   |
+| ---------------------- | -------------------------- | -------------------------- |
+| `json-schema`          | JSON Schema validation     | Default, most cases        |
+| `regex`                | Regex pattern matching     | String formats             |
+| `peg-grammar`          | Parsing Expression Grammar | Complex structures         |
+| `context-free-grammar` | CFG parsing                | Formal language validation |
+| `none`                 | Skip grammar enforcement   | Trust LLM output           |
 
 ### Configuration
 
@@ -487,15 +498,15 @@ instructor.setStreamingProvider(async function* (prompt, systemPrompt, config) {
 const result = await instructor.streamPartial({
   schema: UserSchema,
   prompt: 'Extract user info...',
-  onPartial: (partial) => {
+  onPartial: partial => {
     console.log('Partial:', partial.partial);
     console.log('Confidence:', partial.confidence);
     console.log('Complete:', partial.isComplete);
   },
-  onComplete: (result) => {
+  onComplete: result => {
     console.log('Final:', result.data);
   },
-  onError: (error) => {
+  onError: error => {
     console.error('Error:', error);
   },
 });
@@ -534,36 +545,36 @@ try {
 
 ### Error Codes
 
-| Code | Description |
-|------|-------------|
-| `VALIDATION_FAILED` | Schema validation failed |
-| `MAX_RETRIES_EXCEEDED` | All retry attempts exhausted |
-| `TIMEOUT` | Request exceeded timeout |
-| `LLM_ERROR` | LLM provider returned an error |
-| `GRAMMAR_ENFORCEMENT_FAILED` | Grammar validation failed |
-| `SCHEMA_ERROR` | Invalid schema configuration |
-| `PARSE_ERROR` | JSON parsing failed |
-| `CONFIGURATION_ERROR` | Invalid instructor configuration |
+| Code                         | Description                      |
+| ---------------------------- | -------------------------------- |
+| `VALIDATION_FAILED`          | Schema validation failed         |
+| `MAX_RETRIES_EXCEEDED`       | All retry attempts exhausted     |
+| `TIMEOUT`                    | Request exceeded timeout         |
+| `LLM_ERROR`                  | LLM provider returned an error   |
+| `GRAMMAR_ENFORCEMENT_FAILED` | Grammar validation failed        |
+| `SCHEMA_ERROR`               | Invalid schema configuration     |
+| `PARSE_ERROR`                | JSON parsing failed              |
+| `CONFIGURATION_ERROR`        | Invalid instructor configuration |
 
 ### Validation Result Structure
 
 ```typescript
 interface ValidationResult<T> {
   success: boolean;
-  data?: T;                    // Present if success is true
-  errors?: ValidationError[];  // Present if success is false
-  rawResponse?: string;        // Original LLM response
-  retryCount: number;          // Number of retries attempted
-  duration: number;            // Total time in milliseconds
+  data?: T; // Present if success is true
+  errors?: ValidationError[]; // Present if success is false
+  rawResponse?: string; // Original LLM response
+  retryCount: number; // Number of retries attempted
+  duration: number; // Total time in milliseconds
   metadata: ValidationMetadata;
 }
 
 interface ValidationError {
-  path: (string | number)[];   // Field path: ['user', 'address', 0]
-  message: string;             // Human-readable error
-  code: string;                // Error code from Zod
-  expected?: string;           // Expected type/value
-  received?: unknown;          // Actual value received
+  path: (string | number)[]; // Field path: ['user', 'address', 0]
+  message: string; // Human-readable error
+  code: string; // Error code from Zod
+  expected?: string; // Expected type/value
+  received?: unknown; // Actual value received
 }
 ```
 
@@ -681,27 +692,22 @@ instructor.setLLMProvider(async (prompt, systemPrompt, config) => {
 ### Testing with Mock Providers
 
 ```typescript
-import {
-  createMockLLMProvider,
-  createMockStreamingProvider,
-} from '@wundr.io/structured-output';
+import { createMockLLMProvider, createMockStreamingProvider } from '@wundr.io/structured-output';
 
 // Static response
-instructor.setLLMProvider(
-  createMockLLMProvider('{"name": "John", "age": 30}')
-);
+instructor.setLLMProvider(createMockLLMProvider('{"name": "John", "age": 30}'));
 
 // Multiple responses (round-robin)
 instructor.setLLMProvider(
   createMockLLMProvider([
-    '{"invalid": true}',           // First attempt fails
+    '{"invalid": true}', // First attempt fails
     '{"name": "John", "age": 30}', // Second attempt succeeds
   ])
 );
 
 // Dynamic response based on prompt
 instructor.setLLMProvider(
-  createMockLLMProvider((prompt) => {
+  createMockLLMProvider(prompt => {
     if (prompt.includes('error')) {
       return '{"error": "Something went wrong"}';
     }
@@ -787,76 +793,76 @@ const result = await instructor.generate({
 
 ### Main Exports
 
-| Export | Description |
-|--------|-------------|
-| `createInstructor` | Factory function to create instructor instances |
-| `StructuredOutputGenerator` | Main class for structured output generation |
-| `z` | Re-exported Zod for convenience |
+| Export                      | Description                                     |
+| --------------------------- | ----------------------------------------------- |
+| `createInstructor`          | Factory function to create instructor instances |
+| `StructuredOutputGenerator` | Main class for structured output generation     |
+| `z`                         | Re-exported Zod for convenience                 |
 
 ### Schema Utilities
 
-| Export | Description |
-|--------|-------------|
-| `toJsonSchema` | Convert Zod schema to JSON Schema |
+| Export                 | Description                                 |
+| ---------------------- | ------------------------------------------- |
+| `toJsonSchema`         | Convert Zod schema to JSON Schema           |
 | `generateSchemaPrompt` | Generate prompt-friendly schema description |
-| `introspectSchema` | Extract metadata from schema |
-| `createObjectSchema` | Create object schema with options |
-| `makePartial` | Make all fields optional |
-| `makeRequired` | Make all fields required |
-| `pickFields` | Select specific fields |
-| `omitFields` | Remove specific fields |
-| `extendSchema` | Add fields to schema |
-| `mergeSchemas` | Combine two schemas |
-| `safeParse` | Parse with detailed errors |
-| `parseWithCoercion` | Parse with automatic type coercion |
-| `extractJson` | Extract JSON from text |
-| `parseJsonWithSchema` | Parse and validate JSON |
-| `getRequiredFields` | List required field names |
-| `getOptionalFields` | List optional field names |
+| `introspectSchema`     | Extract metadata from schema                |
+| `createObjectSchema`   | Create object schema with options           |
+| `makePartial`          | Make all fields optional                    |
+| `makeRequired`         | Make all fields required                    |
+| `pickFields`           | Select specific fields                      |
+| `omitFields`           | Remove specific fields                      |
+| `extendSchema`         | Add fields to schema                        |
+| `mergeSchemas`         | Combine two schemas                         |
+| `safeParse`            | Parse with detailed errors                  |
+| `parseWithCoercion`    | Parse with automatic type coercion          |
+| `extractJson`          | Extract JSON from text                      |
+| `parseJsonWithSchema`  | Parse and validate JSON                     |
+| `getRequiredFields`    | List required field names                   |
+| `getOptionalFields`    | List optional field names                   |
 
 ### Retry Strategies
 
-| Export | Description |
-|--------|-------------|
-| `createRetryStrategy` | Factory for retry strategies |
-| `SimpleRetryStrategy` | Fixed delay retry |
-| `ExponentialBackoffRetryStrategy` | Exponential backoff |
-| `AdaptiveRetryStrategy` | Error-pattern adaptive |
-| `ErrorTargetedRetryStrategy` | Error-focused retry |
-| `SchemaGuidedRetryStrategy` | Schema-aware retry |
-| `executeWithRetry` | Generic retry executor |
-| `sleep` | Promise-based delay |
+| Export                            | Description                  |
+| --------------------------------- | ---------------------------- |
+| `createRetryStrategy`             | Factory for retry strategies |
+| `SimpleRetryStrategy`             | Fixed delay retry            |
+| `ExponentialBackoffRetryStrategy` | Exponential backoff          |
+| `AdaptiveRetryStrategy`           | Error-pattern adaptive       |
+| `ErrorTargetedRetryStrategy`      | Error-focused retry          |
+| `SchemaGuidedRetryStrategy`       | Schema-aware retry           |
+| `executeWithRetry`                | Generic retry executor       |
+| `sleep`                           | Promise-based delay          |
 
 ### Grammar Enforcers
 
-| Export | Description |
-|--------|-------------|
-| `createGrammarEnforcer` | Factory for grammar enforcers |
-| `JsonSchemaGrammarEnforcer` | JSON Schema validation |
-| `RegexGrammarEnforcer` | Regex pattern matching |
-| `PegGrammarEnforcer` | PEG grammar enforcement |
-| `CfgGrammarEnforcer` | Context-free grammar |
+| Export                      | Description                   |
+| --------------------------- | ----------------------------- |
+| `createGrammarEnforcer`     | Factory for grammar enforcers |
+| `JsonSchemaGrammarEnforcer` | JSON Schema validation        |
+| `RegexGrammarEnforcer`      | Regex pattern matching        |
+| `PegGrammarEnforcer`        | PEG grammar enforcement       |
+| `CfgGrammarEnforcer`        | Context-free grammar          |
 
 ### Error Classes
 
-| Export | Description |
-|--------|-------------|
-| `StructuredOutputError` | Base error class |
+| Export                    | Description           |
+| ------------------------- | --------------------- |
+| `StructuredOutputError`   | Base error class      |
 | `MaxRetriesExceededError` | All retries exhausted |
-| `TimeoutError` | Request timeout |
+| `TimeoutError`            | Request timeout       |
 
 ### Types
 
-| Export | Description |
-|--------|-------------|
-| `InstructorConfig` | Full configuration interface |
-| `ValidationResult` | Generation result interface |
-| `ValidationError` | Error details interface |
-| `RetryStrategy` | Retry strategy interface |
-| `GrammarEnforcer` | Grammar enforcer interface |
-| `LLMProvider` | LLM provider function type |
-| `StreamingLLMProvider` | Streaming provider type |
-| `InferSchema` | Type inference utility |
+| Export                 | Description                  |
+| ---------------------- | ---------------------------- |
+| `InstructorConfig`     | Full configuration interface |
+| `ValidationResult`     | Generation result interface  |
+| `ValidationError`      | Error details interface      |
+| `RetryStrategy`        | Retry strategy interface     |
+| `GrammarEnforcer`      | Grammar enforcer interface   |
+| `LLMProvider`          | LLM provider function type   |
+| `StreamingLLMProvider` | Streaming provider type      |
+| `InferSchema`          | Type inference utility       |
 
 ## License
 
