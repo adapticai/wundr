@@ -639,3 +639,25 @@ necessary for achieving your goal. ALWAYS prefer editing an existing file to cre
 NEVER proactively create documentation files (\*.md) or README files. Only create documentation
 files if explicitly requested by the User. Never save working files, text/mds and tests to the root
 folder.
+
+---
+
+## Session Memory Protocol
+
+At the end of every Claude Code session, completely regenerate `primer.md` based on the latest
+repository state. This ensures the next session starts with accurate context.
+
+### Session End Checklist
+
+1. **Rebuild `primer.md`** - Fully rewrite with current project state, what was completed, working
+   area, next steps, blockers, key files touched, and notes for future sessions.
+2. **Verify `project_memory.log`** - Ensure it contains the latest commit entry (appended
+   automatically by the post-commit hook).
+3. **Leave `CLAUDE.md` unchanged** - This file represents the static architecture and must not be
+   auto-regenerated.
+
+### Session Start
+
+Run `sh memory.sh` at the beginning of each session to get live repository state including current
+branch, recent commits, modified files, and untracked files. Also read `primer.md` to restore
+session context from the previous session.

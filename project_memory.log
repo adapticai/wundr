@@ -1,0 +1,42 @@
+[2026-03-11]
+branch: master
+commit: feat: Wave 1 production-readiness - wundr packages and web-client updates
+files:
+  - packages/@wundr/autogen-orchestrator/src/group-chat.ts
+  - packages/@wundr/cli/src/plugins/plugin-manager.ts
+  - packages/@wundr/crew-orchestrator/src/crew.ts
+  - packages/@wundr/dashboard/app/providers.tsx
+  - packages/@wundr/dashboard/components/dashboard/metrics-grid.tsx
+  - packages/@wundr/mcp-registry/src/aggregator.ts
+  - packages/@wundr/mcp-server/src/tools/codebase-analysis-rag.ts
+  - packages/@wundr/jit-tools/src/index.ts
+  - (and 170+ more files)
+
+[2026-03-11]
+branch: master
+commit: chore: formatter and remaining structured-output updates
+files:
+  - packages/@wundr/structured-output/src/grammar-enforcer.ts
+  - packages/@wundr/structured-output/src/retry-strategies.ts
+  - packages/@wundr/structured-output/src/schema-utils.ts
+  - packages/@wundr/structured-output/src/types.ts
+
+[2026-03-16]
+branch: master
+commit: various formatting changes?
+files:
+  - packages/@wundr/neolith/apps/web/app/workspaces/layout.tsx
+  - packages/@wundr/neolith/apps/web/next-env.d.ts
+
+[2026-03-16]
+branch: master
+commit: feat: add user avatar dropdown to workspaces header
+files:
+  - packages/@wundr/neolith/apps/web/components/layout/app-header.tsx
+
+[2026-03-16]
+branch: master
+commit: fix: remove nested form tags on workspace creation page
+files:
+  - packages/@wundr/neolith/apps/web/app/workspaces/new/page.tsx
+

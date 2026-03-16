@@ -4,3 +4,20 @@ echo "🔍 Running post-commit build validation..."
 node scripts/build-validation.js validate &
 
 echo "✅ Post-commit validation started in background"
+
+# Append commit metadata to project_memory.log
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
+MEMORY_LOG="${REPO_ROOT}/project_memory.log"
+COMMIT_DATE="$(git log -1 --format='%ad' --date=short)"
+COMMIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+COMMIT_MSG="$(git log -1 --format='%s')"
+COMMIT_FILES="$(git diff-tree --no-commit-id --name-only -r HEAD | head -30 | sed 's/^/  - /')"
+
+{
+  printf "[%s]\n" "${COMMIT_DATE}"
+  printf "branch: %s\n" "${COMMIT_BRANCH}"
+  printf "commit: %s\n" "${COMMIT_MSG}"
+  printf "files:\n"
+  printf "%s\n" "${COMMIT_FILES}"
+  printf "\n"
+} >> "${MEMORY_LOG}"
