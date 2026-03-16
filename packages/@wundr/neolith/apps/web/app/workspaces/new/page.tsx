@@ -282,33 +282,31 @@ export default function NewWorkspacePage() {
 
             {/* Input Area */}
             <div className='border-t p-4'>
-              <form onSubmit={handleSubmit}>
-                <PromptInputForm>
-                  <PromptInputTextarea
-                    value={input}
-                    onChange={e => setInput(e.target.value)}
-                    placeholder='Type your message... (Enter to send)'
-                    disabled={isLoading}
-                  />
-                  <PromptInputToolbar>
-                    <PromptInputTools>
-                      {(extractedData as Partial<WorkspaceReviewData>).name && (
-                        <Button
-                          type='button'
-                          variant='outline'
-                          size='sm'
-                          onClick={handleProceedToReview}
-                        >
-                          Review & Create
-                        </Button>
-                      )}
-                    </PromptInputTools>
-                    <PromptInputSubmit disabled={!input.trim() || isLoading}>
-                      {isLoading ? <Loader size={16} /> : 'Send'}
-                    </PromptInputSubmit>
-                  </PromptInputToolbar>
-                </PromptInputForm>
-              </form>
+              <PromptInputForm onSubmit={handleSubmit}>
+                <PromptInputTextarea
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  placeholder='Type your message... (Enter to send)'
+                  disabled={isLoading}
+                />
+                <PromptInputToolbar>
+                  <PromptInputTools>
+                    {(extractedData as Partial<WorkspaceReviewData>).name && (
+                      <Button
+                        type='button'
+                        variant='outline'
+                        size='sm'
+                        onClick={handleProceedToReview}
+                      >
+                        Review & Create
+                      </Button>
+                    )}
+                  </PromptInputTools>
+                  <PromptInputSubmit disabled={!input.trim() || isLoading}>
+                    {isLoading ? <Loader size={16} /> : 'Send'}
+                  </PromptInputSubmit>
+                </PromptInputToolbar>
+              </PromptInputForm>
             </div>
           </CardContent>
         </Card>
