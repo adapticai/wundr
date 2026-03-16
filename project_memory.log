@@ -40,3 +40,14 @@ commit: fix: remove nested form tags on workspace creation page
 files:
   - packages/@wundr/neolith/apps/web/app/workspaces/new/page.tsx
 
+[2026-03-16]
+branch: master
+commit: feat: add persistent project memory system for Claude Code sessions
+files:
+  - .gitignore
+  - .husky/post-commit
+  - CLAUDE.md
+  - memory.sh
+  - primer.md
+  - project_memory.log
+

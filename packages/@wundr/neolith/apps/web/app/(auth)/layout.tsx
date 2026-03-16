@@ -21,7 +21,7 @@ export default function AuthLayout({
       <div className='w-full max-w-md space-y-8 px-4'>
         {/* Logo */}
         <div className='flex justify-center'>
-          <Logo className='h-12 w-auto text-stone-100' />
+          <Logo className='h-8 w-auto text-stone-100' />
         </div>
 
         {/* Auth Content */}
