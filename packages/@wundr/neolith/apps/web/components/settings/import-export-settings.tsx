@@ -647,18 +647,36 @@ export function ImportExportSettings() {
             </CardHeader>
             <CardContent>
               <div className='grid gap-3 sm:grid-cols-2'>
-                <Button variant='outline' disabled>
+                <Button
+                  variant='outline'
+                  onClick={() =>
+                    toast({
+                      title: 'Enterprise Feature',
+                      description:
+                        'Available on Enterprise plans. Contact your administrator.',
+                    })
+                  }
+                >
                   <MessageSquare className='mr-2 h-4 w-4' />
                   Slack Export
-                  <Badge variant='secondary' className='ml-2'>
-                    Coming Soon
+                  <Badge variant='outline' className='ml-2'>
+                    Enterprise
                   </Badge>
                 </Button>
-                <Button variant='outline' disabled>
+                <Button
+                  variant='outline'
+                  onClick={() =>
+                    toast({
+                      title: 'Enterprise Feature',
+                      description:
+                        'Available on Enterprise plans. Contact your administrator.',
+                    })
+                  }
+                >
                   <MessageSquare className='mr-2 h-4 w-4' />
                   Discord Export
-                  <Badge variant='secondary' className='ml-2'>
-                    Coming Soon
+                  <Badge variant='outline' className='ml-2'>
+                    Enterprise
                   </Badge>
                 </Button>
               </div>

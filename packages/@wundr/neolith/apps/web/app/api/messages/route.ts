@@ -54,21 +54,59 @@ async function checkChannelMembership(channelId: string, userId: string) {
  * Helper function to upload file and create file record
  */
 async function uploadFile(file: File, userId: string, workspaceId: string) {
-  // In a production environment, you would upload to S3, Cloudinary, etc.
-  // For now, we'll just create a file record with metadata
-
-  // Generate unique filename
   const timestamp = Date.now();
   const randomStr = Math.random().toString(36).substring(2, 15);
   const extension = file.name.split('.').pop();
   const filename = `${timestamp}-${randomStr}.${extension}`;
-
-  // Generate S3 key (path in S3 bucket)
+  const s3Bucket =
+    process.env.STORAGE_BUCKET ||
+    process.env.MY_AWS_S3_BUCKET_NAME ||
+    'neolith-files';
   const s3Key = `uploads/${workspaceId}/${filename}`;
-  const s3Bucket = process.env.S3_BUCKET_NAME || 'neolith-files';
 
-  // Create file record
-  const fileRecord = await prisma.file.create({
+  const hasS3 =
+    process.env.MY_AWS_ACCESS_KEY_ID &&
+    process.env.MY_AWS_SECRET_ACCESS_KEY &&
+    process.env.STORAGE_BUCKET;
+
+  if (hasS3) {
+    const s3Module = await import('@aws-sdk/client-s3').catch(() => null);
+    if (s3Module) {
+      const { S3Client, PutObjectCommand } = s3Module;
+      const client = new S3Client({
+        region: process.env.MY_AWS_REGION || 'us-east-1',
+        credentials: {
+          accessKeyId: process.env.MY_AWS_ACCESS_KEY_ID!,
+          secretAccessKey: process.env.MY_AWS_SECRET_ACCESS_KEY!,
+        },
+      });
+      const buffer = Buffer.from(await file.arrayBuffer());
+      await client.send(
+        new PutObjectCommand({
+          Bucket: s3Bucket,
+          Key: s3Key,
+          Body: buffer,
+          ContentType: file.type,
+          Metadata: { originalName: file.name, uploadedBy: userId },
+        })
+      );
+    }
+  } else {
+    // Local storage fallback for development
+    const fs = await import('fs/promises');
+    const path = await import('path');
+    const uploadsDir = path.join(
+      process.cwd(),
+      'public',
+      'uploads',
+      workspaceId
+    );
+    await fs.mkdir(uploadsDir, { recursive: true });
+    const buffer = Buffer.from(await file.arrayBuffer());
+    await fs.writeFile(path.join(uploadsDir, filename), buffer);
+  }
+
+  return prisma.file.create({
     data: {
       filename,
       originalName: file.name,
@@ -77,8 +115,7 @@ async function uploadFile(file: File, userId: string, workspaceId: string) {
       uploadedById: userId,
       workspaceId,
       s3Key,
-      s3Bucket,
-      // Generate thumbnail URL for images
+      s3Bucket: hasS3 ? s3Bucket : 'local',
       thumbnailUrl: file.type.startsWith('image/')
         ? `/api/files/${s3Key}/thumbnail`
         : null,
@@ -89,8 +126,6 @@ async function uploadFile(file: File, userId: string, workspaceId: string) {
       },
     },
   });
-
-  return fileRecord;
 }
 
 /**

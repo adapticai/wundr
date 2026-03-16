@@ -3,6 +3,8 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 
+import { Workflow } from 'lucide-react';
+
 import { AudioRoom } from '@/components/call/audio-room';
 import { HuddleBar } from '@/components/call/huddle-bar';
 import { ChannelHeader } from '@/components/channel';
@@ -10,9 +12,11 @@ import { CanvasTab } from '@/components/channel/canvas-tab';
 import { ChannelDetailsPanel } from '@/components/channel/channel-details-panel';
 import { EditChannelDialog } from '@/components/channel/edit-channel-dialog';
 import { FilesTab } from '@/components/channel/files-tab';
+import { DEFAULT_TABS } from '@/components/channel/shared';
 import { InviteDialog } from '@/components/channel/invite-dialog';
 import { NotificationsDialog } from '@/components/channel/notifications-dialog';
 import { ChannelAIAssistant } from '@/components/channels/channel-ai-assistant';
+import { ChannelTemplates } from '@/components/channels/channel-templates';
 import { PinnedMessagesPanel } from '@/components/channels/pinned-messages-panel';
 import {
   MessageList,
@@ -20,6 +24,8 @@ import {
   ThreadPanel,
   TypingIndicator,
 } from '@/components/chat';
+import { DMSearchPanel } from '@/components/dm/dm-search-panel';
+import { DMWorkflowsTab } from '@/components/dm/dm-workflows';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useAuth } from '@/hooks/use-auth';
 import { useChannelPermissions } from '@/hooks/use-channel';
@@ -33,12 +39,24 @@ import {
 } from '@/hooks/use-chat';
 import { useToast } from '@/hooks/use-toast';
 
-import type { ConversationTab } from '@/components/channel/shared';
+import type { ConversationTab, TabConfig } from '@/components/channel/shared';
 import type { Channel, ChannelPermissions } from '@/types/channel';
 import type { Message, User } from '@/types/chat';
 
-// For channels, we currently support a subset of tabs
-type ChannelTab = Extract<ConversationTab, 'messages' | 'canvas' | 'files'>;
+const CHANNEL_TABS: TabConfig[] = [
+  ...DEFAULT_TABS,
+  {
+    id: 'workflows',
+    label: 'Workflows',
+    icon: <Workflow className='h-4 w-4' />,
+  },
+];
+
+// For channels, we support messages, canvas, files, and workflows tabs
+type ChannelTab = Extract<
+  ConversationTab,
+  'messages' | 'canvas' | 'files' | 'workflows'
+>;
 
 export default function ChannelPage() {
   const params = useParams();
@@ -62,6 +80,9 @@ export default function ChannelPage() {
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [showAIAssistant, setShowAIAssistant] = useState(false);
   const [showPinnedPanel, setShowPinnedPanel] = useState(false);
+  const [showTemplatesDialog, setShowTemplatesDialog] = useState(false);
+  const [isSearchPanelOpen, setIsSearchPanelOpen] = useState(false);
+  const [isCallInitiating, setIsCallInitiating] = useState(false);
   // isStarred is derived from channel data, with local state for optimistic updates
   const [localIsStarred, setLocalIsStarred] = useState<boolean | null>(null);
 
@@ -163,6 +184,18 @@ export default function ChannelPage() {
       }).catch(console.error);
     }
   }, [channelId, currentUser, isMessagesLoading]);
+
+  // Cmd+F keyboard shortcut for in-channel search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
+        e.preventDefault();
+        setIsSearchPanelOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Fetch pinned messages
   const fetchPinnedMessages = useCallback(async () => {
@@ -822,11 +855,43 @@ export default function ChannelPage() {
 
   // Tab change handler - filter to only supported tabs for channels
   const handleTabChange = useCallback((tab: ConversationTab) => {
-    // Channels only support messages, canvas, and files tabs for now
-    if (tab === 'messages' || tab === 'canvas' || tab === 'files') {
+    if (
+      tab === 'messages' ||
+      tab === 'canvas' ||
+      tab === 'files' ||
+      tab === 'workflows'
+    ) {
       setActiveTab(tab);
     }
   }, []);
+
+  // Start audio/video call handler
+  const handleStartCall = useCallback(
+    async (type: 'audio' | 'video') => {
+      if (isCallInitiating) return;
+      setIsCallInitiating(true);
+      try {
+        const response = await fetch('/api/calls', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ channelId, type }),
+        });
+        if (!response.ok) throw new Error('Failed to start call');
+        const data = await response.json();
+        if (data.callId) {
+          router.push(`/${workspaceSlug}/call/${data.callId}`);
+        }
+        toast({
+          title: `${type === 'video' ? 'Video' : 'Audio'} call started`,
+        });
+      } catch {
+        toast({ variant: 'destructive', title: 'Failed to start call' });
+      } finally {
+        setIsCallInitiating(false);
+      }
+    },
+    [channelId, isCallInitiating, router, workspaceSlug, toast]
+  );
 
   // Huddle handlers
   const handleStartHuddle = useCallback(async () => {
@@ -1003,27 +1068,9 @@ export default function ChannelPage() {
           onOpenSettings={() => setShowEditDialog(true)}
           onSummarize={() => setShowAIAssistant(true)}
           onEditNotifications={() => setShowNotificationsDialog(true)}
-          onAddTemplate={() =>
-            toast({
-              title: 'Coming Soon',
-              description:
-                'Message templates are under development. Stay tuned!',
-            })
-          }
-          onAddWorkflow={() =>
-            toast({
-              title: 'Coming Soon',
-              description:
-                'Channel workflows are under development. Stay tuned!',
-            })
-          }
-          onSearchInChannel={() =>
-            toast({
-              title: 'Coming Soon',
-              description:
-                'In-channel search is under development. Stay tuned!',
-            })
-          }
+          onAddTemplate={() => setShowTemplatesDialog(true)}
+          onAddWorkflow={() => setActiveTab('workflows')}
+          onSearchInChannel={() => setIsSearchPanelOpen(prev => !prev)}
           onInvite={() => setShowDetailsPanel(true)}
           onViewPins={
             pinnedMessageIds.size > 0
@@ -1034,16 +1081,20 @@ export default function ChannelPage() {
           onStartHuddle={
             huddle?.status === 'active' ? handleJoinHuddle : handleStartHuddle
           }
-          onStartCall={type =>
-            toast({
-              title: 'Coming Soon',
-              description: `${type === 'video' ? 'Video' : 'Audio'} calls are under development. Stay tuned!`,
-            })
-          }
+          onStartCall={handleStartCall}
+          tabs={CHANNEL_TABS}
           hasActiveHuddle={huddle?.status === 'active'}
           huddleParticipantCount={huddle?.participantCount || 0}
         />
       )}
+
+      {/* In-channel search panel */}
+      <DMSearchPanel
+        isOpen={isSearchPanelOpen}
+        messages={messages}
+        onClose={() => setIsSearchPanelOpen(false)}
+        onScrollToMessage={handleJumpToMessage}
+      />
 
       {/* Main content */}
       <div className='flex flex-1 overflow-hidden'>
@@ -1092,6 +1143,14 @@ export default function ChannelPage() {
             workspaceSlug={workspaceSlug}
             currentUserId={currentUser?.id}
             className='flex-1'
+          />
+        )}
+
+        {activeTab === 'workflows' && currentUser && (
+          <DMWorkflowsTab
+            channelId={channelId}
+            workspaceSlug={workspaceSlug}
+            currentUserId={currentUser.id}
           />
         )}
 
@@ -1216,6 +1275,27 @@ export default function ChannelPage() {
             canManagePins={effectivePermissions.canPin || false}
             currentUserId={currentUser?.id}
           />
+
+          {showTemplatesDialog && (
+            <ChannelTemplates
+              channelId={channelId}
+              open={showTemplatesDialog}
+              onClose={() => setShowTemplatesDialog(false)}
+              onSelectTemplate={content => {
+                navigator.clipboard.writeText(content);
+                setShowTemplatesDialog(false);
+                toast({
+                  title: 'Template copied',
+                  description: 'Paste the template into your message.',
+                });
+              }}
+              isAdmin={
+                effectivePermissions.isAdmin ||
+                effectivePermissions.isOwner ||
+                false
+              }
+            />
+          )}
         </>
       )}
     </div>

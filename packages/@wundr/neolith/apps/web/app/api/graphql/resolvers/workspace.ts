@@ -2,13 +2,14 @@
  * Workspace Resolvers
  *
  * GraphQL resolvers for Workspace-related queries and mutations.
- * These are stub implementations for Phase 0 that will be fully
- * implemented when the Workspace model is added to the database.
+ * All resolvers use real Prisma queries against the database.
  *
  * @module api/graphql/resolvers/workspace
  */
 
 import { GraphQLError } from 'graphql';
+
+import { Prisma } from '@neolith/database';
 
 import { isAuthenticated } from '../context';
 
@@ -22,6 +23,7 @@ interface CreateWorkspaceInput {
   slug?: string | null;
   description?: string | null;
   logoUrl?: string | null;
+  organizationId: string;
 }
 
 interface UpdateWorkspaceInput {
@@ -66,109 +68,47 @@ interface DeleteWorkspaceArgs {
 }
 
 /**
- * Stub workspace data for Phase 0
- *
- * This mock data simulates workspace responses until the
- * Workspace model is implemented in Phase 1.
+ * Shape of the workspace database record as returned by Prisma includes
  */
-const STUB_WORKSPACE: {
+interface WorkspaceParent {
   id: string;
   name: string;
   slug: string;
   description: string | null;
-  logoUrl: string | null;
-  owner: {
-    id: string;
-    email: string;
-    name: string;
-    role: 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST';
-    createdAt: Date;
-    updatedAt: Date;
-  };
-  settings: {
-    theme: 'LIGHT' | 'DARK' | 'SYSTEM';
-    emailNotifications: boolean;
-    inAppNotifications: boolean;
-    timezone: string;
-    locale: string;
-  };
-  memberCount: number;
+  avatarUrl: string | null;
+  settings: Record<string, unknown> | null;
+  organizationId: string | null;
   createdAt: Date;
   updatedAt: Date;
-} = {
-  id: 'ws_stub_001',
-  name: 'Default Workspace',
-  slug: 'default',
-  description: 'This is a stub workspace for Phase 0 development',
-  logoUrl: null,
-  owner: {
-    id: 'user_stub_001',
-    email: 'owner@neolith.local',
-    name: 'Workspace Owner',
-    role: 'ADMIN' as const,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  settings: {
-    theme: 'SYSTEM' as const,
-    emailNotifications: true,
-    inAppNotifications: true,
-    timezone: 'UTC',
-    locale: 'en-US',
-  },
-  memberCount: 1,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-};
-
-/**
- * Creates a stub workspace from input
- *
- * @param input - The workspace creation input
- * @param userId - The creating user's ID
- * @returns A stub workspace object
- */
-function createStubWorkspace(
-  input: CreateWorkspaceInput,
-  userId: string
-): typeof STUB_WORKSPACE {
-  const slug =
-    input.slug ?? input.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-
-  return {
-    ...STUB_WORKSPACE,
-    id: `ws_${Date.now()}`,
-    name: input.name,
-    slug,
-    description: input.description ?? STUB_WORKSPACE.description,
-    logoUrl: input.logoUrl ?? STUB_WORKSPACE.logoUrl,
-    owner: {
-      ...STUB_WORKSPACE.owner,
-      id: userId,
-    },
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
 }
 
 /**
+ * Default workspace settings applied when the settings JSON field is absent
+ * or missing individual keys.
+ */
+const DEFAULT_SETTINGS = {
+  theme: 'SYSTEM' as const,
+  emailNotifications: true,
+  inAppNotifications: true,
+  timezone: 'UTC',
+  locale: 'en-US',
+};
+
+/**
  * Workspace query and mutation resolvers
- *
- * Note: These are stub implementations for Phase 0.
- * Full implementation will be added when Workspace model
- * is available in the database schema.
  */
 export const workspaceResolvers = {
   Query: {
     /**
      * Get a workspace by ID
      *
-     * Stub implementation returns mock data.
+     * Fetches the workspace from the database and verifies that the
+     * requesting user is a member before returning.
      *
      * @param _parent - Parent resolver result (unused)
      * @param args - Query arguments containing workspace ID
      * @param context - GraphQL context
-     * @returns The workspace or null
+     * @returns The workspace or null if not found / not a member
      * @throws GraphQLError if not authenticated
      *
      * @example
@@ -193,23 +133,45 @@ export const workspaceResolvers = {
         });
       }
 
-      // Stub: Return mock workspace if ID matches pattern
-      if (args.id.startsWith('ws_')) {
-        return { ...STUB_WORKSPACE, id: args.id };
+      const workspace = await context.prisma.workspace.findUnique({
+        where: { id: args.id },
+        include: {
+          organization: true,
+          _count: { select: { workspaceMembers: true } },
+        },
+      });
+
+      if (!workspace) {
+        return null;
       }
 
-      return null;
+      // Verify the requesting user is a member of this workspace
+      const membership = await context.prisma.workspaceMember.findUnique({
+        where: {
+          workspaceId_userId: {
+            workspaceId: args.id,
+            userId: context.user.id,
+          },
+        },
+      });
+
+      if (!membership) {
+        return null;
+      }
+
+      return workspace;
     },
 
     /**
      * Get a workspace by its slug
      *
-     * Stub implementation returns mock data.
+     * Fetches the workspace from the database and verifies that the
+     * requesting user is a member before returning.
      *
      * @param _parent - Parent resolver result (unused)
      * @param args - Query arguments containing workspace slug
      * @param context - GraphQL context
-     * @returns The workspace or null
+     * @returns The workspace or null if not found / not a member
      * @throws GraphQLError if not authenticated
      *
      * @example
@@ -233,14 +195,40 @@ export const workspaceResolvers = {
         });
       }
 
-      // Stub: Return mock workspace with matching slug
-      return { ...STUB_WORKSPACE, slug: args.slug };
+      const workspace = await context.prisma.workspace.findFirst({
+        where: { slug: args.slug },
+        include: {
+          organization: true,
+          _count: { select: { workspaceMembers: true } },
+        },
+      });
+
+      if (!workspace) {
+        return null;
+      }
+
+      // Verify the requesting user is a member of this workspace
+      const membership = await context.prisma.workspaceMember.findUnique({
+        where: {
+          workspaceId_userId: {
+            workspaceId: workspace.id,
+            userId: context.user.id,
+          },
+        },
+      });
+
+      if (!membership) {
+        return null;
+      }
+
+      return workspace;
     },
 
     /**
      * Get all workspaces the current user has access to
      *
-     * Stub implementation returns a single mock workspace.
+     * Returns workspaces the authenticated user is a member of,
+     * ordered by workspace creation date descending.
      *
      * @param _parent - Parent resolver result (unused)
      * @param args - Query arguments with pagination options
@@ -269,12 +257,24 @@ export const workspaceResolvers = {
         });
       }
 
-      // Stub: Return single mock workspace
-      // In Phase 1, this will query actual workspace memberships
       const limit = Math.min(Math.max(args.limit ?? 20, 1), 50);
-      void limit; // Acknowledge unused variable in stub
+      const offset = Math.max(args.offset ?? 0, 0);
 
-      return [STUB_WORKSPACE];
+      const memberships = await context.prisma.workspaceMember.findMany({
+        where: { userId: context.user.id },
+        include: {
+          workspace: {
+            include: {
+              organization: true,
+              _count: { select: { workspaceMembers: true } },
+            },
+          },
+        },
+        take: limit,
+        skip: offset,
+      });
+
+      return memberships.map(m => m.workspace);
     },
   },
 
@@ -282,13 +282,15 @@ export const workspaceResolvers = {
     /**
      * Create a new workspace
      *
-     * Stub implementation returns mock created workspace.
+     * Validates the name, generates a slug from the name if not provided,
+     * then uses a transaction to: create the workspace, add the creator as
+     * OWNER, create a #general channel, and add the creator to that channel.
      *
      * @param _parent - Parent resolver result (unused)
      * @param args - Mutation arguments with workspace input
      * @param context - GraphQL context
-     * @returns The created workspace
-     * @throws GraphQLError if not authenticated
+     * @returns The created workspace with includes
+     * @throws GraphQLError if not authenticated or input is invalid
      *
      * @example
      * ```graphql
@@ -312,27 +314,80 @@ export const workspaceResolvers = {
         });
       }
 
-      // Validate input
-      if (!args.input.name || args.input.name.trim().length === 0) {
+      const { input } = args;
+
+      if (!input.name || input.name.trim().length === 0) {
         throw new GraphQLError('Workspace name is required', {
           extensions: { code: 'BAD_USER_INPUT' },
         });
       }
 
-      // Stub: Return mock created workspace
-      return createStubWorkspace(args.input, context.user.id);
+      const slug =
+        input.slug ??
+        input.name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '');
+
+      const workspace = await context.prisma.$transaction(async tx => {
+        const newWorkspace = await tx.workspace.create({
+          data: {
+            name: input.name,
+            slug,
+            description: input.description ?? null,
+            avatarUrl: input.logoUrl ?? null,
+            organizationId: input.organizationId,
+          },
+        });
+
+        await tx.workspaceMember.create({
+          data: {
+            workspaceId: newWorkspace.id,
+            userId: context.user.id,
+            role: 'OWNER',
+          },
+        });
+
+        const generalChannel = await tx.channel.create({
+          data: {
+            name: 'general',
+            slug: 'general',
+            type: 'PUBLIC',
+            description: 'General discussion for the workspace',
+            workspaceId: newWorkspace.id,
+          },
+        });
+
+        await tx.channelMember.create({
+          data: {
+            channelId: generalChannel.id,
+            userId: context.user.id,
+            role: 'ADMIN',
+          },
+        });
+
+        return tx.workspace.findUnique({
+          where: { id: newWorkspace.id },
+          include: {
+            organization: true,
+            _count: { select: { workspaceMembers: true } },
+          },
+        });
+      });
+
+      return workspace;
     },
 
     /**
      * Update workspace details
      *
-     * Stub implementation returns mock updated workspace.
+     * Requires ADMIN or OWNER membership in the workspace.
      *
      * @param _parent - Parent resolver result (unused)
      * @param args - Mutation arguments with workspace ID and update input
      * @param context - GraphQL context
      * @returns The updated workspace
-     * @throws GraphQLError if not authenticated or workspace not found
+     * @throws GraphQLError if not authenticated, not found, or insufficient role
      *
      * @example
      * ```graphql
@@ -355,31 +410,67 @@ export const workspaceResolvers = {
         });
       }
 
-      // Stub: Return mock updated workspace
-      return {
-        ...STUB_WORKSPACE,
-        id: args.id,
-        ...(args.input.name && { name: args.input.name }),
-        ...(args.input.description !== undefined && {
-          description: args.input.description,
-        }),
-        ...(args.input.logoUrl !== undefined && {
-          logoUrl: args.input.logoUrl,
-        }),
-        updatedAt: new Date(),
-      };
+      const membership = await context.prisma.workspaceMember.findUnique({
+        where: {
+          workspaceId_userId: {
+            workspaceId: args.id,
+            userId: context.user.id,
+          },
+        },
+      });
+
+      if (!membership) {
+        throw new GraphQLError('Workspace not found', {
+          extensions: { code: 'NOT_FOUND' },
+        });
+      }
+
+      if (!['OWNER', 'ADMIN'].includes(membership.role)) {
+        throw new GraphQLError(
+          'Insufficient permissions. Admin or Owner role required.',
+          { extensions: { code: 'FORBIDDEN' } }
+        );
+      }
+
+      const updateData: {
+        name?: string;
+        description?: string | null;
+        avatarUrl?: string | null;
+      } = {};
+
+      if (args.input.name != null) {
+        updateData.name = args.input.name;
+      }
+
+      if (args.input.description !== undefined) {
+        updateData.description = args.input.description;
+      }
+
+      if (args.input.logoUrl !== undefined) {
+        updateData.avatarUrl = args.input.logoUrl;
+      }
+
+      return context.prisma.workspace.update({
+        where: { id: args.id },
+        data: updateData,
+        include: {
+          organization: true,
+          _count: { select: { workspaceMembers: true } },
+        },
+      });
     },
 
     /**
      * Update workspace settings
      *
-     * Stub implementation returns mock workspace with updated settings.
+     * Reads the existing settings JSON, merges with the provided input,
+     * and persists the result. Requires ADMIN or OWNER membership.
      *
      * @param _parent - Parent resolver result (unused)
      * @param args - Mutation arguments with workspace ID and settings input
      * @param context - GraphQL context
      * @returns The workspace with updated settings
-     * @throws GraphQLError if not authenticated
+     * @throws GraphQLError if not authenticated, not found, or insufficient role
      *
      * @example
      * ```graphql
@@ -407,38 +498,71 @@ export const workspaceResolvers = {
         });
       }
 
+      const membership = await context.prisma.workspaceMember.findUnique({
+        where: {
+          workspaceId_userId: {
+            workspaceId: args.id,
+            userId: context.user.id,
+          },
+        },
+      });
+
+      if (!membership) {
+        throw new GraphQLError('Workspace not found', {
+          extensions: { code: 'NOT_FOUND' },
+        });
+      }
+
+      if (!['OWNER', 'ADMIN'].includes(membership.role)) {
+        throw new GraphQLError(
+          'Insufficient permissions. Admin or Owner role required.',
+          { extensions: { code: 'FORBIDDEN' } }
+        );
+      }
+
+      const existing = await context.prisma.workspace.findUnique({
+        where: { id: args.id },
+        select: { settings: true },
+      });
+
+      const existingSettings =
+        (existing?.settings as Record<string, unknown> | null) ?? {};
+
       const { input } = args;
 
-      // Stub: Return mock workspace with updated settings
-      return {
-        ...STUB_WORKSPACE,
-        id: args.id,
-        settings: {
-          ...STUB_WORKSPACE.settings,
-          ...(input.theme && { theme: input.theme }),
-          ...(input.emailNotifications !== undefined && {
-            emailNotifications: input.emailNotifications,
-          }),
-          ...(input.inAppNotifications !== undefined && {
-            inAppNotifications: input.inAppNotifications,
-          }),
-          ...(input.timezone && { timezone: input.timezone }),
-          ...(input.locale && { locale: input.locale }),
-        },
-        updatedAt: new Date(),
+      const mergedSettings: Record<string, unknown> = {
+        ...DEFAULT_SETTINGS,
+        ...existingSettings,
+        ...(input.theme != null && { theme: input.theme }),
+        ...(input.emailNotifications != null && {
+          emailNotifications: input.emailNotifications,
+        }),
+        ...(input.inAppNotifications != null && {
+          inAppNotifications: input.inAppNotifications,
+        }),
+        ...(input.timezone != null && { timezone: input.timezone }),
+        ...(input.locale != null && { locale: input.locale }),
       };
+
+      return context.prisma.workspace.update({
+        where: { id: args.id },
+        data: { settings: mergedSettings as Prisma.InputJsonValue },
+        include: {
+          organization: true,
+          _count: { select: { workspaceMembers: true } },
+        },
+      });
     },
 
     /**
      * Delete a workspace
      *
-     * Stub implementation always returns true.
+     * Requires OWNER membership in the workspace.
      *
      * @param _parent - Parent resolver result (unused)
      * @param args - Mutation arguments with workspace ID
-     * @param context - GraphQL context
      * @returns True if deletion was successful
-     * @throws GraphQLError if not authenticated
+     * @throws GraphQLError if not authenticated, not found, or insufficient role
      *
      * @example
      * ```graphql
@@ -458,9 +582,29 @@ export const workspaceResolvers = {
         });
       }
 
-      // Stub: Always return true
-      // In Phase 1, this will actually delete the workspace
-      void args.id; // Acknowledge unused in stub
+      const membership = await context.prisma.workspaceMember.findUnique({
+        where: {
+          workspaceId_userId: {
+            workspaceId: args.id,
+            userId: context.user.id,
+          },
+        },
+      });
+
+      if (!membership) {
+        throw new GraphQLError('Workspace not found', {
+          extensions: { code: 'NOT_FOUND' },
+        });
+      }
+
+      if (membership.role !== 'OWNER') {
+        throw new GraphQLError(
+          'Insufficient permissions. Owner role required to delete a workspace.',
+          { extensions: { code: 'FORBIDDEN' } }
+        );
+      }
+
+      await context.prisma.workspace.delete({ where: { id: args.id } });
 
       return true;
     },
@@ -472,26 +616,68 @@ export const workspaceResolvers = {
   Workspace: {
     /**
      * Resolve owner field
-     * In Phase 1, this will fetch the actual owner from the database
+     *
+     * Finds the OWNER member record for this workspace and returns the
+     * associated user.
      */
-    owner: (parent: typeof STUB_WORKSPACE) => {
-      return parent.owner;
+    owner: async (
+      parent: WorkspaceParent,
+      _args: unknown,
+      context: GraphQLContext
+    ) => {
+      const ownerMembership = await context.prisma.workspaceMember.findFirst({
+        where: { workspaceId: parent.id, role: 'OWNER' },
+        include: { user: true },
+      });
+
+      return ownerMembership?.user ?? null;
     },
 
     /**
      * Resolve settings field
-     * In Phase 1, this will fetch actual workspace settings
+     *
+     * Parses the settings JSON stored on the workspace row and fills in
+     * any missing keys with their default values.
      */
-    settings: (parent: typeof STUB_WORKSPACE) => {
-      return parent.settings;
+    settings: (parent: WorkspaceParent) => {
+      const stored = (parent.settings as Record<string, unknown> | null) ?? {};
+
+      return {
+        theme:
+          (stored.theme as 'LIGHT' | 'DARK' | 'SYSTEM') ??
+          DEFAULT_SETTINGS.theme,
+        emailNotifications:
+          typeof stored.emailNotifications === 'boolean'
+            ? stored.emailNotifications
+            : DEFAULT_SETTINGS.emailNotifications,
+        inAppNotifications:
+          typeof stored.inAppNotifications === 'boolean'
+            ? stored.inAppNotifications
+            : DEFAULT_SETTINGS.inAppNotifications,
+        timezone:
+          typeof stored.timezone === 'string'
+            ? stored.timezone
+            : DEFAULT_SETTINGS.timezone,
+        locale:
+          typeof stored.locale === 'string'
+            ? stored.locale
+            : DEFAULT_SETTINGS.locale,
+      };
     },
 
     /**
      * Resolve memberCount field
-     * In Phase 1, this will count actual workspace members
+     *
+     * Counts the number of workspace members in the database.
      */
-    memberCount: (parent: typeof STUB_WORKSPACE) => {
-      return parent.memberCount;
+    memberCount: async (
+      parent: WorkspaceParent,
+      _args: unknown,
+      context: GraphQLContext
+    ) => {
+      return context.prisma.workspaceMember.count({
+        where: { workspaceId: parent.id },
+      });
     },
   },
 };

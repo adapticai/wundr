@@ -59,6 +59,8 @@ interface ChannelHeaderProps {
   activeTab?: ChannelTab;
   /** Callback when tab changes */
   onTabChange?: (tab: ChannelTab) => void;
+  /** Custom tabs to display (overrides DEFAULT_TABS) */
+  tabs?: import('./shared').TabConfig[];
   /** Callback fired when the star toggle is clicked */
   onToggleStar?: (isStarred: boolean) => Promise<void>;
   /** Callback fired when user leaves the channel */
@@ -113,6 +115,7 @@ export function ChannelHeader({
   workspaceId,
   activeTab = 'messages',
   onTabChange,
+  tabs,
   onToggleStar,
   onLeave,
   onOpenSettings,
@@ -434,7 +437,7 @@ export function ChannelHeader({
       <HeaderTabs
         activeTab={activeTab}
         onTabChange={onTabChange}
-        tabs={DEFAULT_TABS}
+        tabs={tabs || DEFAULT_TABS}
         className='px-2 pb-1'
       />
     </div>

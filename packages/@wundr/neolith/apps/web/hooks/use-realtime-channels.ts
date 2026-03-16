@@ -284,6 +284,33 @@ export function useRealtimeChannels({
   const [newChannelCount, setNewChannelCount] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Batch typing indicators - API returns { data: { [channelId]: [{ userId, userName, startedAt }] } }
+  type TypingApiUser = { userId: string; userName: string; startedAt?: string };
+  type TypingApiData = Record<string, TypingApiUser[]>;
+
+  const typingFetcher = useCallback(
+    async (url: string): Promise<TypingApiData> => {
+      const response = await fetch(url);
+      if (!response.ok) return {};
+      const result = await response.json();
+      return (result.data || {}) as TypingApiData;
+    },
+    []
+  );
+
+  // SWR for batch typing indicators (3s polling)
+  const { data: typingData } = useSWR<TypingApiData>(
+    enabled && workspaceId && includeTyping
+      ? `/api/workspaces/${workspaceId}/typing`
+      : null,
+    typingFetcher,
+    {
+      refreshInterval: 3000,
+      dedupingInterval: 2000,
+      fallbackData: {},
+    }
+  );
+
   // Refs
   const previousChannelIdsRef = useRef<Set<string>>(new Set());
   const onNewChannelsRef = useRef(onNewChannels);
@@ -400,14 +427,22 @@ export function useRealtimeChannels({
         enhanced.onlineStatus = calculateOnlineStatus(channel);
       }
 
-      // Add typing indicators if enabled (placeholder for now)
+      // Add typing indicators from batch endpoint
       if (includeTyping) {
-        enhanced.typingUsers = [];
+        const channelTyping = typingData?.[channel.id];
+        enhanced.typingUsers = channelTyping
+          ? channelTyping.map(t => ({
+              channelId: channel.id,
+              userId: t.userId,
+              userName: t.userName,
+              timestamp: new Date(t.startedAt || Date.now()),
+            }))
+          : [];
       }
 
       return enhanced;
     });
-  }, [channels, includeOnlineStatus, includeTyping]);
+  }, [channels, includeOnlineStatus, includeTyping, typingData]);
 
   // Categorize channels
   const { publicChannels, privateChannels, starredChannels } = useMemo(() => {
