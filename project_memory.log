@@ -51,3 +51,12 @@ files:
   - primer.md
   - project_memory.log
 
+[2026-03-16]
+branch: master
+commit: various formatting changes
+files:
+  - packages/@wundr/neolith/apps/web/app/(auth)/layout.tsx
+  - packages/@wundr/neolith/apps/web/app/workspaces/layout.tsx
+  - packages/@wundr/neolith/apps/web/next-env.d.ts
+  - project_memory.log
+

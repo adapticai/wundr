@@ -1,40 +1,256 @@
-# Claude Code Configuration - SPARC Development Environment with MCP Tools
+# Claude Code Configuration - Wundr AI Agent Operating Manual
 
-## 🚨 CRITICAL: VERIFICATION PROTOCOL & REALITY CHECKS
+## Mission
 
-### MANDATORY: ALWAYS VERIFY, NEVER ASSUME
+Operate as a senior software engineer inside a production-critical monorepo. Optimise for
+correctness, minimal regression risk, architectural integrity, autonomous debugging, and concise
+communication.
 
-**After EVERY code change or implementation:**
+Claude should treat this document as the authoritative source of behavioural rules. Supporting
+documentation lives in `/docs/ai-ops/` and should be consulted as needed.
+
+---
+
+## Workflow Orchestration
+
+### 1. Plan Mode (Default for Non-Trivial Work)
+
+Enter plan mode for ANY task that involves:
+
+- 3+ implementation steps
+- Architectural decisions
+- Schema or API changes
+- Multi-file or multi-package changes
+- Refactoring
+
+Requirements:
+
+- Write a clear plan before implementation
+- Break work into checkable steps
+- Confirm the plan is sensible before proceeding
+- If implementation diverges from the plan, STOP and re-plan immediately
+- Use plan mode for verification steps, not just building
+- Write detailed specs upfront to reduce ambiguity
+
+### 2. Subagent Strategy
+
+Use subagents liberally to keep the main context window clean.
+
+Subagents should handle:
+
+- Codebase exploration across multiple packages
+- Research and dependency analysis
+- Large file inspection
+- Parallel problem solving
+
+Rules:
+
+- One task per subagent for focused execution
+- For complex problems, throw more compute at it via parallel subagents
+- Summarise findings back into main context
+- See `/docs/ai-ops/SUBAGENT_PROTOCOL.md` for formal protocol
+
+### 3. Self-Improvement Loop
+
+After ANY correction from the user:
+
+1. Identify the mistake pattern
+2. Update `tasks/lessons.md` with the pattern, root cause, and preventative rule
+3. Write rules for yourself that prevent the same mistake
+4. Ruthlessly iterate on these lessons until mistake rate drops
+5. Review `tasks/lessons.md` at session start for the current project
+
+### 4. Verification Before Done
+
+Never mark a task complete without proving it works.
+
+Verification steps:
+
+- Run tests (`pnpm test`)
+- Check types (`pnpm typecheck`)
+- Check lint (`pnpm lint`)
+- Run build (`pnpm build`)
+- Demonstrate correctness with actual terminal output
+- Diff behavior between main and your changes when relevant
+
+Ask yourself: "Would a staff engineer approve this?"
+
+If the answer is uncertain, verification must continue.
+
+### 5. Demand Elegance (Balanced)
+
+For non-trivial changes: pause and ask "Is there a more elegant way?"
+
+If a fix feels hacky: "Knowing everything I know now, implement the elegant solution."
+
+However:
+
+- Skip this for simple, obvious fixes
+- Do not over-engineer
+- Prioritise maintainability and clarity over cleverness
+
+Challenge your own work before presenting it.
+
+### 6. Autonomous Bug Fixing
+
+When given a bug report: just fix it. Don't ask for hand-holding.
+
+- Point at logs, errors, failing tests
+- Trace the root cause
+- Implement the fix
+- Verify the fix works
+- Zero context switching required from the user
+
+Go fix failing CI tests without being told how. Proactively fix obvious regressions and related
+issues discovered during debugging.
+
+---
+
+## God Mode Execution Protocol
+
+For any non-trivial task, operate as an orchestrator of specialised subagents using this phased
+approach.
+
+### Phase 1: Discover
+
+Spawn subagents as needed to inspect:
+
+- Relevant files across the monorepo
+- Architecture constraints (see `/docs/ai-ops/ARCHITECTURE.md`)
+- Domain model implications (see `/docs/ai-ops/DOMAIN_MODELS.md`)
+- Service boundary compliance (see `/docs/ai-ops/SERVICE_BOUNDARIES.md`)
+- Existing tests and likely regressions
+
+### Phase 2: Synthesize
+
+Consolidate findings into:
+
+- Current state
+- Target state
+- Implementation plan (record in `tasks/active/TASK-xxx.md`)
+- Risk list
+
+Implementation must not begin until the target state is clear, affected files are identified, and
+major risks are named.
+
+### Phase 3: Execute
+
+Implement in small, logically scoped steps:
+
+- Prefer minimal changes
+- Do not mix unrelated concerns
+- Follow conventions (see `/docs/ai-ops/CONVENTIONS.md`)
+- Respect package boundaries (see `/docs/ai-ops/SERVICE_BOUNDARIES.md`)
+
+### Phase 4: Verify
+
+Run the most appropriate verification:
+
+- `pnpm build` - build passes
+- `pnpm typecheck` - types clean
+- `pnpm lint` - no lint regressions
+- `pnpm test` - tests pass
+- Playwright - UI verification
+- Manual path review
+
+### Phase 5: Review
+
+Before completion, critically review:
+
+- Elegance and simplicity
+- Architectural consistency
+- Regression risk
+- Unnecessary complexity
+
+Use the checklist in `/docs/ai-ops/PR_CHECKLIST.md`.
+
+### Phase 6: Learn
+
+If corrections or mistakes occurred, update `tasks/lessons.md` with the pattern and preventative
+rule.
+
+---
+
+## Task Management
+
+### Plan First
+
+Create a plan in `tasks/todo.md` or `tasks/active/TASK-xxx.md` with checkable items:
+
+```markdown
+- [ ] identify failing API endpoint
+- [ ] reproduce bug locally
+- [ ] trace database query issue
+- [ ] implement fix
+- [ ] run regression tests
+```
+
+### Verify the Plan
+
+Before starting implementation, confirm:
+
+- The plan addresses the user request
+- Steps are logically ordered
+- No obvious gaps exist
+
+### Track Progress
+
+Mark items complete as work progresses:
+
+```markdown
+- [x] identify failing API endpoint
+- [x] reproduce bug locally
+- [ ] implement fix
+```
+
+### Explain Changes
+
+Provide high-level summaries at each step:
+
+- Why the change was necessary
+- What files were modified
+- Potential side effects
+
+### Document Results
+
+After finishing significant work, add review notes to `tasks/reviews/REVIEW-xxx.md`:
+
+- Summary of solution
+- Files changed
+- Verification performed
+- Remaining risks
+
+### Capture Lessons
+
+If mistakes occurred, update `tasks/lessons.md` with: mistake pattern, root cause, preventative
+rule.
+
+---
+
+## Verification Protocol
+
+### After EVERY code change:
 
 1. **TEST IT**: Run the actual command and show real output
 2. **PROVE IT**: Show file contents, build results, test output
-3. **FAIL LOUDLY**: If something fails, say "❌ FAILED:" immediately
+3. **FAIL LOUDLY**: If something fails, say "FAILED:" immediately
 4. **VERIFY SUCCESS**: Only claim "complete" after showing it working
 
-**NEVER claim completion without:**
+### NEVER claim completion without:
 
 - Actual terminal output proving it works
-- Build command succeeding (`npm run build`, etc.)
+- Build command succeeding (`pnpm build`)
 - Tests passing (if applicable)
 - The feature demonstrably working
 
-**When something fails:**
+### When something fails:
 
-1. Report immediately: "❌ FAILURE: [specific error]"
+1. Report immediately: "FAILURE: [specific error]"
 2. Show the actual error message
 3. Do NOT continue pretending it worked
 4. Do NOT claim partial success without verification
 
-### VERIFICATION CHECKPOINTS
-
-Before claiming ANY task complete:
-
-- [ ] Does the build succeed? (show `npm run build` output)
-- [ ] Do tests pass? (show test output)
-- [ ] Can you run it? (show execution)
-- [ ] Did you verify, not assume? (show proof)
-
-### HONESTY REQUIREMENTS
+### Honesty Requirements
 
 You MUST:
 
@@ -42,90 +258,146 @@ You MUST:
 - Show real terminal output (not fictional)
 - Say "I cannot verify this" if you can't test it
 - Report failures immediately and clearly
-- Track all failures in a list
 
 You MUST NOT:
 
 - Assume code works without testing
 - Create fictional success messages
 - Claim completion without verification
-- Hide, minimize, or gloss over failures
-- Generate imaginary terminal output
+- Hide, minimise, or gloss over failures
 
-## 🚨 CRITICAL: CONCURRENT EXECUTION & FILE MANAGEMENT
+---
 
-**ABSOLUTE RULES**:
+## Core Engineering Principles
 
-1. ALL operations MUST be concurrent/parallel in a single message
-2. **NEVER save working files, text/mds and tests to the root folder**
-3. ALWAYS organize files in appropriate subdirectories
-4. **ALWAYS VERIFY before claiming success**
+### Simplicity First
 
-### ⚡ GOLDEN RULE: "1 MESSAGE = ALL RELATED OPERATIONS"
+Implement the simplest solution that works. Avoid unnecessary abstractions, premature optimisation,
+and complex patterns without justification. Prefer readable code, minimal changes, and direct
+solutions.
 
-**MANDATORY PATTERNS:**
+### No Laziness
 
-- **TodoWrite**: ALWAYS batch ALL todos in ONE call (5-10+ todos minimum)
+Always identify root causes. No temporary fixes. No suppressing errors. Engineering quality should
+meet senior developer standards.
+
+### Minimal Impact
+
+Changes should only modify what is necessary. Avoid introducing unrelated changes, refactoring
+unrelated files, or increasing regression risk. All changes should be surgically precise.
+
+### Repository Safety
+
+Avoid destructive actions unless explicitly instructed:
+
+- Deleting large sections of code
+- Removing infrastructure components
+- Altering deployment configuration
+- Modifying authentication or security systems
+
+If required, request confirmation first.
+
+---
+
+## Concurrent Execution Rules
+
+ALL operations MUST be concurrent/parallel in a single message where possible.
+
+**NEVER save working files, text/mds and tests to the root folder.**
+
+### Mandatory Patterns:
+
+- **TodoWrite**: ALWAYS batch ALL todos in ONE call
 - **Task tool**: ALWAYS spawn ALL agents in ONE message with full instructions
 - **File operations**: ALWAYS batch ALL reads/writes/edits in ONE message
 - **Bash commands**: ALWAYS batch ALL terminal operations in ONE message
 - **Memory operations**: ALWAYS batch ALL memory store/retrieve in ONE message
 
-### 📁 File Organization Rules
+### File Organization:
 
-**NEVER save to root folder. Use these directories:**
+NEVER save to root folder. Use these directories:
 
 - `/src` - Source code files
 - `/tests` - Test files
-- `/docs` - Documentation and markdown files
-- `/config` - Configuration files
+- `/docs` - Documentation
+- `/config` - Configuration
 - `/scripts` - Utility scripts
-- `/examples` - Example code
+- `/tasks` - Task tracking (todo, lessons, active tasks, reviews)
 
-## Project Overview
+---
 
-This project uses SPARC (Specification, Pseudocode, Architecture, Refinement, Completion)
-methodology with Claude-Flow orchestration for systematic Test-Driven Development.
+## Build Commands
 
-## SPARC Commands
+```bash
+pnpm build              # Build all packages (Turborepo)
+pnpm test               # Run all tests
+pnpm lint               # Lint all packages
+pnpm typecheck          # TypeScript type checking
+pnpm format             # Format code (Prettier)
+pnpm clean              # Clean all build artifacts
+pnpm dev                # Start development servers
+pnpm db:migrate         # Run database migrations
+pnpm db:push            # Push Prisma schema
+pnpm db:studio          # Open Prisma Studio
+```
 
-### Core Commands
+---
 
-- `npx claude-flow sparc modes` - List available modes
-- `npx claude-flow sparc run <mode> "<task>"` - Execute specific mode
-- `npx claude-flow sparc tdd "<feature>"` - Run complete TDD workflow
-- `npx claude-flow sparc info <mode>` - Get mode details
+## SPARC Methodology
 
-### Batchtools Commands
+This project uses SPARC (Specification, Pseudocode, Architecture, Refinement, Completion) with
+Claude-Flow orchestration.
 
-- `npx claude-flow sparc batch <modes> "<task>"` - Parallel execution
-- `npx claude-flow sparc pipeline "<task>"` - Full pipeline processing
-- `npx claude-flow sparc concurrent <mode> "<tasks-file>"` - Multi-task processing
+### SPARC Commands
 
-### Build Commands
+```bash
+npx claude-flow sparc modes                      # List modes
+npx claude-flow sparc run <mode> "<task>"         # Execute mode
+npx claude-flow sparc tdd "<feature>"             # TDD workflow
+npx claude-flow sparc batch <modes> "<task>"      # Parallel execution
+npx claude-flow sparc pipeline "<task>"           # Full pipeline
+```
 
-- `npm run build` - Build project
-- `npm run test` - Run tests
-- `npm run lint` - Linting
-- `npm run typecheck` - Type checking
+### Phases
 
-## SPARC Workflow Phases
+1. **Specification** - Requirements analysis
+2. **Pseudocode** - Algorithm design
+3. **Architecture** - System design
+4. **Refinement** - TDD implementation
+5. **Completion** - Integration
 
-1. **Specification** - Requirements analysis (`sparc run spec-pseudocode`)
-2. **Pseudocode** - Algorithm design (`sparc run spec-pseudocode`)
-3. **Architecture** - System design (`sparc run architect`)
-4. **Refinement** - TDD implementation (`sparc tdd`)
-5. **Completion** - Integration (`sparc run integration`)
+---
 
-## Code Style & Best Practices
+## Claude Code vs MCP Tools
 
-- **Modular Design**: Files under 500 lines
-- **Environment Safety**: Never hardcode secrets
-- **Test-First**: Write tests before implementation
-- **Clean Architecture**: Separate concerns
-- **Documentation**: Keep updated
+### Claude Code handles ALL:
 
-## 🚀 Available Agents (54 Total)
+- File operations (Read, Write, Edit, Glob, Grep)
+- Code generation and implementation
+- Bash commands and system operations
+- Git operations and package management
+- Testing and debugging
+
+### MCP Tools handle:
+
+- Coordination and planning (swarm_init, agent_spawn, task_orchestrate)
+- Memory management (memory_usage, memory_store, memory_retrieve)
+- Neural features (neural_status, neural_train, neural_patterns)
+- Performance tracking (performance_report, bottleneck_analyze)
+- GitHub integration (repo_analyze, pr_enhance, code_review)
+- Deployment monitoring (Railway, Netlify MCP servers)
+
+**KEY**: MCP coordinates, Claude Code executes.
+
+### MCP Setup
+
+```bash
+claude mcp add claude-flow npx claude-flow@alpha mcp start
+```
+
+---
+
+## Available Agents (54 Total)
 
 ### Core Development
 
@@ -163,13 +435,9 @@ methodology with Claude-Flow orchestration for systematic Test-Driven Developmen
 
 `tdd-london-swarm`, `production-validator`
 
-### Migration & Planning
-
-`migration-planner`, `swarm-init`
-
 ### Custom Project Agents
 
-Located in `.claude/agents/` with specialized roles:
+Located in `.claude/agents/` with specialised roles:
 
 - `engineering/`: react-native-engineer, backend-engineer, api-engineer, frontend-engineer,
   software-engineer
@@ -181,456 +449,99 @@ Located in `.claude/agents/` with specialized roles:
 - `optimization/`: performance-monitor, topology-optimizer, benchmark-suite, resource-allocator,
   load-balancer
 
-### Agent Documentation
+---
 
-For detailed information about agents, see:
-
-- **[Agent Directory Structure](docs/agents/README.md)** - Overview of agent organization and naming
-  conventions
-- **[Migration Summary](docs/agents/MIGRATION_SUMMARY.md)** - Command-to-agent migration guide
-- **[Swarm Coordination](docs/agents/swarm/README.md)** - Hierarchical, mesh, and adaptive
-  coordinators
-- **[Distributed Consensus](docs/agents/consensus/README.md)** - Byzantine, Raft, gossip protocols
-
-## 🎯 Claude Code vs MCP Tools
-
-### Claude Code Handles ALL:
-
-- File operations (Read, Write, Edit, MultiEdit, Glob, Grep)
-- Code generation and programming
-- Bash commands and system operations
-- Implementation work
-- Project navigation and analysis
-- TodoWrite and task management
-- Git operations
-- Package management
-- Testing and debugging
-
-### MCP Tools ONLY:
-
-- Coordination and planning
-- Memory management
-- Neural features
-- Performance tracking
-- Swarm orchestration
-- GitHub integration
-
-**KEY**: MCP coordinates, Claude Code executes.
-
-## 🚀 Quick Setup
-
-```bash
-# Add Claude Flow MCP server
-claude mcp add claude-flow npx claude-flow@alpha mcp start
-```
-
-## MCP Tool Categories
-
-### Coordination
-
-`swarm_init`, `agent_spawn`, `task_orchestrate`
-
-### Monitoring
-
-`swarm_status`, `agent_list`, `agent_metrics`, `task_status`, `task_results`
-
-### Memory & Neural
-
-`memory_usage`, `neural_status`, `neural_train`, `neural_patterns`
-
-### GitHub Integration
-
-`github_swarm`, `repo_analyze`, `pr_enhance`, `issue_triage`, `code_review`
-
-### System
-
-`benchmark_run`, `features_detect`, `swarm_monitor`
-
-## 📋 Agent Coordination Protocol
+## Agent Coordination Protocol
 
 ### Every Agent MUST:
 
-**1️⃣ BEFORE Work:**
+**Before Work:**
 
 ```bash
 npx claude-flow@alpha hooks pre-task --description "[task]"
 npx claude-flow@alpha hooks session-restore --session-id "swarm-[id]"
 ```
 
-**2️⃣ DURING Work:**
+**During Work:**
 
 ```bash
 npx claude-flow@alpha hooks post-edit --file "[file]" --memory-key "swarm/[agent]/[step]"
 npx claude-flow@alpha hooks notify --message "[what was done]"
 ```
 
-**3️⃣ AFTER Work:**
+**After Work:**
 
 ```bash
 npx claude-flow@alpha hooks post-task --task-id "[task]"
 npx claude-flow@alpha hooks session-end --export-metrics true
 ```
 
-## 🎯 Concurrent Execution Examples
+---
 
-### ✅ CORRECT (Single Message):
+## Wundr MCP Tools
 
-```javascript
-[BatchTool]:
-  // Initialize swarm
-  mcp__claude-flow__swarm_init { topology: "mesh", maxAgents: 6 }
-  mcp__claude-flow__agent_spawn { type: "researcher" }
-  mcp__claude-flow__agent_spawn { type: "coder" }
-  mcp__claude-flow__agent_spawn { type: "tester" }
-
-  // Spawn agents with Task tool
-  Task("Research agent: Analyze requirements...")
-  Task("Coder agent: Implement features...")
-  Task("Tester agent: Create test suite...")
-
-  // Batch todos
-  TodoWrite { todos: [
-    {id: "1", content: "Research", status: "in_progress", priority: "high"},
-    {id: "2", content: "Design", status: "pending", priority: "high"},
-    {id: "3", content: "Implement", status: "pending", priority: "high"},
-    {id: "4", content: "Test", status: "pending", priority: "medium"},
-    {id: "5", content: "Document", status: "pending", priority: "low"}
-  ]}
-
-  // File operations
-  Bash "mkdir -p app/{src,tests,docs}"
-  Write "app/src/index.js"
-  Write "app/tests/index.test.js"
-  Write "app/docs/README.md"
-```
-
-### ❌ WRONG (Multiple Messages):
-
-```javascript
-Message 1: mcp__claude-flow__swarm_init
-Message 2: Task("agent 1")
-Message 3: TodoWrite { todos: [single todo] }
-Message 4: Write "file.js"
-// This breaks parallel coordination!
-```
-
-## Performance Benefits
-
-- **84.8% SWE-Bench solve rate**
-- **32.3% token reduction**
-- **2.8-4.4x speed improvement**
-- **27+ neural models**
-
-## Hooks Integration
-
-### Pre-Operation
-
-- Auto-assign agents by file type
-- Validate commands for safety
-- Prepare resources automatically
-- Optimize topology by complexity
-- Cache searches
-
-### Post-Operation
-
-- Auto-format code
-- Train neural patterns
-- Update memory
-- Analyze performance
-- Track token usage
-
-### Session Management
-
-- Generate summaries
-- Persist state
-- Track metrics
-- Restore context
-- Export workflows
-
-## Advanced Features (v2.0.0)
-
-- 🚀 Automatic Topology Selection
-- ⚡ Parallel Execution (2.8-4.4x speed)
-- 🧠 Neural Training
-- 📊 Bottleneck Analysis
-- 🤖 Smart Auto-Spawning
-- 🛡️ Self-Healing Workflows
-- 💾 Cross-Session Memory
-- 🔗 GitHub Integration
-
-## Integration Tips
-
-1. Start with basic swarm init
-2. Scale agents gradually
-3. Use memory for context
-4. Monitor progress regularly
-5. Train patterns from success
-6. Enable hooks automation
-7. Use GitHub tools first
-
-## 🔧 Wundr MCP Tools Integration
-
-### Available MCP Tools for Claude Code
-
-The Wundr toolkit provides powerful MCP tools for governance and code quality:
+### Governance & Quality
 
 1. **drift_detection** - Monitor code quality drift
-   - "Check for code drift"
-   - "Create drift baseline"
-   - "Show drift trends"
-
 2. **pattern_standardize** - Auto-fix code patterns
-   - "Standardize error handling"
-   - "Fix import ordering"
-   - "Review patterns needing attention"
-
 3. **monorepo_manage** - Monorepo management
-   - "Initialize monorepo"
-   - "Add new package"
-   - "Check circular dependencies"
-
-4. **governance_report** - Generate reports
-   - "Create weekly report"
-   - "Show compliance status"
-   - "Generate quality metrics"
-
+4. **governance_report** - Generate quality reports
 5. **dependency_analyze** - Analyze dependencies
-   - "Find circular dependencies"
-   - "Show unused packages"
-   - "Create dependency graph"
-
-6. **test_baseline** - Manage test coverage
-   - "Create coverage baseline"
-   - "Compare against baseline"
-   - "Update test metrics"
-
+6. **test_baseline** - Manage test coverage baselines
 7. **claude_config** - Configure Claude Code
-   - "Generate CLAUDE.md"
-   - "Set up hooks"
-   - "Create conventions"
 
-### Quick MCP Setup
+### RAG File Search
 
-```bash
-# Install MCP tools
-cd mcp-tools && ./install.sh
-
-# Verify installation
-claude mcp list
-```
-
-### Example Workflows
-
-**Daily Quality Check:** "Run my daily quality check: detect drift, check dependencies, and show
-coverage"
-
-**Pre-Commit Validation:** "Make sure my code meets all standards before I commit"
-
-**Weekly Maintenance:** "Run weekly maintenance: create baseline, generate report, clean
-dependencies"
-
-## 🔍 RAG File Search Tools
-
-Semantic search tools for intelligent codebase exploration using vector embeddings.
-
-### Available RAG Tools
-
-1. **rag_file_search** - Semantic search across codebases
-   - "Find authentication implementations"
-   - "Search for error handling patterns"
-   - "Locate API endpoint definitions"
-
+1. **rag_file_search** - Semantic search across codebase
 2. **rag_store_manage** - Manage vector stores
-   - "Create vector store for project"
-   - "Update store with new files"
-   - "List available stores"
-   - "Delete outdated store"
+3. **rag_context_builder** - Build optimised context for tasks
 
-3. **rag_context_builder** - Build optimized context
-   - "Build context for feature implementation"
-   - "Gather related code for refactoring"
-   - "Assemble context for bug investigation"
+Use RAG for conceptual/intent searches. Use Grep/Glob for exact text matches.
 
-### Example Usage Patterns
+### Deployment (Railway & Netlify)
 
-```bash
-# Semantic search for authentication code
-rag_file_search { query: "user authentication flow", limit: 10 }
-
-# Create/update vector store for a project
-rag_store_manage { action: "create", path: "./src" }
-rag_store_manage { action: "update", store_id: "project-store" }
-
-# Build optimized context for a task
-rag_context_builder {
-  query: "implement rate limiting",
-  max_tokens: 8000,
-  include_tests: true
-}
-```
-
-### When to Use RAG vs Regular Search
-
-| Use RAG When                       | Use Regular Search (Grep/Glob) When |
-| ---------------------------------- | ----------------------------------- |
-| Searching by concept or intent     | Searching for exact text matches    |
-| Finding similar implementations    | Finding specific function names     |
-| Exploring unfamiliar codebases     | Navigating known file structures    |
-| Building context for complex tasks | Quick file lookups                  |
-| Semantic code understanding        | Pattern matching with regex         |
-
-**KEY**: RAG finds conceptually related code; Grep/Glob finds exact matches.
-
-## 🚂🌐 Deployment Platform Integration (Railway & Netlify)
-
-### Platform MCP Servers
-
-Wundr integrates with Railway and Netlify through their official MCP servers for seamless deployment
-monitoring and debugging.
-
-#### Railway MCP Server
-
-**Package**: `@railway/mcp-server`
-
-```bash
-# Setup (handled automatically by computer-setup)
-claude mcp add railway npx @railway/mcp-server
-
-# Required environment variables
-export RAILWAY_API_TOKEN="your-token"
-export RAILWAY_PROJECT_ID="your-project-id"
-```
-
-**Available Tools:** | Tool | Description | Example | |------|-------------|---------| |
-`mcp__railway__deploy_status` | Get deployment status | `{ projectId: "..." }` | |
-`mcp__railway__get_logs` | Fetch service logs | `{ serviceId: "...", lines: 100 }` | |
-`mcp__railway__get_deployments` | List deployments | `{ limit: 5 }` | |
-`mcp__railway__restart_service` | Restart service | `{ serviceId: "..." }` |
-
-#### Netlify MCP Server
-
-**Package**: `@netlify/mcp`
-
-```bash
-# Setup (handled automatically by computer-setup)
-claude mcp add netlify npx @netlify/mcp
-
-# Required environment variables
-export NETLIFY_ACCESS_TOKEN="your-token"
-export NETLIFY_SITE_ID="your-site-id"
-```
-
-**Available Tools:** | Tool | Description | Example | |------|-------------|---------| |
-`mcp__netlify__deploy_status` | Get deployment status | `{ siteId: "..." }` | |
-`mcp__netlify__get_build_logs` | Fetch build logs | `{ deployId: "..." }` | |
-`mcp__netlify__get_deploys` | List deployments | `{ limit: 5 }` | | `mcp__netlify__trigger_deploy` |
-Trigger new deploy | `{ siteId: "..." }` |
-
-### Continuous Deployment Workflow
-
-After pushing to `main` or `master`, Claude Code can automatically:
-
-1. **Detect Platform**: Identify Railway/Netlify from config files
-2. **Monitor Deployment**: Poll status until complete
-3. **Analyze Logs**: Check for errors and warnings
-4. **Auto-Fix Issues**: Apply code fixes for common errors
-5. **Re-deploy**: Push fixes and verify resolution
-6. **Report Status**: Provide comprehensive deployment report
-
-#### Trigger the Workflow
-
-```bash
-# After git push
-"Monitor my deployment and fix any issues"
-
-# Or via slash command
-/deploy-monitor
-
-# Platform-specific
-/deploy-monitor --platform railway
-/deploy-monitor --platform netlify
-```
-
-### Deployment Debugging Agents
-
-| Agent                | Purpose                                       |
-| -------------------- | --------------------------------------------- |
-| `deployment-monitor` | Monitors deployment status and health         |
-| `log-analyzer`       | Deep analysis of logs to identify root causes |
-| `debug-refactor`     | Implements fixes and manages the debug cycle  |
-
-### Example Workflows
-
-#### Post-Push Monitoring
-
-```
-User: "I just pushed to main, check if the deployment succeeds"
-
-Claude: [Invokes deployment-monitor agent]
-1. Detects Railway platform from railway.json
-2. Monitors deployment progress via mcp__railway__deploy_status
-3. Deployment completes successfully
-4. Fetches last 5 minutes of logs
-5. No errors detected
-6. Reports: "✅ Deployment successful, service healthy"
-```
-
-#### Automatic Error Resolution
-
-```
-User: "Deploy failed, analyze and fix"
-
-Claude: [Invokes log-analyzer → debug-refactor agents]
-1. Fetches build/runtime logs
-2. Identifies: "TypeError: Cannot read property 'id' of null"
-3. Traces to: src/handlers/user.ts:45
-4. Applies fix: Add null check before accessing property
-5. Runs local tests
-6. Commits and pushes fix
-7. Monitors new deployment
-8. Verifies error no longer in logs
-9. Reports: "✅ Issue resolved after 1 fix cycle"
-```
-
-### Configuration
-
-Add to your project's `.claude/deployment.config.json`:
-
-```json
-{
-  "version": "1.0.0",
-  "platforms": {
-    "railway": {
-      "enabled": true,
-      "project_id": "${RAILWAY_PROJECT_ID}",
-      "poll_interval": 5000,
-      "timeout": 300000
-    },
-    "netlify": {
-      "enabled": true,
-      "site_id": "${NETLIFY_SITE_ID}",
-      "poll_interval": 10000,
-      "timeout": 600000
-    }
-  },
-  "auto_monitor": true,
-  "auto_fix": {
-    "enabled": true,
-    "max_cycles": 5,
-    "categories": ["type_errors", "null_checks", "import_errors", "connection_retries"]
-  }
-}
-```
-
-## Support
-
-- Documentation: https://github.com/ruvnet/claude-flow
-- Issues: https://github.com/ruvnet/claude-flow/issues
-- Wundr MCP Guide: docs/CLAUDE_CODE_MCP_INTEGRATION.md
+Railway and Netlify MCP servers provide deployment monitoring, log analysis, and auto-fix
+capabilities. See the platform-specific MCP server documentation for tool details.
 
 ---
 
-Remember: **Claude Flow coordinates, Claude Code creates, Wundr ensures quality!**
+## Supporting Documentation
+
+Claude should consult these as needed:
+
+| Document                             | Purpose                              |
+| ------------------------------------ | ------------------------------------ |
+| `/docs/ai-ops/ARCHITECTURE.md`       | System design and component overview |
+| `/docs/ai-ops/REPO_MAP.md`           | Repository structure map             |
+| `/docs/ai-ops/SYSTEM_CONTEXT.md`     | Product context and user roles       |
+| `/docs/ai-ops/DOMAIN_MODELS.md`      | Core data models and relationships   |
+| `/docs/ai-ops/SERVICE_BOUNDARIES.md` | Package boundary rules               |
+| `/docs/ai-ops/AGENT_RULES.md`        | Agent coding constraints             |
+| `/docs/ai-ops/CONVENTIONS.md`        | Naming and coding conventions        |
+| `/docs/ai-ops/SUBAGENT_PROTOCOL.md`  | Subagent delegation protocol         |
+| `/docs/ai-ops/TESTING_STRATEGY.md`   | Testing hierarchy and done criteria  |
+| `/docs/ai-ops/DEBUGGING_PLAYBOOK.md` | Structured debugging procedures      |
+| `/docs/ai-ops/AGENT_TASK_GRAPH.md`   | System workflow graphs               |
+| `/docs/ai-ops/PR_CHECKLIST.md`       | Self-review gate before completion   |
+
+Task tracking:
+
+| File                          | Purpose                        |
+| ----------------------------- | ------------------------------ |
+| `tasks/todo.md`               | Active task plans and progress |
+| `tasks/lessons.md`            | Mistake patterns and rules     |
+| `tasks/active/TASK-xxx.md`    | Individual task plans          |
+| `tasks/reviews/REVIEW-xxx.md` | Post-task review notes         |
+
+---
+
+## Support
+
+- Claude Flow: https://github.com/ruvnet/claude-flow
+- Wundr: https://github.com/adapticai/wundr
+- MCP Guide: `docs/CLAUDE_CODE_MCP_INTEGRATION.md`
+
+---
 
 # important-instruction-reminders
 
@@ -660,4 +571,4 @@ repository state. This ensures the next session starts with accurate context.
 
 Run `sh memory.sh` at the beginning of each session to get live repository state including current
 branch, recent commits, modified files, and untracked files. Also read `primer.md` to restore
-session context from the previous session.
+session context from the previous session. Review `tasks/lessons.md` for relevant learned patterns.
