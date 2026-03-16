@@ -20,7 +20,8 @@ export default async function WorkspacesLayout({
     <div className='min-h-screen flex flex-col bg-background'>
       <header className='border-b'>
         <div className='container mx-auto px-4 h-16 flex items-center justify-between'>
-          <Logo className='h-5 text-foreground' />
+          <span></span>
+          <Logo className='h-5 text-foreground ml-20' />
           <AppHeader user={session?.user} compact />
         </div>
       </header>
