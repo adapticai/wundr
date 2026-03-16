@@ -78,6 +78,72 @@ export function AppHeader({ user, compact = false }: AppHeaderProps) {
 
         {/* Theme Toggle */}
         <ThemeToggle variant='compact' />
+
+        {/* User Menu */}
+        {user && (
+          <div className='relative'>
+            <button
+              type='button'
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className='flex items-center gap-2 rounded-lg p-1.5 hover:bg-accent'
+              aria-label='User menu'
+              aria-expanded={isMenuOpen}
+            >
+              {user.image ? (
+                <img
+                  src={user.image}
+                  alt={user.name ?? ''}
+                  className='h-8 w-8 rounded-full object-cover'
+                />
+              ) : (
+                <div className='flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground'>
+                  {getInitials(user.name ?? '')}
+                </div>
+              )}
+              <ChevronDownIcon />
+            </button>
+
+            {isMenuOpen && (
+              <>
+                <div
+                  className='fixed inset-0 z-40'
+                  onClick={() => setIsMenuOpen(false)}
+                  onKeyDown={e => e.key === 'Escape' && setIsMenuOpen(false)}
+                  role='button'
+                  tabIndex={0}
+                  aria-label='Close menu'
+                />
+                <div className='absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border bg-card p-1 shadow-lg animate-fade-in'>
+                  <div className='border-b px-3 py-2'>
+                    <p className='font-medium'>{user.name || 'User'}</p>
+                    <p className='text-sm text-muted-foreground'>
+                      {user.email || 'user@example.com'}
+                    </p>
+                  </div>
+                  <div className='py-1'>
+                    <MenuItem
+                      href='/workspaces'
+                      label='Switch Workspace'
+                      icon={<SwitchIcon />}
+                    />
+                  </div>
+                  <div className='border-t py-1'>
+                    <button
+                      type='button'
+                      onClick={async () => {
+                        await signOut({ callbackUrl: '/login' });
+                      }}
+                      className='flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-destructive hover:bg-accent'
+                    >
+                      <LogOutIcon />
+                      Sign out
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
     );
   }
@@ -274,6 +340,27 @@ function CreditCardIcon() {
     >
       <rect width='20' height='14' x='2' y='5' rx='2' />
       <line x1='2' x2='22' y1='10' y2='10' />
+    </svg>
+  );
+}
+
+function SwitchIcon() {
+  return (
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      width='16'
+      height='16'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+    >
+      <path d='M16 3h5v5' />
+      <path d='M8 3H3v5' />
+      <path d='M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3' />
+      <path d='m15 9 6-6' />
     </svg>
   );
 }
