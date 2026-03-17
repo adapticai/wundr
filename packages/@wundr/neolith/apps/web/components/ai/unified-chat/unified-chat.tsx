@@ -115,10 +115,13 @@ export function UnifiedChat({
               ],
             };
 
-            onDataExtracted?.(merged);
-            if (isReady && !prev.isReady) {
-              onReadyToCreate?.(merged);
-            }
+            // Defer parent callbacks to avoid setState-during-render
+            queueMicrotask(() => {
+              onDataExtracted?.(merged);
+              if (isReady && !prev.isReady) {
+                onReadyToCreate?.(merged);
+              }
+            });
 
             return updated;
           });
