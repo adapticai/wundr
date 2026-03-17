@@ -43,17 +43,31 @@ export default function NewWorkspacePage() {
   }, []);
 
   const handleCreateWorkspace = async (data: WorkspaceReviewData) => {
-    if (!organizationId) {
-      toast.error(
-        'No organization found. Please create an organization first.'
-      );
-      return;
-    }
-
     setIsCreating(true);
     setPhase('creating');
 
     try {
+      // Ensure we have an organization - create one if needed
+      let orgId = organizationId;
+      if (!orgId) {
+        const orgResponse = await fetch('/api/organizations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: data.name,
+            type: data.organizationType || 'STARTUP',
+          }),
+        });
+        if (orgResponse.ok) {
+          const orgResult = await orgResponse.json();
+          orgId = orgResult.data?.id || orgResult.id;
+          if (orgId) setOrganizationId(orgId);
+        }
+        if (!orgId) {
+          throw new Error('Could not create organization. Please try again.');
+        }
+      }
+
       // Generate slug from name
       const slug = data.name
         .toLowerCase()
@@ -68,7 +82,7 @@ export default function NewWorkspacePage() {
           name: data.name,
           slug,
           description: data.description,
-          organizationId,
+          organizationId: orgId,
           settings: {
             teamSize: data.teamSize,
             organizationType: data.organizationType,

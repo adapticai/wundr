@@ -1,6 +1,7 @@
 import { Outfit, Inter } from 'next/font/google';
 
 import { Providers } from '@/components/providers';
+import { Toaster } from '@/components/ui/sonner';
 
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
@@ -79,6 +80,7 @@ export default function RootLayout({
       >
         <Providers>
           <main className='min-h-screen bg-background'>{children}</main>
+          <Toaster />
         </Providers>
       </body>
     </html>
