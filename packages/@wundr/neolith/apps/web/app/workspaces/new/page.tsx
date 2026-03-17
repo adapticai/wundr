@@ -50,12 +50,17 @@ export default function NewWorkspacePage() {
       // Ensure we have an organization - create one if needed
       let orgId = organizationId;
       if (!orgId) {
+        const orgSlug = data.name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '');
         const orgResponse = await fetch('/api/organizations', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             name: data.name,
-            type: data.organizationType || 'STARTUP',
+            slug: orgSlug,
+            type: (data.organizationType || 'other').toLowerCase(),
           }),
         });
         if (orgResponse.ok) {
