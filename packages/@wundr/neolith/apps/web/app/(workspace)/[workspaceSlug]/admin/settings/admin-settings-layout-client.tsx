@@ -67,8 +67,8 @@ export function AdminSettingsLayoutClient({
   // We position our settings sidebar after that collapsed sidebar
   return (
     <div className='flex min-h-screen bg-background'>
-      {/* Desktop Sidebar - positioned after the collapsed main sidebar */}
-      <aside className='hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 lg:left-[5.5rem] lg:border-r lg:bg-muted/30 lg:z-10'>
+      {/* Desktop Sidebar - positioned after the collapsed main sidebar, below the workspace header (h-16 = 4rem) */}
+      <aside className='hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:top-16 lg:bottom-0 lg:left-[5.5rem] lg:border-r lg:bg-muted/30 lg:z-10'>
         <AdminSettingsSidebar
           workspaceSlug={workspaceSlug}
           workspaceName={workspaceName}
@@ -145,13 +145,6 @@ function AdminSettingsSidebar({
 }: AdminSettingsSidebarProps) {
   return (
     <div className='flex h-full flex-col'>
-      {/* Header */}
-      <div className='flex h-14 items-center justify-between border-b px-6'>
-        <h2 className='text-lg font-semibold tracking-tight'>
-          Workspace Settings
-        </h2>
-      </div>
-
       {/* Back to Workspace Link with Icon */}
       <div className='border-b px-4 py-3'>
         <Link
