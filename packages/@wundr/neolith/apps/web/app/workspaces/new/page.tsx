@@ -4,51 +4,25 @@ import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { toast } from 'sonner';
 
-import { Actions } from '@/components/ai/actions';
-import { Conversation } from '@/components/ai/conversation';
-import { Loader, TypingIndicator } from '@/components/ai/loader';
-import { Message, MessageContent } from '@/components/ai/message';
-import {
-  PromptInputForm,
-  PromptInputTextarea,
-  PromptInputToolbar,
-  PromptInputTools,
-  PromptInputSubmit,
-} from '@/components/ai/prompt-input';
-import { Response } from '@/components/ai/response';
-import { Suggestions, getEntitySuggestions } from '@/components/ai/suggestion';
-import { Tool } from '@/components/ai/tool';
+import { UnifiedChat } from '@/components/ai/unified-chat';
+import { Loader } from '@/components/ai/loader';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { WorkspaceReviewForm } from '@/components/wizard/workspace-review-form';
-import {
-  useAIWizardChat,
-  getMessageContent,
-  getToolInvocations,
-  type ToolInvocation,
-} from '@/hooks/use-ai-wizard-chat';
 
 import type { WorkspaceReviewData } from '@/components/wizard/workspace-review-form';
 
 type WizardPhase = 'conversation' | 'review' | 'creating';
-
-const INITIAL_GREETING = `Hi! I'm here to help you set up a new workspace. Let's start with the basics.
-
-What would you like to name your workspace, and what is it for?`;
 
 export default function NewWorkspacePage() {
   const router = useRouter();
   const [phase, setPhase] = React.useState<WizardPhase>('conversation');
   const [isCreating, setIsCreating] = React.useState(false);
   const [organizationId, setOrganizationId] = React.useState<string>('');
+  const [extractedData, setExtractedData] = React.useState<
+    Record<string, unknown>
+  >({});
 
   // Fetch user's organization on mount
   React.useEffect(() => {
@@ -67,32 +41,6 @@ export default function NewWorkspacePage() {
     }
     fetchOrganization();
   }, []);
-
-  const {
-    messages,
-    input,
-    setInput,
-    handleSubmit,
-    isLoading,
-    append,
-    extractedData,
-  } = useAIWizardChat({
-    entityType: 'workspace',
-    initialGreeting: INITIAL_GREETING,
-  });
-
-  const handleSuggestionSelect = (suggestion: string) => {
-    append({ role: 'user', content: suggestion });
-  };
-
-  const handleProceedToReview = () => {
-    const data = extractedData as Partial<WorkspaceReviewData>;
-    if (data.name && data.description) {
-      setPhase('review');
-    } else {
-      toast.error('Please provide at least a name and description first');
-    }
-  };
 
   const handleCreateWorkspace = async (data: WorkspaceReviewData) => {
     if (!organizationId) {
@@ -151,7 +99,6 @@ export default function NewWorkspacePage() {
   };
 
   const completionPercentage = React.useMemo(() => {
-    const data = extractedData as Partial<WorkspaceReviewData>;
     const fields = [
       'name',
       'description',
@@ -159,7 +106,7 @@ export default function NewWorkspacePage() {
       'teamSize',
       'purpose',
     ];
-    const filled = fields.filter(f => data[f as keyof WorkspaceReviewData]);
+    const filled = fields.filter(f => extractedData[f]);
     return Math.round((filled.length / fields.length) * 100);
   }, [extractedData]);
 
@@ -194,122 +141,37 @@ export default function NewWorkspacePage() {
 
       {/* Main Content */}
       {phase === 'conversation' && (
-        <Card className='h-[600px] flex flex-col'>
-          <CardHeader className='pb-3'>
-            <CardTitle className='text-lg'>Workspace Setup Assistant</CardTitle>
-            <CardDescription>
-              Describe your workspace and I&apos;ll gather all the details
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className='flex-1 flex flex-col overflow-hidden p-0'>
-            {/* Messages Area */}
-            <Conversation className='flex-1 px-6'>
-              {messages.map(message => {
-                const content = getMessageContent(message);
-                const toolInvocations = getToolInvocations(message);
-
-                return (
-                  <div key={message.id} className='group'>
-                    <Message
-                      from={message.role as 'user' | 'assistant'}
-                      avatar={
-                        message.role === 'assistant'
-                          ? { name: 'AI', fallback: 'AI' }
-                          : undefined
-                      }
-                    >
-                      <MessageContent>
-                        {message.role === 'assistant' ? (
-                          <Response
-                            isStreaming={
-                              isLoading &&
-                              message.id === messages[messages.length - 1]?.id
-                            }
-                          >
-                            {content}
-                          </Response>
-                        ) : (
-                          content
-                        )}
-                      </MessageContent>
-
-                      {/* Tool calls */}
-                      {toolInvocations.map(tool => (
-                        <Tool
-                          key={tool.toolCallId}
-                          name={tool.toolName}
-                          status={
-                            tool.state === 'result' ? 'completed' : 'running'
-                          }
-                          input={
-                            tool.input as Record<string, unknown> | undefined
-                          }
-                          output={tool.output}
-                        />
-                      ))}
-                    </Message>
-
-                    {message.role === 'assistant' && !isLoading && (
-                      <Actions content={content} className='ml-12 mt-1' />
-                    )}
-                  </div>
-                );
-              })}
-
-              {isLoading && (
-                <Message
-                  from='assistant'
-                  avatar={{ name: 'AI', fallback: 'AI' }}
-                >
-                  <TypingIndicator />
-                </Message>
-              )}
-            </Conversation>
-
-            {/* Suggestions */}
-            {!isLoading && messages.length > 0 && (
-              <div className='px-6 pb-2'>
-                <Suggestions
-                  suggestions={getEntitySuggestions(
-                    'workspace',
-                    messages.filter(m => m.role === 'user').length
-                  )}
-                  onSelect={handleSuggestionSelect}
-                />
-              </div>
-            )}
-
-            {/* Input Area */}
-            <div className='border-t p-4'>
-              <PromptInputForm onSubmit={handleSubmit}>
-                <PromptInputTextarea
-                  value={input}
-                  onChange={e => setInput(e.target.value)}
-                  placeholder='Type your message... (Enter to send)'
-                  disabled={isLoading}
-                />
-                <PromptInputToolbar>
-                  <PromptInputTools>
-                    {(extractedData as Partial<WorkspaceReviewData>).name && (
-                      <Button
-                        type='button'
-                        variant='outline'
-                        size='sm'
-                        onClick={handleProceedToReview}
-                      >
-                        Review & Create
-                      </Button>
-                    )}
-                  </PromptInputTools>
-                  <PromptInputSubmit disabled={!input.trim() || isLoading}>
-                    {isLoading ? <Loader size={16} /> : 'Send'}
-                  </PromptInputSubmit>
-                </PromptInputToolbar>
-              </PromptInputForm>
-            </div>
-          </CardContent>
-        </Card>
+        <UnifiedChat
+          apiEndpoint='/api/wizard/chat'
+          entityType='workspace'
+          variant='embedded'
+          persona={{
+            name: 'Workspace Assistant',
+            greeting:
+              "I'll help you set up your new workspace. Tell me about your team - what kind of work do you do, and what will this workspace be used for?",
+            suggestions: [
+              'Create a workspace for my engineering team',
+              'Set up a project management workspace',
+              'I need a workspace for client collaboration',
+            ],
+          }}
+          progress={{
+            enabled: true,
+            requiredFields: ['name', 'description', 'organizationType'],
+            optionalFields: ['teamSize', 'purpose'],
+          }}
+          showToolCalls={false}
+          enableActions
+          requestBody={{ organizationId }}
+          onDataExtracted={data => {
+            setExtractedData(prev => ({ ...prev, ...data }));
+          }}
+          onReadyToCreate={data => {
+            setExtractedData(prev => ({ ...prev, ...data }));
+            setPhase('review');
+          }}
+          className='flex-1'
+        />
       )}
 
       {/* Review Phase */}
