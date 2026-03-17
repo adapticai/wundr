@@ -1,19 +1,15 @@
 /**
  * Conversational Creator Component
- * LLM-powered conversational interface for creating entities
+ * LLM-powered conversational interface for creating entities via UnifiedChat
  * @module components/creation/conversational-creator
  */
 'use client';
 
-import { Send, ArrowRight } from 'lucide-react';
 import * as React from 'react';
 
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { UnifiedChat } from '@/components/ai/unified-chat';
 
-import { ChatMessage } from './chat-message';
-import { useConversationalCreation } from './hooks/useConversationalCreation';
-
+import type { ChatPersona } from '@/components/ai/unified-chat';
 import type { EntityType, EntitySpec } from './types';
 
 export interface ConversationalCreatorProps {
@@ -31,22 +27,81 @@ export interface ConversationalCreatorProps {
   open?: boolean;
 }
 
-interface Message {
-  id: string;
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-  timestamp: Date;
+function getPersonaForEntity(entityType: EntityType): ChatPersona {
+  const personas: Record<EntityType, ChatPersona> = {
+    workspace: {
+      name: 'Workspace Assistant',
+      greeting: "Let's create your workspace. What will it be used for?",
+      suggestions: [
+        'Engineering team workspace',
+        'Project management',
+        'Client collaboration',
+      ],
+    },
+    orchestrator: {
+      name: 'Agent Architect',
+      greeting:
+        "I'll help you design an orchestrator agent. What role should this agent play in your organization? For example: Customer Support Lead, Research Analyst, or Project Manager.",
+      suggestions: [
+        'Team lead agent',
+        'Process coordinator',
+        'Quality reviewer',
+      ],
+    },
+    'session-manager': {
+      name: 'Session Designer',
+      greeting:
+        "Let's configure a session manager. What context should it manage?",
+      suggestions: [
+        'Engineering sessions',
+        'Client meetings',
+        'Sprint planning',
+      ],
+    },
+    workflow: {
+      name: 'Workflow Builder',
+      greeting:
+        "I'll help you build a workflow. What process do you want to automate?",
+      suggestions: [
+        'Approval workflow',
+        'Onboarding process',
+        'Code review pipeline',
+      ],
+    },
+    channel: {
+      name: 'Channel Setup',
+      greeting: "Let's create a channel. What topic or team is it for?",
+      suggestions: [
+        'Team discussion channel',
+        'Project updates',
+        'Announcements',
+      ],
+    },
+    subagent: {
+      name: 'Agent Builder',
+      greeting:
+        "I'll help you create a specialized sub-agent. What capabilities does it need?",
+      suggestions: ['Code reviewer', 'Data analyst', 'Content writer'],
+    },
+  };
+  return personas[entityType] || personas.workspace;
+}
+
+function getRequiredFields(entityType: EntityType): string[] {
+  const fields: Record<EntityType, string[]> = {
+    workspace: ['name', 'description', 'organizationType'],
+    orchestrator: ['name', 'role', 'description'],
+    'session-manager': ['name', 'responsibilities', 'context'],
+    workflow: ['name', 'description', 'trigger'],
+    channel: ['name', 'description', 'type'],
+    subagent: ['name', 'description', 'capabilities'],
+  };
+  return fields[entityType] || ['name', 'description'];
 }
 
 /**
  * ConversationalCreator - Chat-based interface for creating entities
- *
- * Features:
- * - Streaming LLM responses
- * - Context-aware conversation
- * - Automatic spec generation
- * - Switch to form view
- * - Keyboard shortcuts
+ * Uses UnifiedChat for a polished, consistent conversational experience.
  */
 export function ConversationalCreator({
   entityType,
@@ -56,227 +111,41 @@ export function ConversationalCreator({
   existingSpec,
   open = true,
 }: ConversationalCreatorProps) {
-  const [messages, setMessages] = React.useState<Message[]>([]);
-  const [input, setInput] = React.useState('');
-  const messagesEndRef = React.useRef<HTMLDivElement>(null);
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-
-  const { sendMessage, isLoading, error, generatedSpec, hasGeneratedSpec } =
-    useConversationalCreation({
-      entityType,
-      workspaceId,
-      existingSpec,
-      onSpecGenerated,
-    });
-
-  // Initialize with greeting
-  React.useEffect(() => {
-    if (messages.length === 0 && open) {
-      setMessages([
-        {
-          id: 'greeting',
-          role: 'assistant',
-          content: getGreetingMessage(entityType),
-          timestamp: new Date(),
-        },
-      ]);
-    }
-  }, [entityType, messages.length, open]);
-
-  // Auto-scroll to bottom
-  React.useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  // Focus textarea
-  React.useEffect(() => {
-    if (open) {
-      textareaRef.current?.focus();
-    }
-  }, [open]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) {
-      return;
-    }
-
-    const userMessage: Message = {
-      id: `user-${Date.now()}`,
-      role: 'user',
-      content: input.trim(),
-      timestamp: new Date(),
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
-
-    try {
-      const response = await sendMessage(input, messages);
-
-      const assistantMessage: Message = {
-        id: `assistant-${Date.now()}`,
-        role: 'assistant',
-        content: response,
-        timestamp: new Date(),
-      };
-
-      setMessages(prev => [...prev, assistantMessage]);
-    } catch (err) {
-      console.error('Failed to send message:', err);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit(e);
-    }
-  };
-
-  const handleSwitchToForm = () => {
-    if (hasGeneratedSpec && generatedSpec) {
-      onSpecGenerated(generatedSpec);
-    } else {
-      // Generate basic spec from conversation
-      const basicSpec: EntitySpec = {
-        entityType,
-        name: '',
-        description: messages
-          .filter(m => m.role === 'user')
-          .map(m => m.content)
-          .join(' ')
-          .slice(0, 200),
-        confidence: 0.5,
-        missingFields: ['name', 'description'],
-        suggestions: ['Continue the conversation to provide more details'],
-      };
-      onSpecGenerated(basicSpec);
-    }
-  };
+  if (!open) return null;
 
   return (
     <div className='flex h-[70vh] flex-col'>
-      {/* Header */}
-      <div className='border-b px-6 py-4'>
-        <h2 className='text-lg font-semibold'>
-          Create {getEntityDisplayName(entityType)}
-        </h2>
-        <p className='text-sm text-muted-foreground'>
-          Chat with AI to generate your {entityType} specification
-        </p>
-      </div>
-
-      {/* Messages */}
-      <div className='flex-1 overflow-y-auto px-6 py-4'>
-        <div className='space-y-4'>
-          {messages.map(message => (
-            <ChatMessage
-              key={message.id}
-              role={message.role}
-              content={message.content}
-              timestamp={message.timestamp}
-              isStreaming={false}
-            />
-          ))}
-
-          {isLoading && (
-            <ChatMessage
-              role='assistant'
-              content='Thinking...'
-              isStreaming={true}
-            />
-          )}
-
-          {error && (
-            <div className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'>
-              {error}
-            </div>
-          )}
-
-          <div ref={messagesEndRef} />
-        </div>
-      </div>
-
-      {/* Input */}
-      <div className='border-t px-6 py-4'>
-        <form onSubmit={handleSubmit} className='space-y-3'>
-          <div className='flex gap-2'>
-            <Textarea
-              ref={textareaRef}
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder='Type your message... (Enter to send, Shift+Enter for new line)'
-              className='min-h-[60px] resize-none'
-              disabled={isLoading}
-              aria-label='Message input'
-            />
-            <Button
-              type='submit'
-              size='icon'
-              className='h-[60px] w-[60px] shrink-0'
-              disabled={!input.trim() || isLoading}
-            >
-              <Send className='h-5 w-5' />
-              <span className='sr-only'>Send message</span>
-            </Button>
-          </div>
-
-          <div className='flex items-center justify-between'>
-            <Button
-              type='button'
-              variant='outline'
-              onClick={handleSwitchToForm}
-              disabled={isLoading}
-            >
-              Switch to Form View
-              <ArrowRight className='ml-2 h-4 w-4' />
-            </Button>
-            <Button type='button' variant='ghost' onClick={onCancel}>
-              Cancel
-            </Button>
-          </div>
-        </form>
-      </div>
+      <UnifiedChat
+        apiEndpoint='/api/wizard/chat'
+        entityType={entityType}
+        variant='embedded'
+        persona={getPersonaForEntity(entityType)}
+        progress={{
+          enabled: true,
+          requiredFields: getRequiredFields(entityType),
+        }}
+        showToolCalls={false}
+        enableActions
+        requestBody={{ workspaceId }}
+        onDataExtracted={() => {
+          // Data extraction in progress - handled internally by UnifiedChat
+        }}
+        onReadyToCreate={data => {
+          const spec: EntitySpec = {
+            entityType,
+            name: (data.name as string) || '',
+            description: (data.description as string) || '',
+            role: (data.role as string) || undefined,
+            confidence: 0.8,
+            missingFields: [],
+            suggestions: [],
+            properties: data,
+          };
+          onSpecGenerated(spec);
+        }}
+        onClose={onCancel}
+        className='flex-1'
+      />
     </div>
-  );
-}
-
-/**
- * Get entity display name
- */
-function getEntityDisplayName(entityType: EntityType): string {
-  const names: Record<EntityType, string> = {
-    workspace: 'Workspace',
-    orchestrator: 'Orchestrator',
-    'session-manager': 'Session Manager',
-    subagent: 'Subagent',
-    workflow: 'Workflow',
-    channel: 'Channel',
-  };
-  return names[entityType] || entityType;
-}
-
-/**
- * Get greeting message for entity type
- */
-function getGreetingMessage(entityType: EntityType): string {
-  const greetings: Record<EntityType, string> = {
-    workspace:
-      "Hi! I'll help you create a new Workspace. Let's start with the basics - what kind of organization are you setting up?",
-    orchestrator:
-      "Hi! I'll help you create a new Orchestrator. What role should this agent serve? For example: Customer Support Lead, Research Analyst, or Project Manager.",
-    'session-manager':
-      "Hi! I'll help you create a new Session Manager. Session Managers monitor channels and orchestrate conversations. What channel or context should this manage?",
-    subagent:
-      "Hi! I'll help you create a new Subagent. Subagents handle specific tasks. What capability should this subagent provide?",
-    workflow:
-      "Hi! I'll help you create a new Workflow. Workflows automate tasks and processes. What would you like to automate?",
-    channel:
-      "Hi! I'll help you create a new Channel. What kind of channel do you need? (e.g., public, private, direct message)",
-  };
-  return (
-    greetings[entityType] || `Hi! I'll help you create a new ${entityType}.`
   );
 }
