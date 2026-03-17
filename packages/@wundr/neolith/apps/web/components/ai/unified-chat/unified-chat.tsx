@@ -35,6 +35,7 @@ const VARIANT_CONTAINER_CLASSES: Record<UnifiedChatProps['variant'], string> = {
 
 export function UnifiedChat({
   apiEndpoint,
+  entityType,
   variant,
   persona,
   progress,
@@ -63,10 +64,13 @@ export function UnifiedChat({
     () =>
       new DefaultChatTransport({
         api: apiEndpoint,
-        body: requestBody,
+        body: {
+          ...requestBody,
+          ...(entityType ? { entityType } : {}),
+        },
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [apiEndpoint]
+    [apiEndpoint, entityType]
   );
 
   const { messages, sendMessage, status } = useChat({
