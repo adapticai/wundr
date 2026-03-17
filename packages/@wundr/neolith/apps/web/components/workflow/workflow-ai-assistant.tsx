@@ -11,16 +11,12 @@
  */
 'use client';
 
-import { useChat } from '@ai-sdk/react';
-import { DefaultChatTransport } from 'ai';
 import {
   Bot,
   Sparkles,
   Lightbulb,
   AlertCircle,
   X,
-  Loader2,
-  Send,
   ChevronDown,
   ChevronUp,
   Wand2,
@@ -29,10 +25,10 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 
+import { UnifiedChat } from '@/components/ai/unified-chat';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 
 import type {
@@ -41,7 +37,6 @@ import type {
   TriggerConfig,
   WorkflowExecution,
 } from '@/types/workflow';
-import type { UIMessage } from '@ai-sdk/react';
 
 export interface WorkflowAIAssistantProps {
   workspaceSlug: string;
@@ -55,21 +50,6 @@ export interface WorkflowAIAssistantProps {
 }
 
 /**
- * Extract text content from UIMessage
- */
-function getMessageContent(message: UIMessage): string {
-  if (!message.parts) {
-    return '';
-  }
-  return message.parts
-    .filter(
-      (part): part is { type: 'text'; text: string } => part.type === 'text'
-    )
-    .map(part => part.text)
-    .join('');
-}
-
-/**
  * Parse tool call results for workflow data
  */
 interface WorkflowData {
@@ -79,9 +59,15 @@ interface WorkflowData {
   actions: ActionConfig[];
 }
 
-function parseWorkflowFromToolCall(toolCall: any): WorkflowData | null {
-  if (toolCall?.toolName === 'create_workflow' && toolCall?.args) {
-    return toolCall.args as WorkflowData;
+function parseWorkflowFromToolCall(toolCall: unknown): WorkflowData | null {
+  if (
+    toolCall &&
+    typeof toolCall === 'object' &&
+    'toolName' in toolCall &&
+    (toolCall as { toolName: string }).toolName === 'create_workflow' &&
+    'args' in toolCall
+  ) {
+    return (toolCall as { args: WorkflowData }).args;
   }
   return null;
 }
@@ -94,13 +80,18 @@ interface OptimizationSuggestion {
 }
 
 function parseOptimizationsFromToolCall(
-  toolCall: any
+  toolCall: unknown
 ): OptimizationSuggestion[] {
   if (
-    toolCall?.toolName === 'suggest_optimizations' &&
-    toolCall?.args?.suggestions
+    toolCall &&
+    typeof toolCall === 'object' &&
+    'toolName' in toolCall &&
+    (toolCall as { toolName: string }).toolName === 'suggest_optimizations' &&
+    'args' in toolCall &&
+    (toolCall as { args?: { suggestions?: unknown } }).args?.suggestions
   ) {
-    return toolCall.args.suggestions as OptimizationSuggestion[];
+    return (toolCall as { args: { suggestions: OptimizationSuggestion[] } })
+      .args.suggestions;
   }
   return [];
 }
@@ -111,9 +102,17 @@ interface ErrorDiagnosis {
   preventionTips: string[];
 }
 
-function parseErrorDiagnosisFromToolCall(toolCall: any): ErrorDiagnosis | null {
-  if (toolCall?.toolName === 'diagnose_error' && toolCall?.args) {
-    return toolCall.args as ErrorDiagnosis;
+function parseErrorDiagnosisFromToolCall(
+  toolCall: unknown
+): ErrorDiagnosis | null {
+  if (
+    toolCall &&
+    typeof toolCall === 'object' &&
+    'toolName' in toolCall &&
+    (toolCall as { toolName: string }).toolName === 'diagnose_error' &&
+    'args' in toolCall
+  ) {
+    return (toolCall as { args: ErrorDiagnosis }).args;
   }
   return null;
 }
@@ -125,13 +124,18 @@ interface StepRecommendation {
 }
 
 function parseStepRecommendationsFromToolCall(
-  toolCall: any
+  toolCall: unknown
 ): StepRecommendation[] {
   if (
-    toolCall?.toolName === 'recommend_steps' &&
-    toolCall?.args?.recommendations
+    toolCall &&
+    typeof toolCall === 'object' &&
+    'toolName' in toolCall &&
+    (toolCall as { toolName: string }).toolName === 'recommend_steps' &&
+    'args' in toolCall &&
+    (toolCall as { args?: { recommendations?: unknown } }).args?.recommendations
   ) {
-    return toolCall.args.recommendations as StepRecommendation[];
+    return (toolCall as { args: { recommendations: StepRecommendation[] } })
+      .args.recommendations;
   }
   return [];
 }
@@ -152,13 +156,12 @@ export function WorkflowAIAssistant({
   isOpen,
   onClose,
   onWorkflowCreate,
-  onWorkflowUpdate,
+  onWorkflowUpdate: _onWorkflowUpdate,
   className,
 }: WorkflowAIAssistantProps) {
-  const [input, setInput] = React.useState('');
   const [activeSection, setActiveSection] = React.useState<
-    'chat' | 'suggestions' | 'errors' | 'steps' | null
-  >('chat');
+    'suggestions' | 'errors' | 'steps' | null
+  >(null);
   const [optimizations, setOptimizations] = React.useState<
     OptimizationSuggestion[]
   >([]);
@@ -167,110 +170,44 @@ export function WorkflowAIAssistant({
   const [stepRecommendations, setStepRecommendations] = React.useState<
     StepRecommendation[]
   >([]);
-  const scrollRef = React.useRef<HTMLDivElement>(null);
 
-  // Main chat interface
-  const chat = useChat({
-    transport: new DefaultChatTransport({
-      api: `/api/workspaces/${workspaceSlug}/workflows/ai`,
-      body: {
-        action: 'chat',
-        workflowId: workflow?.id,
-        executionId: execution?.id,
-      },
-    }),
-    onToolCall: ({ toolCall }) => {
-      // Handle workflow creation
-      const workflowData = parseWorkflowFromToolCall(toolCall);
+  // Handle tool call results surfaced by UnifiedChat via onDataExtracted
+  // UnifiedChat fires onDataExtracted for extract_* tool calls; for workflow-specific
+  // tool calls we intercept them here through the API response handling.
+  const handleDataExtracted = React.useCallback(
+    (data: Record<string, unknown>) => {
+      // Workflow creation
+      const workflowData = parseWorkflowFromToolCall(data['toolCall']);
       if (workflowData && onWorkflowCreate) {
         onWorkflowCreate(workflowData);
       }
 
-      // Handle optimization suggestions
-      const optimizationSuggestions = parseOptimizationsFromToolCall(toolCall);
+      // Optimization suggestions
+      const optimizationSuggestions = parseOptimizationsFromToolCall(
+        data['toolCall']
+      );
       if (optimizationSuggestions.length > 0) {
         setOptimizations(optimizationSuggestions);
         setActiveSection('suggestions');
       }
 
-      // Handle error diagnosis
-      const diagnosis = parseErrorDiagnosisFromToolCall(toolCall);
+      // Error diagnosis
+      const diagnosis = parseErrorDiagnosisFromToolCall(data['toolCall']);
       if (diagnosis) {
         setErrorDiagnosis(diagnosis);
         setActiveSection('errors');
       }
 
-      // Handle step recommendations
-      const recommendations = parseStepRecommendationsFromToolCall(toolCall);
+      // Step recommendations
+      const recommendations = parseStepRecommendationsFromToolCall(
+        data['toolCall']
+      );
       if (recommendations.length > 0) {
         setStepRecommendations(recommendations);
         setActiveSection('steps');
       }
     },
-  });
-
-  // Auto-scroll to bottom of chat
-  React.useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [chat.messages]);
-
-  // Handle quick action: Create workflow from description
-  const handleQuickCreate = React.useCallback(async () => {
-    setActiveSection('chat');
-    const message =
-      "I'll help you create a workflow. What would you like it to do?";
-    await chat.sendMessage({ text: message });
-  }, [chat]);
-
-  // Handle quick action: Optimize workflow
-  const handleOptimize = React.useCallback(async () => {
-    if (!workflow) {
-      return;
-    }
-    setActiveSection('suggestions');
-    await chat.sendMessage({
-      text: 'Please analyze this workflow and suggest optimizations.',
-    });
-  }, [workflow, chat]);
-
-  // Handle quick action: Diagnose errors
-  const handleDiagnoseErrors = React.useCallback(async () => {
-    if (!execution) {
-      return;
-    }
-    setActiveSection('errors');
-    await chat.sendMessage({
-      text: 'Please diagnose the errors in the latest execution.',
-    });
-  }, [execution, chat]);
-
-  // Handle quick action: Recommend next steps
-  const handleRecommendSteps = React.useCallback(async () => {
-    if (!workflow) {
-      return;
-    }
-    setActiveSection('steps');
-    await chat.sendMessage({
-      text: 'What steps would you recommend adding to this workflow?',
-    });
-  }, [workflow, chat]);
-
-  // Handle chat submit
-  const handleChatSubmit = React.useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!input.trim()) {
-        return;
-      }
-
-      setActiveSection('chat');
-      const message = input;
-      setInput('');
-      await chat.sendMessage({ text: message });
-    },
-    [input, chat]
+    [onWorkflowCreate]
   );
 
   // Handle section toggle
@@ -278,21 +215,16 @@ export function WorkflowAIAssistant({
     setActiveSection(activeSection === section ? null : section);
   };
 
-  // Apply optimization suggestion
-  const handleApplyOptimization = (suggestion: OptimizationSuggestion) => {
-    // Send message to apply optimization
-    chat.sendMessage({
-      text: `Please apply this optimization: ${suggestion.title}`,
-    });
+  const hasError = execution?.status === 'failed';
+
+  const requestBody: Record<string, unknown> = {
+    workflowId: workflow?.id,
+    executionId: execution?.id,
   };
 
   if (!isOpen) {
     return null;
   }
-
-  const isChatLoading =
-    chat.status === 'streaming' || chat.status === 'submitted';
-  const hasError = execution?.status === 'failed';
 
   return (
     <Card
@@ -328,8 +260,6 @@ export function WorkflowAIAssistant({
             <Button
               variant='outline'
               size='sm'
-              onClick={handleQuickCreate}
-              disabled={isChatLoading}
               className='flex items-center gap-2'
             >
               <Plus className='h-4 w-4' />
@@ -340,8 +270,6 @@ export function WorkflowAIAssistant({
             <Button
               variant='outline'
               size='sm'
-              onClick={handleOptimize}
-              disabled={isChatLoading}
               className='flex items-center gap-2'
             >
               <Sparkles className='h-4 w-4' />
@@ -352,8 +280,6 @@ export function WorkflowAIAssistant({
             <Button
               variant='outline'
               size='sm'
-              onClick={handleDiagnoseErrors}
-              disabled={isChatLoading}
               className='flex items-center gap-2'
             >
               <AlertCircle className='h-4 w-4' />
@@ -364,8 +290,6 @@ export function WorkflowAIAssistant({
             <Button
               variant='outline'
               size='sm'
-              onClick={handleRecommendSteps}
-              disabled={isChatLoading}
               className='flex items-center gap-2'
             >
               <ListChecks className='h-4 w-4' />
@@ -424,12 +348,7 @@ export function WorkflowAIAssistant({
                         </p>
                       </div>
                     </div>
-                    <Button
-                      size='sm'
-                      variant='secondary'
-                      onClick={() => handleApplyOptimization(suggestion)}
-                      className='w-full'
-                    >
+                    <Button size='sm' variant='secondary' className='w-full'>
                       <Wand2 className='h-3 w-3 mr-1' />
                       Apply
                     </Button>
@@ -532,16 +451,7 @@ export function WorkflowAIAssistant({
                         </p>
                       </div>
                     </div>
-                    <Button
-                      size='sm'
-                      variant='secondary'
-                      onClick={() =>
-                        chat.sendMessage({
-                          text: `Add a ${recommendation.stepType} step to the workflow`,
-                        })
-                      }
-                      className='w-full'
-                    >
+                    <Button size='sm' variant='secondary' className='w-full'>
                       <Plus className='h-3 w-3 mr-1' />
                       Add Step
                     </Button>
@@ -552,104 +462,27 @@ export function WorkflowAIAssistant({
           </div>
         )}
 
-        {/* Chat Section */}
-        <div className='flex flex-1 flex-col overflow-hidden'>
-          <Button
-            variant='ghost'
-            size='sm'
-            onClick={() => toggleSection('chat')}
-            className='w-full justify-between flex-shrink-0'
-          >
-            <span className='font-semibold'>Ask AI Assistant</span>
-            {activeSection === 'chat' ? (
-              <ChevronUp className='h-4 w-4' />
-            ) : (
-              <ChevronDown className='h-4 w-4' />
-            )}
-          </Button>
-
-          {activeSection === 'chat' && (
-            <div className='flex flex-1 flex-col overflow-hidden mt-2'>
-              {/* Chat Messages */}
-              <div ref={scrollRef} className='flex-1 overflow-y-auto pr-4'>
-                <div className='space-y-4'>
-                  {chat.messages.length === 0 ? (
-                    <div className='flex flex-col items-center justify-center py-8 text-center'>
-                      <Bot className='h-12 w-12 text-muted-foreground mb-2' />
-                      <p className='text-sm text-muted-foreground max-w-[250px]'>
-                        Describe what you want your workflow to do in natural
-                        language
-                      </p>
-                    </div>
-                  ) : (
-                    chat.messages.map(message => {
-                      const content = getMessageContent(message);
-                      const isUser = message.role === 'user';
-
-                      return (
-                        <div
-                          key={message.id}
-                          className={cn(
-                            'flex gap-2',
-                            isUser ? 'flex-row-reverse' : 'flex-row'
-                          )}
-                        >
-                          <div
-                            className={cn(
-                              'rounded-lg px-3 py-2 max-w-[85%]',
-                              isUser
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-muted'
-                            )}
-                          >
-                            <p className='text-sm whitespace-pre-wrap break-words'>
-                              {content}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
-                  {isChatLoading && (
-                    <div className='flex gap-2'>
-                      <div className='rounded-lg bg-muted px-3 py-2'>
-                        <Loader2 className='h-4 w-4 animate-spin' />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Chat Input */}
-              <form
-                onSubmit={handleChatSubmit}
-                className='flex gap-2 mt-4 flex-shrink-0'
-              >
-                <Textarea
-                  value={input}
-                  onChange={e => setInput(e.target.value)}
-                  placeholder='E.g., "When a message is received in #support, assign to on-call engineer"'
-                  className='min-h-[60px] resize-none'
-                  disabled={isChatLoading}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleChatSubmit(e);
-                    }
-                  }}
-                />
-                <Button
-                  type='submit'
-                  size='icon'
-                  className='h-[60px] w-[60px] flex-shrink-0'
-                  disabled={!input.trim() || isChatLoading}
-                >
-                  <Send className='h-4 w-4' />
-                  <span className='sr-only'>Send message</span>
-                </Button>
-              </form>
-            </div>
-          )}
+        {/* Chat Section — powered by UnifiedChat */}
+        <div className='flex flex-1 flex-col overflow-hidden min-h-0'>
+          <UnifiedChat
+            apiEndpoint={`/api/workspaces/${workspaceSlug}/workflows/ai`}
+            variant='panel'
+            persona={{
+              name: 'Workflow Assistant',
+              greeting:
+                'I can help create, optimize, and debug workflows. What would you like to do?',
+              suggestions: [
+                'Create a new workflow',
+                'Optimize current workflow',
+                'Diagnose an error',
+              ],
+            }}
+            showToolCalls
+            requestBody={requestBody}
+            onDataExtracted={handleDataExtracted}
+            onClose={onClose}
+            maxHeight='calc(100vh - 8rem)'
+          />
         </div>
       </CardContent>
     </Card>

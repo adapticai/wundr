@@ -260,18 +260,22 @@ export function ChannelAIAssistant({
         <div className='flex flex-1 flex-col overflow-hidden'>
           <UnifiedChat
             apiEndpoint={`/api/channels/${channelId}/ai`}
-            variant="panel"
+            variant='panel'
             persona={{
               name: `${channelName} Assistant`,
               greeting: `I can help with anything about #${channelName}. Ask me to summarize, suggest messages, or answer questions.`,
-              suggestions: ['Summarize recent activity', 'Suggest a message', 'What topics are trending?'],
+              suggestions: [
+                'Summarize recent activity',
+                'Suggest a message',
+                'What topics are trending?',
+              ],
             }}
             showToolCalls
             showReasoning
             enableActions
             requestBody={{ channelId, action: 'chat' }}
             onClose={onClose}
-            maxHeight="calc(100vh - 8rem)"
+            maxHeight='calc(100vh - 8rem)'
           />
         </div>
       </CardContent>
