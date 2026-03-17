@@ -18,15 +18,14 @@ import {
   MessageSquare,
   X,
   Loader2,
-  Send,
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
 import * as React from 'react';
 
+import { UnifiedChat } from '@/components/ai/unified-chat';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 
 import type { UIMessage } from '@ai-sdk/react';
@@ -60,7 +59,7 @@ function getMessageContent(message: UIMessage): string {
  * Features:
  * - One-click channel summarization
  * - Message suggestion generation
- * - Interactive chat interface
+ * - Interactive chat interface via UnifiedChat
  * - Collapsible sections
  */
 export function ChannelAIAssistant({
@@ -70,19 +69,9 @@ export function ChannelAIAssistant({
   onClose,
   className,
 }: ChannelAIAssistantProps) {
-  const [input, setInput] = React.useState('');
   const [activeSection, setActiveSection] = React.useState<
     'summary' | 'suggestions' | 'chat' | null
   >(null);
-  const scrollRef = React.useRef<HTMLDivElement>(null);
-
-  // Chat for general assistance
-  const chat = useChat({
-    transport: new DefaultChatTransport({
-      api: `/api/channels/${channelId}/ai`,
-      body: { action: 'chat' },
-    }),
-  });
 
   // Separate hook for summarization
   const summaryChat = useChat({
@@ -99,13 +88,6 @@ export function ChannelAIAssistant({
       body: { action: 'suggest' },
     }),
   });
-
-  // Auto-scroll to bottom of chat
-  React.useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [chat.messages]);
 
   // Handle summarize button
   const handleSummarize = React.useCallback(async () => {
@@ -127,22 +109,6 @@ export function ChannelAIAssistant({
     }
   }, [suggestionsChat]);
 
-  // Handle chat submit
-  const handleChatSubmit = React.useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!input.trim()) {
-        return;
-      }
-
-      setActiveSection('chat');
-      const message = input;
-      setInput('');
-      await chat.sendMessage({ text: message });
-    },
-    [input, chat]
-  );
-
   // Handle section toggle
   const toggleSection = (section: typeof activeSection) => {
     setActiveSection(activeSection === section ? null : section);
@@ -152,8 +118,6 @@ export function ChannelAIAssistant({
     return null;
   }
 
-  const isChatLoading =
-    chat.status === 'streaming' || chat.status === 'submitted';
   const isSummaryLoading =
     summaryChat.status === 'streaming' || summaryChat.status === 'submitted';
   const isSuggestionsLoading =
@@ -294,101 +258,21 @@ export function ChannelAIAssistant({
 
         {/* Chat Section */}
         <div className='flex flex-1 flex-col overflow-hidden'>
-          <Button
-            variant='ghost'
-            size='sm'
-            onClick={() => toggleSection('chat')}
-            className='w-full justify-between flex-shrink-0'
-          >
-            <span className='font-semibold'>Ask AI Assistant</span>
-            {activeSection === 'chat' ? (
-              <ChevronUp className='h-4 w-4' />
-            ) : (
-              <ChevronDown className='h-4 w-4' />
-            )}
-          </Button>
-
-          {activeSection === 'chat' && (
-            <div className='flex flex-1 flex-col overflow-hidden mt-2'>
-              {/* Chat Messages */}
-              <div ref={scrollRef} className='flex-1 overflow-y-auto pr-4'>
-                <div className='space-y-4'>
-                  {chat.messages.length === 0 ? (
-                    <div className='flex flex-col items-center justify-center py-8 text-center'>
-                      <Bot className='h-12 w-12 text-muted-foreground mb-2' />
-                      <p className='text-sm text-muted-foreground'>
-                        Ask me anything about this channel
-                      </p>
-                    </div>
-                  ) : (
-                    chat.messages.map(message => {
-                      const content = getMessageContent(message);
-                      const isUser = message.role === 'user';
-
-                      return (
-                        <div
-                          key={message.id}
-                          className={cn(
-                            'flex gap-2',
-                            isUser ? 'flex-row-reverse' : 'flex-row'
-                          )}
-                        >
-                          <div
-                            className={cn(
-                              'rounded-lg px-3 py-2 max-w-[85%]',
-                              isUser
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-muted'
-                            )}
-                          >
-                            <p className='text-sm whitespace-pre-wrap break-words'>
-                              {content}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
-                  {isChatLoading && (
-                    <div className='flex gap-2'>
-                      <div className='rounded-lg bg-muted px-3 py-2'>
-                        <Loader2 className='h-4 w-4 animate-spin' />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Chat Input */}
-              <form
-                onSubmit={handleChatSubmit}
-                className='flex gap-2 mt-4 flex-shrink-0'
-              >
-                <Textarea
-                  value={input}
-                  onChange={e => setInput(e.target.value)}
-                  placeholder='Ask about this channel...'
-                  className='min-h-[60px] resize-none'
-                  disabled={isChatLoading}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleChatSubmit(e);
-                    }
-                  }}
-                />
-                <Button
-                  type='submit'
-                  size='icon'
-                  className='h-[60px] w-[60px] flex-shrink-0'
-                  disabled={!input.trim() || isChatLoading}
-                >
-                  <Send className='h-4 w-4' />
-                  <span className='sr-only'>Send message</span>
-                </Button>
-              </form>
-            </div>
-          )}
+          <UnifiedChat
+            apiEndpoint={`/api/channels/${channelId}/ai`}
+            variant="panel"
+            persona={{
+              name: `${channelName} Assistant`,
+              greeting: `I can help with anything about #${channelName}. Ask me to summarize, suggest messages, or answer questions.`,
+              suggestions: ['Summarize recent activity', 'Suggest a message', 'What topics are trending?'],
+            }}
+            showToolCalls
+            showReasoning
+            enableActions
+            requestBody={{ channelId, action: 'chat' }}
+            onClose={onClose}
+            maxHeight="calc(100vh - 8rem)"
+          />
         </div>
       </CardContent>
     </Card>
