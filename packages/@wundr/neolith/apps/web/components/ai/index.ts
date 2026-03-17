@@ -300,3 +300,12 @@ export type { QuotaDisplayProps, QuotaData } from './quota-display';
 // NOTE: quota-manager, rate-limiter, and rate-limit-middleware are SERVER-ONLY
 // Import directly from lib/ai/... in server components/routes
 // Do NOT export them from this client-side barrel file
+
+// Unified Chat
+export { UnifiedChat } from './unified-chat';
+export type {
+  UnifiedChatConfig,
+  ChatPersona,
+  ChatVariant,
+  ProgressConfig,
+} from './unified-chat';
