@@ -63,12 +63,10 @@ export function AdminSettingsLayoutClient({
   channelCount,
   sections,
 }: AdminSettingsLayoutClientProps) {
-  // The main workspace sidebar is auto-collapsed when in admin routes (width: 5.5rem)
-  // We position our settings sidebar after that collapsed sidebar
   return (
-    <div className='flex min-h-screen bg-background'>
-      {/* Desktop Sidebar - positioned after the collapsed main sidebar, below the workspace header (h-16 = 4rem) */}
-      <aside className='hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:top-16 lg:bottom-0 lg:left-[5.5rem] lg:border-r lg:bg-muted/30 lg:z-10'>
+    <div className='flex h-[calc(100vh-4rem)] -mx-6 -mt-6'>
+      {/* Desktop Sidebar - in-flow, not fixed */}
+      <aside className='hidden lg:flex lg:w-64 lg:shrink-0 lg:flex-col border-r bg-muted/30 overflow-y-auto'>
         <AdminSettingsSidebar
           workspaceSlug={workspaceSlug}
           workspaceName={workspaceName}
@@ -81,7 +79,7 @@ export function AdminSettingsLayoutClient({
       </aside>
 
       {/* Mobile Header */}
-      <div className='lg:hidden fixed top-0 left-0 right-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
+      <div className='lg:hidden fixed top-16 left-0 right-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
         <div className='flex h-14 items-center justify-between px-4'>
           <Link
             href={`/${workspaceSlug}/dashboard`}
@@ -112,8 +110,8 @@ export function AdminSettingsLayoutClient({
         </div>
       </div>
 
-      {/* Main Content - account for both collapsed main sidebar (5.5rem) + settings sidebar (16rem) */}
-      <main className='flex-1 lg:pl-64'>
+      {/* Main Content */}
+      <main className='flex-1 overflow-y-auto'>
         <div className='pt-14 lg:pt-0'>
           <div className='mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12'>
             {children}
