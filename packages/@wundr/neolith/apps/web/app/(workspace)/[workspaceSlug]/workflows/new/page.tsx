@@ -4,19 +4,12 @@
  */
 'use client';
 
-import {
-  Send,
-  ArrowRight,
-  Zap,
-  GitBranch,
-  AlertCircle,
-  CheckCircle,
-} from 'lucide-react';
+import { AlertCircle, CheckCircle, GitBranch } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import * as React from 'react';
 
+import { UnifiedChat } from '@/components/ai/unified-chat';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { WorkflowPreview } from '@/components/workflows/workflow-preview';
 
 import type {
@@ -25,13 +18,6 @@ import type {
   ActionId,
   CreateWorkflowInput,
 } from '@/types/workflow';
-
-interface Message {
-  id: string;
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-  timestamp: Date;
-}
 
 interface WorkflowSpec {
   name: string;
@@ -43,165 +29,20 @@ interface WorkflowSpec {
   suggestions: string[];
 }
 
-const GREETING_MESSAGE = `I'll help you create a new workflow. Workflows automate tasks and processes based on triggers and actions.
-
-To get started, describe what you want to automate. For example:
-- "Send a welcome message when someone joins a channel"
-- "Notify my team when a specific keyword is mentioned"
-- "Post a daily summary every morning at 9 AM"
-
-What would you like your workflow to do?`;
-
 /**
- * ConversationalWorkflowCreation - Chat-based workflow creation
+ * ConversationalWorkflowCreation - Chat-based workflow creation using UnifiedChat
  */
 export default function ConversationalWorkflowCreationPage() {
   const params = useParams();
   const router = useRouter();
-  const workspaceId = (params?.workspaceSlug ?? '') as string;
+  const workspaceSlug = (params?.workspaceSlug ?? '') as string;
 
-  const [messages, setMessages] = React.useState<Message[]>([
-    {
-      id: 'greeting',
-      role: 'assistant',
-      content: GREETING_MESSAGE,
-      timestamp: new Date(),
-    },
-  ]);
-  const [input, setInput] = React.useState('');
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
   const [generatedSpec, setGeneratedSpec] = React.useState<WorkflowSpec | null>(
     null
   );
   const [showReview, setShowReview] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
-
-  const messagesEndRef = React.useRef<HTMLDivElement>(null);
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-
-  // Auto-scroll to bottom
-  React.useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  // Focus textarea
-  React.useEffect(() => {
-    textareaRef.current?.focus();
-  }, []);
-
-  const sendMessage = async (userMessage: string): Promise<void> => {
-    setIsLoading(true);
-    setError(null);
-
-    const userMsg: Message = {
-      id: `user-${Date.now()}`,
-      role: 'user',
-      content: userMessage.trim(),
-      timestamp: new Date(),
-    };
-
-    setMessages(prev => [...prev, userMsg]);
-    setInput('');
-
-    try {
-      const response = await fetch('/api/creation/conversation', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          entityType: 'workflow',
-          messages: [...messages, userMsg],
-          workspaceContext: {
-            id: workspaceId,
-          },
-          existingSpec: generatedSpec,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`API error: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-
-      const assistantMsg: Message = {
-        id: `assistant-${Date.now()}`,
-        role: 'assistant',
-        content: data.message,
-        timestamp: new Date(),
-      };
-
-      setMessages(prev => [...prev, assistantMsg]);
-
-      // Check if spec was generated
-      if (data.spec) {
-        const spec: WorkflowSpec = {
-          name: data.spec.name || '',
-          description: data.spec.description || '',
-          trigger: data.spec.properties?.trigger || null,
-          actions: data.spec.properties?.actions || [],
-          confidence: data.spec.confidence || 0,
-          missingFields: data.spec.missingFields || [],
-          suggestions: data.spec.suggestions || [],
-        };
-        setGeneratedSpec(spec);
-      }
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to send message';
-      setError(errorMessage);
-      setMessages(prev => [
-        ...prev,
-        {
-          id: `error-${Date.now()}`,
-          role: 'assistant',
-          content: `I encountered an error: ${errorMessage}. Please try again.`,
-          timestamp: new Date(),
-        },
-      ]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) {
-      return;
-    }
-
-    await sendMessage(input);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit(e);
-    }
-  };
-
-  const handleSwitchToReview = () => {
-    if (!generatedSpec) {
-      // Generate basic spec from conversation
-      const basicSpec: WorkflowSpec = {
-        name: '',
-        description: messages
-          .filter(m => m.role === 'user')
-          .map(m => m.content)
-          .join(' ')
-          .slice(0, 200),
-        trigger: null,
-        actions: [],
-        confidence: 0.3,
-        missingFields: ['name', 'trigger', 'actions'],
-        suggestions: ['Continue the conversation to provide more details'],
-      };
-      setGeneratedSpec(basicSpec);
-    }
-    setShowReview(true);
-  };
+  const [error, setError] = React.useState<string | null>(null);
 
   const handleCreateWorkflow = async () => {
     if (!generatedSpec || !generatedSpec.trigger) {
@@ -223,13 +64,14 @@ export default function ConversationalWorkflowCreationPage() {
         })),
       };
 
-      const response = await fetch(`/api/workspaces/${workspaceId}/workflows`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(workflowInput),
-      });
+      const response = await fetch(
+        `/api/workspaces/${workspaceSlug}/workflows`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(workflowInput),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -237,26 +79,24 @@ export default function ConversationalWorkflowCreationPage() {
       }
 
       await response.json();
-
-      // Redirect to workflows page
-      router.push(`/${workspaceId}/workflows`);
+      router.push(`/${workspaceSlug}/workflows`);
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to create workflow';
-      setError(errorMessage);
+      setError(
+        err instanceof Error ? err.message : 'Failed to create workflow'
+      );
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleCancel = () => {
-    router.push(`/${workspaceId}/workflows`);
+    router.push(`/${workspaceSlug}/workflows`);
   };
 
+  // Review phase
   if (showReview && generatedSpec) {
     return (
       <div className='flex h-screen flex-col'>
-        {/* Header */}
         <div className='border-b bg-background px-6 py-4'>
           <div className='flex items-center justify-between'>
             <div>
@@ -280,7 +120,6 @@ export default function ConversationalWorkflowCreationPage() {
           </div>
         </div>
 
-        {/* Review Content */}
         <div className='flex-1 overflow-auto p-6'>
           <div className='mx-auto max-w-4xl space-y-6'>
             {/* Confidence & Status */}
@@ -311,7 +150,7 @@ export default function ConversationalWorkflowCreationPage() {
                   <ul className='mt-1 space-y-1'>
                     {generatedSpec.suggestions.map((suggestion, idx) => (
                       <li key={idx} className='text-sm text-muted-foreground'>
-                        • {suggestion}
+                        &bull; {suggestion}
                       </li>
                     ))}
                   </ul>
@@ -413,6 +252,7 @@ export default function ConversationalWorkflowCreationPage() {
     );
   }
 
+  // Conversation phase
   return (
     <div className='flex h-screen flex-col'>
       {/* Header */}
@@ -424,170 +264,75 @@ export default function ConversationalWorkflowCreationPage() {
               Describe what you want to automate and we will build it for you
             </p>
           </div>
-          <Button type='button' onClick={handleCancel} variant='ghost'>
-            Cancel
-          </Button>
-        </div>
-      </div>
-
-      {/* Chat Messages */}
-      <div className='flex-1 overflow-y-auto px-6 py-4'>
-        <div className='mx-auto max-w-3xl space-y-4'>
-          {messages.map(message => (
-            <ChatMessage key={message.id} message={message} />
-          ))}
-
-          {isLoading && (
-            <div className='flex items-start gap-3'>
-              <div className='flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10'>
-                <Zap className='h-4 w-4 text-primary' />
+          <div className='flex items-center gap-2'>
+            {generatedSpec && generatedSpec.trigger && (
+              <div className='flex items-center gap-2 text-sm text-muted-foreground mr-2'>
+                <GitBranch className='h-4 w-4' />
+                <span>
+                  {generatedSpec.actions.length} action
+                  {generatedSpec.actions.length !== 1 ? 's' : ''} configured
+                </span>
               </div>
-              <div className='flex-1 rounded-lg bg-muted p-4'>
-                <div className='flex items-center gap-2'>
-                  <LoadingDots />
-                  <span className='text-sm text-muted-foreground'>
-                    Thinking...
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {error && (
-            <div className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'>
-              {error}
-            </div>
-          )}
-
-          <div ref={messagesEndRef} />
+            )}
+            <Button type='button' onClick={handleCancel} variant='ghost'>
+              Cancel
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Input Area */}
-      <div className='border-t bg-background px-6 py-4'>
-        <div className='mx-auto max-w-3xl'>
-          <form onSubmit={handleSubmit} className='space-y-3'>
-            <div className='flex gap-2'>
-              <Textarea
-                ref={textareaRef}
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder='Type your message... (Enter to send, Shift+Enter for new line)'
-                className='min-h-[80px] resize-none'
-                disabled={isLoading}
-                aria-label='Message input'
-              />
-              <Button
-                type='submit'
-                size='icon'
-                className='h-[80px] w-[80px] shrink-0'
-                disabled={!input.trim() || isLoading}
-              >
-                <Send className='h-5 w-5' />
-                <span className='sr-only'>Send message</span>
-              </Button>
-            </div>
-
-            <div className='flex items-center justify-between'>
-              <Button
-                type='button'
-                variant='outline'
-                onClick={handleSwitchToReview}
-                disabled={isLoading}
-              >
-                {generatedSpec?.trigger ? 'Review & Create' : 'Skip to Review'}
-                <ArrowRight className='ml-2 h-4 w-4' />
-              </Button>
-
-              {generatedSpec && generatedSpec.trigger && (
-                <div className='flex items-center gap-2 text-sm text-muted-foreground'>
-                  <GitBranch className='h-4 w-4' />
-                  <span>
-                    {generatedSpec.actions.length} action
-                    {generatedSpec.actions.length !== 1 ? 's' : ''} configured
-                  </span>
-                </div>
-              )}
-            </div>
-          </form>
-        </div>
-      </div>
+      {/* Chat */}
+      <UnifiedChat
+        apiEndpoint='/api/wizard/chat'
+        entityType='workflow'
+        variant='embedded'
+        persona={{
+          name: 'Workflow Builder',
+          greeting:
+            'I\'ll help you create a new workflow. Describe what you want to automate. For example:\n- "Send a welcome message when someone joins a channel"\n- "Notify my team when a specific keyword is mentioned"\n- "Post a daily summary every morning at 9 AM"\n\nWhat would you like your workflow to do?',
+          suggestions: [
+            'Send a welcome message on channel join',
+            'Daily summary notification at 9 AM',
+            'Alert team on keyword mention',
+          ],
+        }}
+        progress={{
+          enabled: true,
+          requiredFields: ['name', 'description', 'trigger'],
+        }}
+        showToolCalls={false}
+        enableActions
+        requestBody={{ workspaceId: workspaceSlug }}
+        onDataExtracted={data => {
+          setGeneratedSpec(prev => ({
+            name: (data.name as string) || prev?.name || '',
+            description:
+              (data.description as string) || prev?.description || '',
+            trigger: (data.trigger as TriggerConfig) || prev?.trigger || null,
+            actions:
+              (data.actions as Omit<ActionConfig, 'id' | 'order'>[]) ||
+              prev?.actions ||
+              [],
+            confidence: 0.7,
+            missingFields: [],
+            suggestions: [],
+          }));
+        }}
+        onReadyToCreate={data => {
+          setGeneratedSpec({
+            name: (data.name as string) || '',
+            description: (data.description as string) || '',
+            trigger: (data.trigger as TriggerConfig) || null,
+            actions:
+              (data.actions as Omit<ActionConfig, 'id' | 'order'>[]) || [],
+            confidence: 0.8,
+            missingFields: [],
+            suggestions: [],
+          });
+          setShowReview(true);
+        }}
+        className='flex-1'
+      />
     </div>
-  );
-}
-
-/**
- * ChatMessage Component
- */
-interface ChatMessageProps {
-  message: Message;
-}
-
-function ChatMessage({ message }: ChatMessageProps) {
-  const isUser = message.role === 'user';
-
-  return (
-    <div
-      className={`flex items-start gap-3 ${isUser ? 'flex-row-reverse' : ''}`}
-    >
-      <div
-        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-          isUser ? 'bg-primary text-primary-foreground' : 'bg-primary/10'
-        }`}
-      >
-        {isUser ? (
-          <UserIcon className='h-4 w-4' />
-        ) : (
-          <Zap className='h-4 w-4 text-primary' />
-        )}
-      </div>
-      <div
-        className={`flex-1 rounded-lg p-4 ${
-          isUser ? 'bg-primary/10 text-right' : 'bg-muted'
-        }`}
-      >
-        <p className='whitespace-pre-wrap text-sm leading-relaxed'>
-          {message.content}
-        </p>
-        <p className='mt-2 text-xs text-muted-foreground'>
-          {message.timestamp.toLocaleTimeString()}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Loading Dots Animation
- */
-function LoadingDots() {
-  return (
-    <div className='flex gap-1'>
-      <div className='h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.3s]' />
-      <div className='h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]' />
-      <div className='h-2 w-2 animate-bounce rounded-full bg-primary' />
-    </div>
-  );
-}
-
-/**
- * User Icon
- */
-function UserIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <path d='M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2' />
-      <circle cx='12' cy='7' r='4' />
-    </svg>
   );
 }
