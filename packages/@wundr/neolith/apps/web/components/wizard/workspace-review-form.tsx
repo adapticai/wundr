@@ -3,6 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as React from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { Loader } from '@/components/ai/loader';
@@ -27,7 +28,7 @@ import { Textarea } from '@/components/ui/textarea';
 
 const workspaceReviewSchema = z.object({
   name: z.string().min(1, 'Workspace name is required'),
-  description: z.string().min(10, 'Description must be at least 10 characters'),
+  description: z.string().min(1, 'Description is required'),
   organizationType: z.string().optional(),
   teamSize: z.enum(['small', 'medium', 'large']).optional(),
   purpose: z.string().optional(),
@@ -73,7 +74,12 @@ export function WorkspaceReviewForm({
       </CardHeader>
       <CardContent>
         <form
-          onSubmit={form.handleSubmit(handleFormSubmit)}
+          onSubmit={form.handleSubmit(handleFormSubmit, errors => {
+            const firstError = Object.values(errors)[0];
+            if (firstError?.message) {
+              toast.error(String(firstError.message));
+            }
+          })}
           className='space-y-6'
         >
           {/* Name */}
