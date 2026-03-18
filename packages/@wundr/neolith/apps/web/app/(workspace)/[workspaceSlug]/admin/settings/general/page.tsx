@@ -563,22 +563,17 @@ export default function GeneralSettingsPage() {
                 )}
               </div>
               <div>
-                <label htmlFor='icon-upload' className='cursor-pointer'>
-                  <Button
-                    variant='outline'
-                    size='sm'
-                    disabled={isUploadingIcon}
-                    asChild
-                  >
-                    <span>
-                      <Upload className='h-4 w-4 mr-2' />
-                      {isUploadingIcon ? 'Uploading...' : 'Change Icon'}
-                    </span>
-                  </Button>
-                </label>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  disabled={isUploadingIcon}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className='h-4 w-4 mr-2' />
+                  {isUploadingIcon ? 'Uploading...' : 'Change Icon'}
+                </Button>
                 <input
                   ref={fileInputRef}
-                  id='icon-upload'
                   type='file'
                   accept='image/jpeg,image/png,image/webp,image/svg+xml'
                   className='hidden'
