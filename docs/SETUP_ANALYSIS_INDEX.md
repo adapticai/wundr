@@ -461,7 +461,7 @@ For questions about this analysis:
 
 ### External References:
 
-- Claude Flow: https://github.com/ruvnet/claude-flow
+- Ruflo: https://github.com/ruvnet/ruflo
 - MCP Documentation: https://modelcontextprotocol.io/docs
 - Wundr Repository: This repository
 

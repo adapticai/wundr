@@ -53,7 +53,7 @@ declare module '@wundr.io/computer-setup' {
     };
     aiTools: {
       claudeCode: boolean;
-      claudeFlow: boolean;
+      ruflo: boolean;
       mcpTools: string[];
       swarmAgents: string[];
     };

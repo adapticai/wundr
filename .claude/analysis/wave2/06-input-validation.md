@@ -147,7 +147,7 @@ const SpawnSessionPayloadSchema = z.object({
     priority: z.enum(['low', 'medium', 'high', 'critical']),
     status: z.enum([...]).default('pending'),
   }),
-  sessionType: z.enum(['claude-code', 'claude-flow']),
+  sessionType: z.enum(['claude-code', 'ruflo']),
   memoryProfile: z.string().optional(),
 });
 ```

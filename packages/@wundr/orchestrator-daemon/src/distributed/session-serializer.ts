@@ -59,7 +59,7 @@ export interface SerializedSession {
   compressed?: boolean;
   compressionAlgorithm?: 'zlib';
   task: Task;
-  sessionType: 'claude-code' | 'claude-flow';
+  sessionType: 'claude-code' | 'ruflo';
   memoryContext: MemoryContext;
   metrics: SessionMetrics;
   startedAt: string;
@@ -118,7 +118,7 @@ const SerializedSessionSchema = z.object({
   compressed: z.boolean().optional(),
   compressionAlgorithm: z.enum(['zlib']).optional(),
   task: z.any(), // Task schema from types
-  sessionType: z.enum(['claude-code', 'claude-flow']),
+  sessionType: z.enum(['claude-code', 'ruflo']),
   memoryContext: z.any(), // MemoryContext schema from types
   metrics: z.any(), // SessionMetrics schema from types
   startedAt: z.string(),

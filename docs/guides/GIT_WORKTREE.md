@@ -1,12 +1,11 @@
-# Git-Worktree Guide: Parallel Development with Claude Flow
+# Git-Worktree Guide: Parallel Development with Ruflo
 
-Learn how to leverage Git worktrees with Claude Flow for ultra-efficient parallel development
-workflows.
+Learn how to leverage Git worktrees with Ruflo for ultra-efficient parallel development workflows.
 
 ## Table of Contents
 
 - [What are Git Worktrees?](#what-are-git-worktrees)
-- [Why Use Worktrees with Claude Flow?](#why-use-worktrees-with-claude-flow)
+- [Why Use Worktrees with Ruflo?](#why-use-worktrees-with-ruflo)
 - [Setup and Configuration](#setup-and-configuration)
 - [Basic Workflows](#basic-workflows)
 - [Advanced Patterns](#advanced-patterns)
@@ -38,7 +37,7 @@ cd ~/project/feature-a    # Feature A branch
 cd ~/project/feature-b    # Feature B branch
 ```
 
-## Why Use Worktrees with Claude Flow?
+## Why Use Worktrees with Ruflo?
 
 ### 1. True Parallel Agent Execution
 
@@ -84,9 +83,9 @@ mkdir -p .worktrees
 git config worktree.guessRemote true
 ```
 
-### Claude Flow Worktree Configuration
+### Ruflo Worktree Configuration
 
-Create `.claude-flow/worktree.config.json`:
+Create `.ruflo/worktree.config.json`:
 
 ```json
 {
@@ -118,12 +117,12 @@ Create `.claude-flow/worktree.config.json`:
 
 ```bash
 # Initialize worktree-enabled project
-npx claude-flow@alpha worktree init
+npx ruflo@latest worktree init
 
 # Create agent-specific worktrees
-npx claude-flow@alpha worktree create --agent backend-dev --branch feature/api
-npx claude-flow@alpha worktree create --agent frontend-dev --branch feature/ui
-npx claude-flow@alpha worktree create --agent tester --branch feature/tests
+npx ruflo@latest worktree create --agent backend-dev --branch feature/api
+npx ruflo@latest worktree create --agent frontend-dev --branch feature/ui
+npx ruflo@latest worktree create --agent tester --branch feature/tests
 ```
 
 ## Basic Workflows
@@ -135,7 +134,7 @@ npx claude-flow@alpha worktree create --agent tester --branch feature/tests
 git checkout -b feature/user-management
 
 # 2. Initialize worktrees for agents
-npx claude-flow@alpha worktree setup-feature "user-management"
+npx ruflo@latest worktree setup-feature "user-management"
 ```
 
 This creates:
@@ -154,7 +153,7 @@ project/
 
 ```bash
 # Run SPARC TDD across multiple worktrees
-npx claude-flow@alpha sparc tdd "Add user authentication" \
+npx ruflo@latest sparc tdd "Add user authentication" \
   --worktree-mode parallel \
   --agents backend-dev,tester,api-docs
 ```
@@ -187,7 +186,7 @@ npx claude-flow@alpha sparc tdd "Add user authentication" \
 
 ```bash
 # Start review process
-npx claude-flow@alpha worktree review \
+npx ruflo@latest worktree review \
   --branch feature/user-auth \
   --reviewers reviewer,tester,security-manager
 ```
@@ -206,7 +205,7 @@ Each reviewer gets isolated workspace:
 ### Pattern 1: Hierarchical Agent Coordination
 
 ```json
-// .claude-flow/worktree-topology.json
+// .ruflo/worktree-topology.json
 {
   "topology": "hierarchical",
   "coordinator": {
@@ -233,9 +232,9 @@ Each reviewer gets isolated workspace:
 Run hierarchical coordination:
 
 ```bash
-npx claude-flow@alpha swarm start \
+npx ruflo@latest swarm start \
   --topology hierarchical \
-  --config .claude-flow/worktree-topology.json \
+  --config .ruflo/worktree-topology.json \
   --task "Build complete user management system"
 ```
 
@@ -243,7 +242,7 @@ npx claude-flow@alpha swarm start \
 
 ```bash
 # Initialize consensus swarm
-npx claude-flow@alpha worktree consensus \
+npx ruflo@latest worktree consensus \
   --task "Design authentication architecture" \
   --agents architect,security-manager,backend-dev,reviewer \
   --consensus-threshold 0.75
@@ -260,10 +259,10 @@ npx claude-flow@alpha worktree consensus \
 
 ```bash
 # Create CI worktree
-npx claude-flow@alpha worktree create --name ci --branch main
+npx ruflo@latest worktree create --name ci --branch main
 
 # Watch for changes and test
-npx claude-flow@alpha worktree watch \
+npx ruflo@latest worktree watch \
   --worktree ci \
   --on-change "npm test && npm run build" \
   --notify-on-failure true
@@ -273,7 +272,7 @@ npx claude-flow@alpha worktree watch \
 
 ```bash
 # Initialize multi-repo swarm
-npx claude-flow@alpha worktree multi-repo \
+npx ruflo@latest worktree multi-repo \
   --repos "frontend,backend,shared" \
   --task "Update authentication across all services"
 ```
@@ -294,10 +293,10 @@ projects/
 
 ### Automatic Agent Assignment
 
-Claude Flow automatically assigns agents to worktrees based on file types and task context.
+Ruflo automatically assigns agents to worktrees based on file types and task context.
 
 ```javascript
-// .claude-flow/agent-assignment.js
+// .ruflo/agent-assignment.js
 module.exports = {
   rules: [
     {
@@ -325,13 +324,13 @@ Agents communicate via shared memory:
 
 ```bash
 # Agent in backend worktree stores result
-npx claude-flow@alpha memory store \
+npx ruflo@latest memory store \
   --key "auth/backend/implementation" \
   --value "Completed JWT implementation" \
   --worktree backend
 
 # Agent in testing worktree retrieves
-npx claude-flow@alpha memory retrieve \
+npx ruflo@latest memory retrieve \
   --key "auth/backend/implementation" \
   --worktree testing
 ```
@@ -358,7 +357,7 @@ Define when worktrees sync:
 
 ```bash
 # 1. Initialize project
-npx claude-flow@alpha worktree init-microservice "user-service"
+npx ruflo@latest worktree init-microservice "user-service"
 
 # Creates worktrees:
 # - api/         (API endpoints)
@@ -367,7 +366,7 @@ npx claude-flow@alpha worktree init-microservice "user-service"
 # - docs/        (API documentation)
 
 # 2. Spawn agents
-npx claude-flow@alpha swarm start \
+npx ruflo@latest swarm start \
   --topology mesh \
   --agents backend-dev,tester,api-docs \
   --task "Build user CRUD service with PostgreSQL"
@@ -382,7 +381,7 @@ npx claude-flow@alpha swarm start \
 # CI worktree runs tests as code changes
 
 # 5. Merge when complete
-npx claude-flow@alpha worktree merge-all --to main
+npx ruflo@latest worktree merge-all --to main
 ```
 
 ### Example 2: Frontend Refactoring
@@ -391,7 +390,7 @@ npx claude-flow@alpha worktree merge-all --to main
 
 ```bash
 # 1. Create refactor worktrees
-npx claude-flow@alpha worktree refactor \
+npx ruflo@latest worktree refactor \
   --base feature/typescript-migration \
   --split-by module
 
@@ -402,12 +401,12 @@ npx claude-flow@alpha worktree refactor \
 # - types/       (Create type definitions)
 
 # 2. Assign specialized agents
-npx claude-flow@alpha agent spawn \
+npx ruflo@latest agent spawn \
   --type coder \
   --specialization typescript \
   --worktree components
 
-npx claude-flow@alpha agent spawn \
+npx ruflo@latest agent spawn \
   --type coder \
   --specialization typescript \
   --worktree hooks
@@ -416,12 +415,12 @@ npx claude-flow@alpha agent spawn \
 # Each worktree refactors independently
 
 # 4. Type checking across all worktrees
-npx claude-flow@alpha worktree exec-all "npm run typecheck"
+npx ruflo@latest worktree exec-all "npm run typecheck"
 
 # 5. Incremental merge
-npx claude-flow@alpha worktree merge \
+npx ruflo@latest worktree merge \
   --from types --to main  # Merge types first
-npx claude-flow@alpha worktree merge \
+npx ruflo@latest worktree merge \
   --from utils --to main  # Then utilities
 # ... continue incrementally
 ```
@@ -432,16 +431,16 @@ npx claude-flow@alpha worktree merge \
 
 ```bash
 # 1. Create optimization worktrees
-npx claude-flow@alpha worktree create --name benchmark --branch main
-npx claude-flow@alpha worktree create --name optimize --branch optimize/performance
+npx ruflo@latest worktree create --name benchmark --branch main
+npx ruflo@latest worktree create --name optimize --branch optimize/performance
 
 # 2. Baseline in benchmark worktree
 cd .worktrees/benchmark
-npx claude-flow@alpha benchmark run --suite full --save-baseline
+npx ruflo@latest benchmark run --suite full --save-baseline
 
 # 3. Optimize in separate worktree
 cd .worktrees/optimize
-npx claude-flow@alpha agent spawn --type perf-analyzer
+npx ruflo@latest agent spawn --type perf-analyzer
 
 # Agent analyzes and optimizes:
 # - Database queries
@@ -450,14 +449,14 @@ npx claude-flow@alpha agent spawn --type perf-analyzer
 # - Memory usage
 
 # 4. Compare performance
-npx claude-flow@alpha worktree compare \
+npx ruflo@latest worktree compare \
   --baseline benchmark \
   --current optimize \
   --metric performance
 
 # 5. Merge if improved
 if [ $PERFORMANCE_GAIN -gt 20 ]; then
-  npx claude-flow@alpha worktree merge --from optimize --to main
+  npx ruflo@latest worktree merge --from optimize --to main
 fi
 ```
 
@@ -467,7 +466,7 @@ fi
 
 ```bash
 # 1. Create feature worktrees
-npx claude-flow@alpha worktree batch-create \
+npx ruflo@latest worktree batch-create \
   --features "payment-gateway,notification-system,user-dashboard"
 
 # Creates:
@@ -477,7 +476,7 @@ npx claude-flow@alpha worktree batch-create \
 # └── user-dashboard/
 
 # 2. Spawn agent teams for each
-npx claude-flow@alpha swarm start \
+npx ruflo@latest swarm start \
   --topology hierarchical \
   --task "Develop all three features in parallel" \
   --assign-teams-to-worktrees true
@@ -490,10 +489,10 @@ npx claude-flow@alpha swarm start \
 # 3. Each team works independently
 
 # 4. Integration worktree
-npx claude-flow@alpha worktree create --name integration --branch integration/all-features
+npx ruflo@latest worktree create --name integration --branch integration/all-features
 
 # 5. Merge features to integration
-npx claude-flow@alpha worktree merge-strategy \
+npx ruflo@latest worktree merge-strategy \
   --strategy feature-toggle \
   --features payment-gateway,notification-system,user-dashboard \
   --target integration
@@ -526,14 +525,14 @@ git merge integration/all-features
 
 ```bash
 # Use worktree-scoped memory
-npx claude-flow@alpha memory store \
+npx ruflo@latest memory store \
   --key "feature/auth/status" \
   --value "Backend complete, tests pending" \
   --scope worktree \
   --worktree backend
 
 # Global memory for coordination
-npx claude-flow@alpha memory store \
+npx ruflo@latest memory store \
   --key "project/status" \
   --value "3/5 features complete" \
   --scope global
@@ -543,13 +542,13 @@ npx claude-flow@alpha memory store \
 
 ```bash
 # Auto-cleanup merged worktrees
-npx claude-flow@alpha worktree cleanup \
+npx ruflo@latest worktree cleanup \
   --merged-only \
   --older-than 7d
 
 # Manual cleanup
-npx claude-flow@alpha worktree list --merged
-npx claude-flow@alpha worktree remove feature/auth-backend
+npx ruflo@latest worktree list --merged
+npx ruflo@latest worktree remove feature/auth-backend
 ```
 
 ### 4. Conflict Resolution
@@ -572,12 +571,12 @@ npx claude-flow@alpha worktree remove feature/auth-backend
 
 ```bash
 # Monitor all worktrees
-npx claude-flow@alpha worktree monitor \
+npx ruflo@latest worktree monitor \
   --dashboard \
   --metrics "cpu,memory,disk,build-time,test-time"
 
 # Set alerts
-npx claude-flow@alpha worktree alert \
+npx ruflo@latest worktree alert \
   --condition "build-time > 5min" \
   --action "notify-coordinator"
 ```
@@ -586,12 +585,12 @@ npx claude-flow@alpha worktree alert \
 
 ```bash
 # Snapshot all worktrees
-npx claude-flow@alpha worktree snapshot \
+npx ruflo@latest worktree snapshot \
   --all \
   --output .snapshots/$(date +%Y%m%d)
 
 # Restore worktree
-npx claude-flow@alpha worktree restore \
+npx ruflo@latest worktree restore \
   --snapshot .snapshots/20250121/backend \
   --to .worktrees/backend
 ```
@@ -617,27 +616,27 @@ git worktree prune
 
 ```bash
 # Check agent assignments
-npx claude-flow@alpha agent list --show-worktrees
+npx ruflo@latest agent list --show-worktrees
 
 # Verify communication
-npx claude-flow@alpha agent ping --all
+npx ruflo@latest agent ping --all
 
 # Reset coordination
-npx claude-flow@alpha swarm reset
-npx claude-flow@alpha swarm start --topology mesh
+npx ruflo@latest swarm reset
+npx ruflo@latest swarm start --topology mesh
 ```
 
 ### Issue: Memory Conflicts
 
 ```bash
 # Check memory state
-npx claude-flow@alpha memory list --scope all
+npx ruflo@latest memory list --scope all
 
 # Clear worktree memory
-npx claude-flow@alpha memory clear --worktree backend
+npx ruflo@latest memory clear --worktree backend
 
 # Reset all memory
-npx claude-flow@alpha memory reset --confirm
+npx ruflo@latest memory reset --confirm
 ```
 
 ### Issue: Sync Failures
@@ -649,7 +648,7 @@ git fetch origin
 git rebase origin/main
 
 # Force sync all
-npx claude-flow@alpha worktree sync-all --force --strategy rebase
+npx ruflo@latest worktree sync-all --force --strategy rebase
 ```
 
 ### Issue: Build Failures in Worktree
@@ -661,17 +660,17 @@ rm -rf node_modules package-lock.json
 npm install
 
 # Verify configuration
-npx claude-flow@alpha worktree validate --worktree backend
+npx ruflo@latest worktree validate --worktree backend
 
 # Run diagnostics
-npx claude-flow@alpha diagnostics --worktree backend
+npx ruflo@latest diagnostics --worktree backend
 ```
 
 ## Advanced Configuration
 
 ### Custom Worktree Hooks
 
-Create `.claude-flow/hooks/worktree-hooks.js`:
+Create `.ruflo/hooks/worktree-hooks.js`:
 
 ```javascript
 module.exports = {
@@ -737,7 +736,7 @@ module.exports = {
 
 ## Summary
 
-Git worktrees with Claude Flow enable:
+Git worktrees with Ruflo enable:
 
 - ✅ **True Parallelism**: 2.8-4.4x speed improvement
 - ✅ **Agent Isolation**: Independent workspaces

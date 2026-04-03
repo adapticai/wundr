@@ -195,9 +195,9 @@ export class TemplateManager {
         template: 'slack/manifest.json',
         output: 'slack-manifest.json',
       },
-      'claude-flow': {
-        template: 'claude-flow/swarm.config.js',
-        output: 'claude-flow.config.js',
+      ruflo: {
+        template: 'ruflo/swarm.config.js',
+        output: 'ruflo.config.js',
       },
     };
 

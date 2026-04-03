@@ -659,7 +659,7 @@ Examples:
 
     if (profile.tools?.includes('Claude Code')) {
       steps.push({ name: 'Install Claude Code', required: false });
-      steps.push({ name: 'Configure Claude Flow', required: false });
+      steps.push({ name: 'Configure Ruflo', required: false });
     }
 
     // Final steps

@@ -110,7 +110,7 @@ Complete setup with all tools and configuration.
 wundr claude-setup [path]               # Full setup
 wundr claude-setup --global             # Install tools globally
 wundr claude-setup --skip-mcp           # Skip MCP tools
-wundr claude-setup --skip-flow          # Skip Claude Flow
+wundr claude-setup --skip-flow          # Skip Ruflo
 wundr claude-setup --template react     # Apply template
 ```
 
@@ -508,7 +508,7 @@ Location: `~/.wundr/config.json`
     "autoUpdateClaudeConfig": true
   },
   "integrations": {
-    "claudeFlow": {
+    "ruflo": {
       "enabled": true,
       "autoInstall": true
     },
@@ -545,7 +545,7 @@ const QUALITY_THRESHOLDS = {
 - **Project Detection**: < 100ms for typical projects
 - **Quality Analysis**: < 500ms for most codebases
 - **CLAUDE.md Generation**: < 200ms
-- **Full Setup**: < 2 minutes including Claude Flow
+- **Full Setup**: < 2 minutes including Ruflo
 
 ### Memory Usage
 

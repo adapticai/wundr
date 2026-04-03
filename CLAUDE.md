@@ -345,17 +345,17 @@ pnpm db:studio          # Open Prisma Studio
 
 ## SPARC Methodology
 
-This project uses SPARC (Specification, Pseudocode, Architecture, Refinement, Completion) with
-Claude-Flow orchestration.
+This project uses SPARC (Specification, Pseudocode, Architecture, Refinement, Completion) with Ruflo
+orchestration.
 
 ### SPARC Commands
 
 ```bash
-npx claude-flow sparc modes                      # List modes
-npx claude-flow sparc run <mode> "<task>"         # Execute mode
-npx claude-flow sparc tdd "<feature>"             # TDD workflow
-npx claude-flow sparc batch <modes> "<task>"      # Parallel execution
-npx claude-flow sparc pipeline "<task>"           # Full pipeline
+npx ruflo@latest sparc modes                      # List modes
+npx ruflo@latest sparc run <mode> "<task>"         # Execute mode
+npx ruflo@latest sparc tdd "<feature>"             # TDD workflow
+npx ruflo@latest sparc batch <modes> "<task>"      # Parallel execution
+npx ruflo@latest sparc pipeline "<task>"           # Full pipeline
 ```
 
 ### Phases
@@ -392,7 +392,7 @@ npx claude-flow sparc pipeline "<task>"           # Full pipeline
 ### MCP Setup
 
 ```bash
-claude mcp add claude-flow npx claude-flow@alpha mcp start
+claude mcp add ruflo npx ruflo@latest mcp start
 ```
 
 ---
@@ -458,22 +458,22 @@ Located in `.claude/agents/` with specialised roles:
 **Before Work:**
 
 ```bash
-npx claude-flow@alpha hooks pre-task --description "[task]"
-npx claude-flow@alpha hooks session-restore --session-id "swarm-[id]"
+npx ruflo@latest hooks pre-task --description "[task]"
+npx ruflo@latest hooks session-restore --session-id "swarm-[id]"
 ```
 
 **During Work:**
 
 ```bash
-npx claude-flow@alpha hooks post-edit --file "[file]" --memory-key "swarm/[agent]/[step]"
-npx claude-flow@alpha hooks notify --message "[what was done]"
+npx ruflo@latest hooks post-edit --file "[file]" --memory-key "swarm/[agent]/[step]"
+npx ruflo@latest hooks notify --message "[what was done]"
 ```
 
 **After Work:**
 
 ```bash
-npx claude-flow@alpha hooks post-task --task-id "[task]"
-npx claude-flow@alpha hooks session-end --export-metrics true
+npx ruflo@latest hooks post-task --task-id "[task]"
+npx ruflo@latest hooks session-end --export-metrics true
 ```
 
 ---
@@ -537,7 +537,7 @@ Task tracking:
 
 ## Support
 
-- Claude Flow: https://github.com/ruvnet/claude-flow
+- Ruflo: https://github.com/ruvnet/ruflo
 - Wundr: https://github.com/adapticai/wundr
 - MCP Guide: `docs/CLAUDE_CODE_MCP_INTEGRATION.md`
 

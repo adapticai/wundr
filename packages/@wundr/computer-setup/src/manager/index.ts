@@ -149,7 +149,7 @@ export class ComputerSetupManager extends EventEmitter {
         },
         aiTools: {
           claudeCode: true,
-          claudeFlow: true,
+          ruflo: true,
           mcpTools: ['all'],
           swarmAgents: ['default'],
           memoryAllocation: '2GB',
@@ -381,9 +381,9 @@ export class ComputerSetupManager extends EventEmitter {
     if (profile.preferences?.aiTools?.claudeCode) {
       steps.push(...(await this.installerRegistry.getClaudeCodeSteps()));
     }
-    if (profile.preferences?.aiTools?.claudeFlow) {
+    if (profile.preferences?.aiTools?.ruflo) {
       steps.push(
-        ...(await this.installerRegistry.getClaudeFlowSteps(
+        ...(await this.installerRegistry.getRufloSteps(
           profile.preferences.aiTools.swarmAgents || []
         ))
       );
@@ -550,8 +550,8 @@ export class ComputerSetupManager extends EventEmitter {
     }
 
     // Configure AI agents
-    if (profile.preferences.aiTools.claudeFlow) {
-      await this.configuratorService.configureClaudeFlow(
+    if (profile.preferences.aiTools.ruflo) {
+      await this.configuratorService.configureRuflo(
         profile.preferences.aiTools
       );
     }

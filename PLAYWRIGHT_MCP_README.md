@@ -1,24 +1,34 @@
 # Playwright MCP Server - Project Integration Guide
 
-**Status**: INSTALLED & READY FOR USE
-**Date**: 2025-11-26
-**Version**: @executeautomation/playwright-mcp-server
+**Status**: INSTALLED & READY FOR USE **Date**: 2025-11-26 **Version**:
+@executeautomation/playwright-mcp-server
 
 ## Overview
 
-The Playwright MCP server has been successfully installed and configured for the Wundr Neolith application. This provides browser automation capabilities for testing all 24 application pages.
+The Playwright MCP server has been successfully installed and configured for the Wundr Neolith
+application. This provides browser automation capabilities for testing all 24 application pages.
 
 ## Quick Links
 
 ### Documentation (Read These First!)
-- **Setup Complete**: `/Users/iroselli/wundr/docs/PLAYWRIGHT_MCP_SETUP_COMPLETE.md` - Overview & validation results
-- **User Guide**: `/Users/iroselli/wundr/docs/PLAYWRIGHT_MCP_GUIDE.md` - Installation & available tools
-- **Commands Reference**: `/Users/iroselli/wundr/docs/PLAYWRIGHT_MCP_COMMANDS.md` - 50+ command examples
-- **Agent Workflows**: `/Users/iroselli/wundr/docs/PLAYWRIGHT_MCP_AGENT_WORKFLOW.md` - Role-specific instructions
+
+- **Setup Complete**: `/Users/iroselli/wundr/docs/PLAYWRIGHT_MCP_SETUP_COMPLETE.md` - Overview &
+  validation results
+- **User Guide**: `/Users/iroselli/wundr/docs/PLAYWRIGHT_MCP_GUIDE.md` - Installation & available
+  tools
+- **Commands Reference**: `/Users/iroselli/wundr/docs/PLAYWRIGHT_MCP_COMMANDS.md` - 50+ command
+  examples
+- **Agent Workflows**: `/Users/iroselli/wundr/docs/PLAYWRIGHT_MCP_AGENT_WORKFLOW.md` - Role-specific
+  instructions
 
 ### Test Resources (Copy & Use!)
-- **Test Template**: `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/__tests__/playwright-mcp-test-template.ts` - 20+ reusable helper functions
-- **Page Validation**: `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/__tests__/neolith-page-validation.test.ts` - All 24 pages documented
+
+- **Test Template**:
+  `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/__tests__/playwright-mcp-test-template.ts` -
+  20+ reusable helper functions
+- **Page Validation**:
+  `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/__tests__/neolith-page-validation.test.ts` -
+  All 24 pages documented
 
 ## Verify Installation
 
@@ -41,6 +51,7 @@ claude mcp list
 ## Basic Usage Examples
 
 ### Example 1: Navigate to Page
+
 ```bash
 mcp_tool__playwright_navigate { url: "http://localhost:3000/login" }
 mcp_tool__playwright_wait_for_selector { selector: "form" }
@@ -48,6 +59,7 @@ mcp_tool__playwright_screenshot { path: "screenshots/login.png" }
 ```
 
 ### Example 2: Login Flow
+
 ```bash
 # Navigate
 mcp_tool__playwright_navigate { url: "http://localhost:3000/login" }
@@ -65,6 +77,7 @@ mcp_tool__playwright_get_url
 ```
 
 ### Example 3: Form Interaction
+
 ```bash
 # Click button
 mcp_tool__playwright_click { selector: ".create-button" }
@@ -113,12 +126,14 @@ const agentNames = await queryElements(page, '.agent-name');
 ## Available Pages (24 Total)
 
 ### Public Pages (4)
+
 - `/` - Home (redirects to login)
 - `/login` - Login page
 - `/register` - Registration page
 - `/error` - Error page
 
 ### Workspace Pages (20)
+
 - `/[workspaceId]/dashboard` - Main dashboard
 - `/[workspaceId]/agents` - AI agents management
 - `/[workspaceId]/workflows` - Workflow management
@@ -143,6 +158,7 @@ const agentNames = await queryElements(page, '.agent-name');
 ## MCP Tools Available
 
 **Navigation** (5 tools):
+
 - `playwright_navigate` - Navigate to URL
 - `playwright_goto` - Go with options
 - `playwright_back` - Go back
@@ -150,6 +166,7 @@ const agentNames = await queryElements(page, '.agent-name');
 - `playwright_reload` - Reload page
 
 **Interaction** (8 tools):
+
 - `playwright_click` - Click element
 - `playwright_fill` - Fill input
 - `playwright_type` - Type text
@@ -159,6 +176,7 @@ const agentNames = await queryElements(page, '.agent-name');
 - `playwright_press` - Press key
 
 **Information** (9 tools):
+
 - `playwright_screenshot` - Take screenshot
 - `playwright_get_text` - Get element text
 - `playwright_get_html` - Get element HTML
@@ -170,12 +188,14 @@ const agentNames = await queryElements(page, '.agent-name');
 - `playwright_add_cookies` - Add cookies
 
 **Waiting** (4 tools):
+
 - `playwright_wait_for_selector` - Wait for element
 - `playwright_wait_for_navigation` - Wait for nav
 - `playwright_wait_for_load_state` - Wait for load
 - `playwright_wait_for_timeout` - Wait duration
 
 **Session** (5 tools):
+
 - `playwright_create_context` - New context
 - `playwright_close_context` - Close context
 - `playwright_new_page` - New page
@@ -187,30 +207,35 @@ const agentNames = await queryElements(page, '.agent-name');
 ## For Different Roles
 
 ### QA Engineer
+
 1. Read: `/Users/iroselli/wundr/docs/PLAYWRIGHT_MCP_GUIDE.md`
 2. Use: Test template helper functions
 3. Create: Test cases for features
 4. Run: `npm run test`
 
 ### Test Automation Engineer
+
 1. Study: Commands reference & patterns
 2. Review: Page validation test file
 3. Implement: Automated test suites
 4. Integrate: Into CI/CD pipeline
 
 ### Frontend Engineer
+
 1. Navigate: To implemented pages
 2. Test: Form inputs and interactions
 3. Verify: Error states
 4. Capture: Screenshots for comparison
 
 ### Backend Engineer
+
 1. Navigate: Through UI features
 2. Verify: API data displayed correctly
 3. Test: Integration points
 4. Validate: State persistence
 
 ### DevOps Engineer
+
 1. Configure: GitHub Actions workflow
 2. Integrate: Test execution in CI/CD
 3. Monitor: Test results
@@ -220,13 +245,13 @@ const agentNames = await queryElements(page, '.agent-name');
 
 ```bash
 # Specification phase
-npx claude-flow sparc run spec-pseudocode "Create test spec using Playwright"
+npx ruflo sparc run spec-pseudocode "Create test spec using Playwright"
 
 # Refinement phase (TDD)
-npx claude-flow sparc tdd "Implement login tests with Playwright"
+npx ruflo sparc tdd "Implement login tests with Playwright"
 
 # Integration phase
-npx claude-flow sparc run integration "Add tests to CI/CD pipeline"
+npx ruflo sparc run integration "Add tests to CI/CD pipeline"
 ```
 
 ## Integration with GitHub Actions
@@ -255,6 +280,7 @@ jobs:
 ## Troubleshooting
 
 ### MCP Not Connected
+
 ```bash
 claude mcp remove playwright
 claude mcp add playwright npx @executeautomation/playwright-mcp-server
@@ -262,6 +288,7 @@ claude mcp list
 ```
 
 ### Dev Server Not Responding
+
 ```bash
 cd /Users/iroselli/wundr/packages/@wundr/neolith/apps/web
 npm run dev
@@ -270,6 +297,7 @@ curl http://localhost:3000
 ```
 
 ### Tests Timing Out
+
 ```bash
 # Increase timeout
 mcp_tool__playwright_wait_for_selector {
@@ -282,6 +310,7 @@ mcp_tool__playwright_wait_for_load_state { state: "networkidle" }
 ```
 
 ### Element Not Found
+
 ```bash
 # Check if selector exists
 mcp_tool__playwright_query_selector { selector: ".my-element" }
@@ -296,6 +325,7 @@ mcp_tool__playwright_get_html { selector: "body" }
 ## Common Patterns
 
 ### Pattern 1: Simple Page Load
+
 ```bash
 mcp_tool__playwright_navigate { url: "http://localhost:3000/page" }
 mcp_tool__playwright_wait_for_selector { selector: ".content" }
@@ -303,6 +333,7 @@ mcp_tool__playwright_screenshot { path: "screenshots/page.png" }
 ```
 
 ### Pattern 2: Form Submission
+
 ```bash
 mcp_tool__playwright_navigate { url: "http://localhost:3000/form" }
 mcp_tool__playwright_fill { selector: "input[name='field']", value: "value" }
@@ -311,6 +342,7 @@ mcp_tool__playwright_wait_for_navigation
 ```
 
 ### Pattern 3: Multi-Step Flow
+
 ```bash
 # Step 1
 mcp_tool__playwright_navigate { url: "..." }
@@ -363,6 +395,7 @@ Config:
 ## Support
 
 For detailed information, refer to:
+
 - **Playwright MCP Guide**: Setup & available tools
 - **Commands Reference**: 50+ command examples
 - **Agent Workflow**: Role-specific instructions
@@ -371,10 +404,7 @@ For detailed information, refer to:
 
 ---
 
-**Installation**: COMPLETE
-**Status**: READY FOR USE
-**MCP Connection**: ACTIVE
-**Dev Server**: RUNNING
-**Pages Covered**: 24/24 (100%)
+**Installation**: COMPLETE **Status**: READY FOR USE **MCP Connection**: ACTIVE **Dev Server**:
+RUNNING **Pages Covered**: 24/24 (100%)
 
 Ready to start automated browser testing!

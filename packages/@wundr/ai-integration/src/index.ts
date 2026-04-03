@@ -1,12 +1,12 @@
 /**
  * @wundr/ai-integration - AI Integration Hive Queen
  *
- * Orchestrates Claude Code, Claude Flow, and MCP tools for comprehensive AI integration.
+ * Orchestrates Claude Code, Ruflo, and MCP tools for comprehensive AI integration.
  * Implements neural pattern training, swarm intelligence, and cross-session memory.
  */
 
 export * from './core/AIIntegrationHive';
-export * from './core/ClaudeFlowOrchestrator';
+export * from './core/RufloOrchestrator';
 export * from './core/MCPToolsRegistry';
 export * from './core/NeuralTrainingPipeline';
 export * from './core/SwarmIntelligence';

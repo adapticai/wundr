@@ -111,7 +111,7 @@ Increment active sessions gauge.
 ```typescript
 recordSessionStart(
   orchestratorId: string,
-  sessionType: 'claude-code' | 'claude-flow'
+  sessionType: 'claude-code' | 'ruflo'
 ): void
 ```
 
@@ -128,7 +128,7 @@ Decrement active sessions gauge.
 ```typescript
 recordSessionEnd(
   orchestratorId: string,
-  sessionType: 'claude-code' | 'claude-flow'
+  sessionType: 'claude-code' | 'ruflo'
 ): void
 ```
 

@@ -8,7 +8,7 @@
  * - Enhanced options with context engineering, memory architectures, and orchestration
  * - Claude Code conventions generator for .claude/ directory structure
  * - Support for different memory architectures (basic, tiered, memgpt)
- * - Orchestration framework integration (claude-flow, sparc, custom)
+ * - Orchestration framework integration (ruflo, sparc, custom)
  * - Agent, skill, and command generation
  *
  * @module project-init
@@ -289,7 +289,7 @@ export class ProjectInitOrchestrator {
           },
           aiTools: {
             claudeCode: true,
-            claudeFlow: true,
+            ruflo: true,
             mcpTools: [],
             swarmAgents: [],
             memoryAllocation: '2GB',

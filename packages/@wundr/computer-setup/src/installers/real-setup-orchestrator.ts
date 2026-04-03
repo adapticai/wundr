@@ -1069,7 +1069,7 @@ export class RealSetupOrchestrator extends EventEmitter {
         },
         aiTools: {
           claudeCode: true,
-          claudeFlow: true,
+          ruflo: true,
           mcpTools: [],
           swarmAgents: [],
           memoryAllocation: '2GB',

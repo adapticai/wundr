@@ -14,7 +14,7 @@ export interface MCPToolConfig {
   };
   capabilities?: Record<string, any>;
   integration?: {
-    claude_flow?: Record<string, any>;
+    ruflo?: Record<string, any>;
   };
 }
 
@@ -226,10 +226,18 @@ export namespace Context7MCP {
     store(request: StoreRequest): Promise<MCPResponse<StoreResult>>;
     retrieve(request: RetrieveRequest): Promise<MCPResponse<RetrieveResult>>;
     search(request: SearchRequest): Promise<MCPResponse<SearchResult[]>>;
-    buildKnowledgeGraph(request: KnowledgeGraphRequest): Promise<MCPResponse<KnowledgeGraph>>;
-    storeRelationships(contextId: string, relationships: Relationship[]): Promise<MCPResponse<void>>;
+    buildKnowledgeGraph(
+      request: KnowledgeGraphRequest
+    ): Promise<MCPResponse<KnowledgeGraph>>;
+    storeRelationships(
+      contextId: string,
+      relationships: Relationship[]
+    ): Promise<MCPResponse<void>>;
     getRelationships(contextId: string): Promise<MCPResponse<Relationship[]>>;
-    analyzeRelationships(request: { contextIds: string[]; analysisType: string }): Promise<MCPResponse<any>>;
+    analyzeRelationships(request: {
+      contextIds: string[];
+      analysisType: string;
+    }): Promise<MCPResponse<any>>;
   }
 }
 
@@ -255,7 +263,14 @@ export namespace PlaywrightMCP {
   }
 
   export interface TestStep {
-    action: 'navigate' | 'click' | 'type' | 'wait' | 'screenshot' | 'evaluate' | 'select';
+    action:
+      | 'navigate'
+      | 'click'
+      | 'type'
+      | 'wait'
+      | 'screenshot'
+      | 'evaluate'
+      | 'select';
     selector?: string;
     url?: string;
     text?: string;
@@ -337,9 +352,19 @@ export namespace PlaywrightMCP {
 
   export interface PlaywrightClient {
     launch(options: LaunchOptions): Promise<MCPResponse<BrowserInstance>>;
-    executeTest(instance: BrowserInstance, script: TestScript): Promise<MCPResponse<TestResult>>;
-    captureScreenshot(instance: BrowserInstance, url: string, options?: ScreenshotOptions): Promise<MCPResponse<{ screenshot: string }>>;
-    auditPerformance(url: string, metrics: string[]): Promise<MCPResponse<PerformanceMetrics>>;
+    executeTest(
+      instance: BrowserInstance,
+      script: TestScript
+    ): Promise<MCPResponse<TestResult>>;
+    captureScreenshot(
+      instance: BrowserInstance,
+      url: string,
+      options?: ScreenshotOptions
+    ): Promise<MCPResponse<{ screenshot: string }>>;
+    auditPerformance(
+      url: string,
+      metrics: string[]
+    ): Promise<MCPResponse<PerformanceMetrics>>;
     close(instanceId: string): Promise<MCPResponse<void>>;
   }
 }
@@ -435,14 +460,25 @@ export namespace BrowserMCP {
     connectToChrome(): Promise<MCPResponse<ChromeConnection>>;
     getAllTabs(): Promise<MCPResponse<TabInfo[]>>;
     navigate(url: string, tabId?: number): Promise<MCPResponse<void>>;
-    executeScript(request: ScriptExecutionRequest): Promise<MCPResponse<ScriptExecutionResult>>;
-    captureVisibleTab(options?: ScreenshotRequest): Promise<MCPResponse<{ screenshot: string }>>;
+    executeScript(
+      request: ScriptExecutionRequest
+    ): Promise<MCPResponse<ScriptExecutionResult>>;
+    captureVisibleTab(
+      options?: ScreenshotRequest
+    ): Promise<MCPResponse<{ screenshot: string }>>;
     getDOMSnapshot(tabId?: number): Promise<MCPResponse<DOMSnapshot>>;
     getNetworkLog(tabId?: number): Promise<MCPResponse<NetworkLogEntry[]>>;
-    monitorNetwork(duration: number, filters?: string[]): Promise<MCPResponse<NetworkLogEntry[]>>;
+    monitorNetwork(
+      duration: number,
+      filters?: string[]
+    ): Promise<MCPResponse<NetworkLogEntry[]>>;
     sendExtensionMessage(message: ExtensionMessage): Promise<MCPResponse<any>>;
     click(selector: string, tabId?: number): Promise<MCPResponse<void>>;
-    type(selector: string, text: string, tabId?: number): Promise<MCPResponse<void>>;
+    type(
+      selector: string,
+      text: string,
+      tabId?: number
+    ): Promise<MCPResponse<void>>;
     scroll(x: number, y: number, tabId?: number): Promise<MCPResponse<void>>;
   }
 }
@@ -589,13 +625,20 @@ export namespace SequentialThinkingMCP {
   }
 
   export interface SequentialThinkingClient {
-    startSession(request: SessionStartRequest): Promise<MCPResponse<ReasoningSession>>;
+    startSession(
+      request: SessionStartRequest
+    ): Promise<MCPResponse<ReasoningSession>>;
     nextStep(sessionId: string): Promise<MCPResponse<ReasoningStep>>;
-    validateStep(sessionId: string, step: ReasoningStep): Promise<MCPResponse<StepValidation>>;
+    validateStep(
+      sessionId: string,
+      step: ReasoningStep
+    ): Promise<MCPResponse<StepValidation>>;
     backtrack(sessionId: string): Promise<MCPResponse<void>>;
     getFinalResult(sessionId: string): Promise<MCPResponse<any>>;
     validate(request: ValidationRequest): Promise<MCPResponse<StepValidation>>;
-    buildDecisionTree(request: DecisionTreeRequest): Promise<MCPResponse<DecisionTree>>;
+    buildDecisionTree(
+      request: DecisionTreeRequest
+    ): Promise<MCPResponse<DecisionTree>>;
     decomposeTask(task: string): Promise<MCPResponse<TaskDecomposition>>;
     synthesizeResults(request: {
       subtaskResults: any[];
@@ -695,5 +738,5 @@ export {
   Context7MCP,
   PlaywrightMCP,
   BrowserMCP,
-  SequentialThinkingMCP
+  SequentialThinkingMCP,
 };

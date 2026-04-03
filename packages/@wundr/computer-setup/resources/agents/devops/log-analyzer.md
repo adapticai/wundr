@@ -16,7 +16,7 @@ hooks:
     echo "Preparing log analysis patterns..."
   post: |
     echo "Log analysis complete"
-    npx claude-flow@alpha hooks post-edit --memory-key "logs/analysis/$(date +%s)"
+    npx ruflo@latest hooks post-edit --memory-key "logs/analysis/$(date +%s)"
 ---
 
 # Log Analyzer Agent

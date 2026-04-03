@@ -50,7 +50,7 @@ wundr computer-setup doctor           # Diagnose setup issues
 - **Editors**: VS Code + extensions (ESLint, Prettier, etc.)
 - **Browsers**: Chrome/Firefox with DevTools
 - **CLI Tools**: Vercel CLI, Netlify CLI
-- **AI Tools**: Claude Code, Claude Flow
+- **AI Tools**: Claude Code, Ruflo
 - ❌ **NOT**: React, Vue, Next.js (these go in projects!)
 
 #### Backend Developer Profile:
@@ -117,7 +117,7 @@ Every generated project includes:
 #### Claude Integration:
 
 - **CLAUDE.md** file with project-specific instructions
-- **Claude Flow** configuration
+- **Ruflo** configuration
 - **MCP tools** setup
 - **Swarm configurations** for different tasks
 

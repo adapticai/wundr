@@ -200,7 +200,7 @@ load_context() {
     local memory_key="swarm/${SESSION_ID}/files/${file_hash}"
 
     # Retrieve previous edit history
-    npx claude-flow@alpha hooks memory-retrieve \
+    npx ruflo@latest hooks memory-retrieve \
         --key "$memory_key" \
         --output "$PROJECT_ROOT/.claude/cache/file-context-${file_hash}.json" \
         2>&1 | tee -a "$LOG_FILE" || {

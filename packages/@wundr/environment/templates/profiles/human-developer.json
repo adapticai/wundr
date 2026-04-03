@@ -114,7 +114,7 @@
       "description": "Claude AI coding assistant"
     },
     {
-      "name": "claude-flow",
+      "name": "ruflo",
       "required": true,
       "installer": "npm",
       "dependencies": ["node", "claude-code"],
@@ -129,8 +129,8 @@
   },
   "agentConfig": {
     "claudeCode": true,
-    "claudeFlow": true,
-    "mcpTools": ["claude-flow", "wundr-toolkit"],
+    "ruflo": true,
+    "mcpTools": ["ruflo", "wundr-toolkit"],
     "swarmCapabilities": true,
     "neuralFeatures": true
   },

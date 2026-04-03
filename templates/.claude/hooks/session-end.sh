@@ -283,24 +283,24 @@ EOF
 fi
 
 # -----------------------------------------------------------------------------
-# CLAUDE-FLOW INTEGRATION
+# RUFLO INTEGRATION
 # -----------------------------------------------------------------------------
 
 echo ""
-echo "--- Claude-Flow Integration ---"
+echo "--- Ruflo Integration ---"
 
 if [ "$EXPORT_METRICS" = "true" ] && command -v npx &> /dev/null; then
-    if npx claude-flow@alpha --version &> /dev/null 2>&1; then
-        echo "Exporting session metrics to Claude-Flow..."
+    if npx ruflo@latest --version &> /dev/null 2>&1; then
+        echo "Exporting session metrics to Ruflo..."
 
         METRICS_FILE="$SESSION_DIR/metrics_${SESSION_ID}_${TIMESTAMP}.json"
-        npx claude-flow@alpha hooks session-end --session-id "$SESSION_ID" --export-metrics true > "$METRICS_FILE" 2>/dev/null || echo "  Metrics export skipped"
+        npx ruflo@latest hooks session-end --session-id "$SESSION_ID" --export-metrics true > "$METRICS_FILE" 2>/dev/null || echo "  Metrics export skipped"
 
         if [ -f "$METRICS_FILE" ] && [ -s "$METRICS_FILE" ]; then
             echo "[OK] Metrics exported to: $METRICS_FILE"
         fi
     else
-        echo "Claude-Flow not available"
+        echo "Ruflo not available"
     fi
 fi
 

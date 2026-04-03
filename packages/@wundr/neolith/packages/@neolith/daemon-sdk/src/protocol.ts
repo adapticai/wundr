@@ -99,7 +99,7 @@ export interface HelloPayload {
 // Session domain
 // ---------------------------------------------------------------------------
 
-export type SessionType = 'claude-code' | 'claude-flow';
+export type SessionType = 'claude-code' | 'ruflo';
 export type SessionStatus =
   | 'initializing'
   | 'running'

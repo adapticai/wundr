@@ -7,7 +7,7 @@
  *
  * The Orchestrator daemon is responsible for:
  * - Machine-level supervision and orchestration
- * - Spawning and managing Claude Code/Claude Flow sessions
+ * - Spawning and managing Claude Code/Ruflo sessions
  * - Interfacing with external integrations (Slack, Gmail, Google Drive, Twilio)
  * - Managing session archetypes and dynamic CLAUDE.md compilation
  */
@@ -701,7 +701,7 @@ description: "Machine-level supervisor for managing Claude Code/Flow sessions"
 
 responsibilities:
   - Spawn and manage Claude Code sessions
-  - Spawn and manage Claude Flow swarm sessions
+  - Spawn and manage Ruflo swarm sessions
   - Coordinate between multiple active sessions
   - Manage external integrations (Slack, Gmail, etc.)
   - Monitor resource usage and enforce limits

@@ -270,9 +270,9 @@ export class InstallerRegistry {
   }
 
   /**
-   * Get Claude Flow setup steps
+   * Get Ruflo setup steps
    */
-  async getClaudeFlowSteps(swarmAgents?: string[]): Promise<SetupStep[]> {
+  async getRufloSteps(swarmAgents?: string[]): Promise<SetupStep[]> {
     const installer = this.installers.get('claude');
     if (!installer) {
       return [];
@@ -281,7 +281,7 @@ export class InstallerRegistry {
       preferences: {
         aiTools: {
           claudeCode: true,
-          claudeFlow: true,
+          ruflo: true,
           mcpTools: [],
           swarmAgents: swarmAgents || [],
           memoryAllocation: '4GB',

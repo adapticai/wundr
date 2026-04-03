@@ -88,7 +88,7 @@ Legal sub-agents are optimized for:
 
 ```bash
 # Invoke contract scanner for a specific document
-npx claude-flow@alpha agent spawn --type contract-scanner \
+npx ruflo@latest agent spawn --type contract-scanner \
   --task "Analyze vendor agreement at /docs/contracts/vendor-2024.pdf"
 ```
 
@@ -96,7 +96,7 @@ npx claude-flow@alpha agent spawn --type contract-scanner \
 
 ```bash
 # Invoke risk analyst for compliance review
-npx claude-flow@alpha agent spawn --type risk-analyst \
+npx ruflo@latest agent spawn --type risk-analyst \
   --task "Assess regulatory compliance risks in procurement process"
 ```
 

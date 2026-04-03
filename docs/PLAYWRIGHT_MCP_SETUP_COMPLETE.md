@@ -309,13 +309,13 @@ mcp_tool__playwright_screenshot { path: "screenshots/test.png" }
 
 ```bash
 # Specification phase
-npx claude-flow sparc run spec-pseudocode "Create test spec using Playwright"
+npx ruflo sparc run spec-pseudocode "Create test spec using Playwright"
 
 # Refinement phase (TDD)
-npx claude-flow sparc tdd "Write tests with Playwright MCP"
+npx ruflo sparc tdd "Write tests with Playwright MCP"
 
 # Integration phase
-npx claude-flow sparc run integration "Add tests to CI/CD pipeline"
+npx ruflo sparc run integration "Add tests to CI/CD pipeline"
 ```
 
 ### With GitHub Actions

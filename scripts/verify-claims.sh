@@ -83,7 +83,7 @@ echo ""
 echo "3. CHECKING KEY FILES"
 echo "---------------------"
 check_file "FAILURES.md tracker" "docs/FAILURES.md"
-check_file "Claude Flow verification hooks" ".claude-flow/verification-hooks.json"
+check_file "Ruflo verification hooks" ".ruflo/verification-hooks.json"
 check_file "Main package.json" "package.json"
 echo ""
 

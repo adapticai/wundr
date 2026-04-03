@@ -65,18 +65,21 @@ claude
 ### ⭐ Essential Files (Required)
 
 **CLAUDE.md** (most important)
+
 - Master configuration file
 - Claude Code reads this automatically
 - Defines project rules, structure, commands
 - **You must customize this for your project**
 
 **conventions.md**
+
 - Coding standards and patterns
 - Naming conventions
 - Architecture guidelines
 - **Customize to match your team's standards**
 
 **README.md**
+
 - Explains the directory structure
 - Provides usage instructions
 - Reference documentation
@@ -84,6 +87,7 @@ claude
 ### 🤖 Agent Definitions (Optional)
 
 **Core Agents** (5 agents)
+
 - `coder.md` - Code implementation expert
 - `reviewer.md` - Code quality and review expert
 - `tester.md` - Testing and QA expert
@@ -91,42 +95,50 @@ claude
 - `researcher.md` - Research and analysis expert
 
 **Swarm Agents** (2 agents)
+
 - `coordinator.md` - Multi-agent orchestration
 - `memory-manager.md` - Context and memory management
 
 **GitHub Agents** (2 agents)
+
 - `pr-manager.md` - Pull request management
 - `issue-tracker.md` - Issue tracking and triage
 
 **SPARC Agents** (2 agents)
+
 - `specification.md` - Requirements specification
 - `architecture.md` - System architecture design
 
 **Specialized Agents** (1 agent)
+
 - `backend-dev.md` - Backend development expert
-- *Add more as needed for your domain*
+- _Add more as needed for your domain_
 
 ### ⚙️ Automation Hooks (Optional)
 
 **pre-task.sh**
+
 - Runs before starting work
 - Validates environment
 - Checks prerequisites
 - Restores context
 
 **post-task.sh**
+
 - Runs after completing work
 - Runs tests and linting
 - Validates quality
 - Stores results
 
 **post-edit.sh**
+
 - Runs after file edits
 - Auto-formats code
 - Runs linters
 - Updates imports
 
 **session-end.sh**
+
 - Runs when session ends
 - Generates summary
 - Saves state
@@ -135,16 +147,19 @@ claude
 ### 💬 Custom Commands (Optional)
 
 **test-suite.md**
+
 - Run complete test suite
 - Generate coverage reports
 - Display quality metrics
 
 **review-changes.md**
+
 - Review uncommitted changes
 - Run quality checks
 - Suggest improvements
 
 **setup-project.md**
+
 - Initialize development environment
 - Install dependencies
 - Configure tools
@@ -197,8 +212,8 @@ chmod +x .claude/hooks/*.sh
 # Copy everything
 cp -r .claude /path/to/project/
 
-# Install claude-flow
-npm install -g claude-flow@alpha
+# Install ruflo
+npm install -g ruflo@latest
 
 # Customize
 vim .claude/CLAUDE.md
@@ -206,7 +221,7 @@ vim .claude/conventions.md
 
 # Use SPARC workflow
 cd /path/to/project
-npx claude-flow sparc tdd "Implement user authentication"
+npx ruflo sparc tdd "Implement user authentication"
 
 # SPARC will use:
 # - .claude/agents/sparc/specification.md
@@ -241,21 +256,25 @@ npx claude-flow sparc tdd "Implement user authentication"
 ### For Different Project Types
 
 **React/Frontend**:
+
 - Focus on component conventions
 - Add frontend-specific agents
 - Update directory structure for src/components/
 
 **Node.js/Backend**:
+
 - Focus on API conventions
 - Add backend-dev agent examples
 - Update for src/api/ structure
 
 **Fullstack**:
+
 - Combine frontend and backend
 - Add both sets of conventions
 - Update for monorepo if needed
 
 **Mobile**:
+
 - Add mobile-specific patterns
 - React Native conventions
 - Platform-specific guidelines
@@ -263,22 +282,19 @@ npx claude-flow sparc tdd "Implement user authentication"
 ## Features
 
 ### For Solo Developers
-✅ Clear project configuration
-✅ Coding standards reference
-✅ Agent guidance for different tasks
+
+✅ Clear project configuration ✅ Coding standards reference ✅ Agent guidance for different tasks
 ✅ Optional automation
 
 ### For Teams
-✅ Shared configuration via git
-✅ Team coding standards
-✅ Consistent development approach
-✅ Onboarding documentation
+
+✅ Shared configuration via git ✅ Team coding standards ✅ Consistent development approach ✅
+Onboarding documentation
 
 ### For Large Projects
-✅ SPARC methodology integration
-✅ Multi-agent coordination
-✅ Memory and context management
-✅ GitHub workflow automation
+
+✅ SPARC methodology integration ✅ Multi-agent coordination ✅ Memory and context management ✅
+GitHub workflow automation
 
 ## Documentation
 
@@ -302,42 +318,50 @@ npx claude-flow sparc tdd "Implement user authentication"
 ## Requirements
 
 ### Minimum
+
 - Claude Code installed
 - Text editor
 - 5 minutes to customize CLAUDE.md
 
 ### Recommended
+
 - Git for version control
 - Node.js (if using hooks/commands)
 - Team consensus on conventions
 
 ### Optional
-- claude-flow for SPARC methodology
+
+- ruflo for SPARC methodology
 - Husky for git hooks integration
 - CI/CD for automated quality checks
 
 ## Getting Started
 
 ### Step 1: Read This File
+
 You're doing it! ✅
 
 ### Step 2: Copy Template
+
 ```bash
 cp -r .claude /path/to/your/project/
 ```
 
 ### Step 3: Read Setup Guide
+
 ```bash
 cat /path/to/your/project/.claude/SETUP_GUIDE.md
 ```
 
 ### Step 4: Customize
+
 ```bash
 vim /path/to/your/project/.claude/CLAUDE.md
 vim /path/to/your/project/.claude/conventions.md
 ```
 
 ### Step 5: Start Claude Code
+
 ```bash
 cd /path/to/your/project
 claude
@@ -348,18 +372,21 @@ claude
 ### Documentation Locations
 
 In `.claude/` directory:
+
 - `SETUP_GUIDE.md` - Detailed setup instructions
 - `README.md` - Directory structure reference
 - `CLAUDE.md` - Master configuration template
 - `conventions.md` - Coding standards template
 
 In `templates/` directory:
+
 - `USAGE_GUIDE.md` - Usage examples and scenarios
 - `README.md` - This file
 
 ### Example Files
 
 All agent, hook, and command files contain:
+
 - Detailed documentation
 - Usage examples
 - Best practices
@@ -375,6 +402,7 @@ All agent, hook, and command files contain:
 ## Best Practices
 
 ### DO ✅
+
 - Customize CLAUDE.md for your project
 - Commit .claude/ to version control
 - Update regularly as project evolves
@@ -384,6 +412,7 @@ All agent, hook, and command files contain:
 - Review with team periodically
 
 ### DON'T ❌
+
 - Use template without customization
 - Hardcode secrets in configuration
 - Over-configure initially
@@ -402,12 +431,12 @@ All agent, hook, and command files contain:
 
 ## License
 
-This template is provided as part of the Wundr project.
-Customize and use freely in your projects.
+This template is provided as part of the Wundr project. Customize and use freely in your projects.
 
 ## Credits
 
-Created for Claude Code projects using SPARC methodology and best practices from the development community.
+Created for Claude Code projects using SPARC methodology and best practices from the development
+community.
 
 ---
 

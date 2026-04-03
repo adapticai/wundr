@@ -1,6 +1,6 @@
 /**
  * MCP Tools Agent Integration Patterns
- * Defines how each MCP tool integrates with Claude Flow agents
+ * Defines how each MCP tool integrates with Ruflo agents
  */
 
 import { EventEmitter } from 'events';
@@ -76,7 +76,12 @@ export class MCPToolRegistry {
 export class FirecrawlResearchAgent extends EventEmitter implements MCPAgent {
   public id: string;
   public type = 'firecrawl-research';
-  public capabilities = ['web-scraping', 'content-extraction', 'site-mapping', 'pdf-processing'];
+  public capabilities = [
+    'web-scraping',
+    'content-extraction',
+    'site-mapping',
+    'pdf-processing',
+  ];
   public mcpTools: MCPToolRegistry;
 
   private firecrawl: FirecrawlMCP;
@@ -93,7 +98,7 @@ export class FirecrawlResearchAgent extends EventEmitter implements MCPAgent {
       active: true,
       tasksCompleted: 0,
       tasksErrored: 0,
-      uptime: Date.now()
+      uptime: Date.now(),
     };
   }
 
@@ -119,7 +124,7 @@ export class FirecrawlResearchAgent extends EventEmitter implements MCPAgent {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
-        metadata: { executionTime: Date.now() - startTime }
+        metadata: { executionTime: Date.now() - startTime },
       };
     } finally {
       this.status.currentTask = undefined;
@@ -129,15 +134,15 @@ export class FirecrawlResearchAgent extends EventEmitter implements MCPAgent {
 
   private async scrapeWebsite(task: AgentTask): Promise<AgentResult> {
     const { url, options = {} } = task.parameters;
-    
+
     const crawlConfig = {
       url,
       options: {
         formats: options.formats || ['markdown', 'structured'],
         onlyMainContent: options.onlyMainContent !== false,
         includePDFs: options.includePDFs || false,
-        maxDepth: options.maxDepth || 3
-      }
+        maxDepth: options.maxDepth || 3,
+      },
     };
 
     const results = await this.firecrawl.crawl(crawlConfig);
@@ -148,62 +153,64 @@ export class FirecrawlResearchAgent extends EventEmitter implements MCPAgent {
         tags: ['web-scraping', 'firecrawl'],
         category: 'scraped-content',
         source_url: url,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
 
     this.emit('task-completed', {
       taskId: task.id,
       type: 'scrape-website',
-      results: results.data
+      results: results.data,
     });
 
     return {
       success: true,
       data: results,
-      metadata: { executionTime: Date.now() - Date.now() }
+      metadata: { executionTime: Date.now() - Date.now() },
     };
   }
 
   private async mapSite(task: AgentTask): Promise<AgentResult> {
     const { url, maxDepth = 5 } = task.parameters;
-    
+
     const siteMap = await this.firecrawl.mapSite({
       url,
-      options: { maxDepth, respectRobotsTxt: true }
+      options: { maxDepth, respectRobotsTxt: true },
     });
 
     return {
       success: true,
       data: siteMap,
-      metadata: { executionTime: Date.now() - Date.now() }
+      metadata: { executionTime: Date.now() - Date.now() },
     };
   }
 
   private async extractContent(task: AgentTask): Promise<AgentResult> {
     const { url, selector, format = 'markdown' } = task.parameters;
-    
+
     const content = await this.firecrawl.extract({
       url,
       selector,
-      format
+      format,
     });
 
     return {
       success: true,
       data: content,
-      metadata: { executionTime: Date.now() - Date.now() }
+      metadata: { executionTime: Date.now() - Date.now() },
     };
   }
 
   private async researchTopic(task: AgentTask): Promise<AgentResult> {
     const { topic, sources, depth = 3 } = task.parameters;
-    
+
     const researchResults = await Promise.all(
-      sources.map((url: string) => this.firecrawl.crawl({
-        url,
-        options: { maxDepth: depth, formats: ['markdown'] }
-      }))
+      sources.map((url: string) =>
+        this.firecrawl.crawl({
+          url,
+          options: { maxDepth: depth, formats: ['markdown'] },
+        })
+      )
     );
 
     // Aggregate and structure results
@@ -212,23 +219,23 @@ export class FirecrawlResearchAgent extends EventEmitter implements MCPAgent {
       sources: researchResults.map((result, index) => ({
         url: sources[index],
         content: result.data,
-        metadata: result.metadata
+        metadata: result.metadata,
       })),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     // Store research in Context7
     if (this.context7) {
       await this.context7.store(aggregatedData, {
         tags: ['research', topic],
-        category: 'research-results'
+        category: 'research-results',
       });
     }
 
     return {
       success: true,
       data: aggregatedData,
-      metadata: { executionTime: Date.now() - Date.now() }
+      metadata: { executionTime: Date.now() - Date.now() },
     };
   }
 
@@ -244,7 +251,12 @@ export class FirecrawlResearchAgent extends EventEmitter implements MCPAgent {
 export class ContextManagerAgent extends EventEmitter implements MCPAgent {
   public id: string;
   public type = 'context-manager';
-  public capabilities = ['context-storage', 'context-retrieval', 'context-search', 'knowledge-graph'];
+  public capabilities = [
+    'context-storage',
+    'context-retrieval',
+    'context-search',
+    'knowledge-graph',
+  ];
   public mcpTools: MCPToolRegistry;
 
   private context7: Context7MCP;
@@ -259,7 +271,7 @@ export class ContextManagerAgent extends EventEmitter implements MCPAgent {
       active: true,
       tasksCompleted: 0,
       tasksErrored: 0,
-      uptime: Date.now()
+      uptime: Date.now(),
     };
   }
 
@@ -287,7 +299,7 @@ export class ContextManagerAgent extends EventEmitter implements MCPAgent {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
-        metadata: { executionTime: Date.now() - startTime }
+        metadata: { executionTime: Date.now() - startTime },
       };
     } finally {
       this.status.currentTask = undefined;
@@ -297,11 +309,11 @@ export class ContextManagerAgent extends EventEmitter implements MCPAgent {
 
   private async storeContext(task: AgentTask): Promise<AgentResult> {
     const { data, metadata = {}, relationships = [] } = task.parameters;
-    
+
     const contextId = await this.context7.store(data, {
       ...metadata,
       stored_at: Date.now(),
-      agent_id: this.id
+      agent_id: this.id,
     });
 
     // Store relationships if provided
@@ -312,15 +324,15 @@ export class ContextManagerAgent extends EventEmitter implements MCPAgent {
     return {
       success: true,
       data: { contextId },
-      metadata: { executionTime: Date.now() - Date.now() }
+      metadata: { executionTime: Date.now() - Date.now() },
     };
   }
 
   private async retrieveContext(task: AgentTask): Promise<AgentResult> {
     const { contextId, includeRelationships = false } = task.parameters;
-    
+
     const context = await this.context7.retrieve(contextId);
-    
+
     if (includeRelationships) {
       const relationships = await this.context7.getRelationships(contextId);
       context.relationships = relationships;
@@ -329,60 +341,60 @@ export class ContextManagerAgent extends EventEmitter implements MCPAgent {
     return {
       success: true,
       data: context,
-      metadata: { executionTime: Date.now() - Date.now() }
+      metadata: { executionTime: Date.now() - Date.now() },
     };
   }
 
   private async searchContext(task: AgentTask): Promise<AgentResult> {
-    const { 
-      query, 
-      filters = {}, 
-      limit = 10, 
-      searchType = 'hybrid' 
+    const {
+      query,
+      filters = {},
+      limit = 10,
+      searchType = 'hybrid',
     } = task.parameters;
-    
+
     const results = await this.context7.search({
       query,
       filters,
       limit,
-      searchType
+      searchType,
     });
 
     return {
       success: true,
       data: results,
-      metadata: { executionTime: Date.now() - Date.now() }
+      metadata: { executionTime: Date.now() - Date.now() },
     };
   }
 
   private async buildKnowledgeGraph(task: AgentTask): Promise<AgentResult> {
     const { scope, maxNodes = 100, includeMetadata = true } = task.parameters;
-    
+
     const graph = await this.context7.buildKnowledgeGraph({
       scope,
       maxNodes,
-      includeMetadata
+      includeMetadata,
     });
 
     return {
       success: true,
       data: graph,
-      metadata: { executionTime: Date.now() - Date.now() }
+      metadata: { executionTime: Date.now() - Date.now() },
     };
   }
 
   private async analyzeRelationships(task: AgentTask): Promise<AgentResult> {
     const { contextIds, analysisType = 'similarity' } = task.parameters;
-    
+
     const analysis = await this.context7.analyzeRelationships({
       contextIds,
-      analysisType
+      analysisType,
     });
 
     return {
       success: true,
       data: analysis,
-      metadata: { executionTime: Date.now() - Date.now() }
+      metadata: { executionTime: Date.now() - Date.now() },
     };
   }
 
@@ -395,10 +407,18 @@ export class ContextManagerAgent extends EventEmitter implements MCPAgent {
  * Playwright Automation Agent
  * Specializes in browser automation and testing
  */
-export class PlaywrightAutomationAgent extends EventEmitter implements MCPAgent {
+export class PlaywrightAutomationAgent
+  extends EventEmitter
+  implements MCPAgent
+{
   public id: string;
   public type = 'playwright-automation';
-  public capabilities = ['browser-automation', 'e2e-testing', 'screenshot-capture', 'performance-testing'];
+  public capabilities = [
+    'browser-automation',
+    'e2e-testing',
+    'screenshot-capture',
+    'performance-testing',
+  ];
   public mcpTools: MCPToolRegistry;
 
   private playwright: PlaywrightMCP;
@@ -415,7 +435,7 @@ export class PlaywrightAutomationAgent extends EventEmitter implements MCPAgent 
       active: true,
       tasksCompleted: 0,
       tasksErrored: 0,
-      uptime: Date.now()
+      uptime: Date.now(),
     };
   }
 
@@ -441,7 +461,7 @@ export class PlaywrightAutomationAgent extends EventEmitter implements MCPAgent 
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
-        metadata: { executionTime: Date.now() - startTime }
+        metadata: { executionTime: Date.now() - startTime },
       };
     } finally {
       this.status.currentTask = undefined;
@@ -450,17 +470,17 @@ export class PlaywrightAutomationAgent extends EventEmitter implements MCPAgent 
   }
 
   private async runTest(task: AgentTask): Promise<AgentResult> {
-    const { 
-      testScript, 
-      browser = 'chromium', 
+    const {
+      testScript,
+      browser = 'chromium',
       headless = true,
-      viewport = { width: 1920, height: 1080 }
+      viewport = { width: 1920, height: 1080 },
     } = task.parameters;
 
     const browserInstance = await this.playwright.launch({
       browser,
       headless,
-      viewport
+      viewport,
     });
 
     try {
@@ -473,14 +493,14 @@ export class PlaywrightAutomationAgent extends EventEmitter implements MCPAgent 
           category: 'test-results',
           test_type: 'playwright',
           agent_id: this.id,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
       }
 
       return {
         success: true,
         data: results,
-        metadata: { executionTime: Date.now() - Date.now() }
+        metadata: { executionTime: Date.now() - Date.now() },
       };
     } finally {
       await browserInstance.close();
@@ -513,15 +533,12 @@ export class PlaywrightAutomationAgent extends EventEmitter implements MCPAgent 
   }
 
   private async captureScreenshot(task: AgentTask): Promise<AgentResult> {
-    const { 
-      url, 
-      selector, 
-      fullPage = false,
-      quality = 90 
-    } = task.parameters;
+    const { url, selector, fullPage = false, quality = 90 } = task.parameters;
 
-    const browserInstance = await this.playwright.launch({ browser: 'chromium' });
-    
+    const browserInstance = await this.playwright.launch({
+      browser: 'chromium',
+    });
+
     try {
       const page = await browserInstance.newPage();
       await page.goto(url);
@@ -533,7 +550,7 @@ export class PlaywrightAutomationAgent extends EventEmitter implements MCPAgent 
       return {
         success: true,
         data: { screenshot: screenshot.toString('base64') },
-        metadata: { executionTime: Date.now() - Date.now() }
+        metadata: { executionTime: Date.now() - Date.now() },
       };
     } finally {
       await browserInstance.close();
@@ -542,19 +559,19 @@ export class PlaywrightAutomationAgent extends EventEmitter implements MCPAgent 
 
   private async automateWorkflow(task: AgentTask): Promise<AgentResult> {
     const { workflow } = task.parameters;
-    
+
     const browserInstance = await this.playwright.launch({
       browser: workflow.browser || 'chromium',
-      headless: workflow.headless !== false
+      headless: workflow.headless !== false,
     });
 
     try {
       const results = await this.executeWorkflow(browserInstance, workflow);
-      
+
       return {
         success: true,
         data: results,
-        metadata: { executionTime: Date.now() - Date.now() }
+        metadata: { executionTime: Date.now() - Date.now() },
       };
     } finally {
       await browserInstance.close();
@@ -579,26 +596,27 @@ export class PlaywrightAutomationAgent extends EventEmitter implements MCPAgent 
       case 'navigate':
         await page.goto(action.url);
         return { type: 'navigate', url: action.url, success: true };
-      
+
       case 'extract':
         const data = await page.evaluate(action.script);
         return { type: 'extract', data, success: true };
-      
+
       default:
         return { type: action.type, success: false, error: 'Unknown action' };
     }
   }
 
   private async performanceAudit(task: AgentTask): Promise<AgentResult> {
-    const { url, metrics = ['performance', 'accessibility', 'seo'] } = task.parameters;
-    
+    const { url, metrics = ['performance', 'accessibility', 'seo'] } =
+      task.parameters;
+
     // Implementation of performance auditing
     const audit = await this.playwright.auditPerformance(url, metrics);
-    
+
     return {
       success: true,
       data: audit,
-      metadata: { executionTime: Date.now() - Date.now() }
+      metadata: { executionTime: Date.now() - Date.now() },
     };
   }
 
@@ -614,7 +632,12 @@ export class PlaywrightAutomationAgent extends EventEmitter implements MCPAgent 
 export class BrowserControlAgent extends EventEmitter implements MCPAgent {
   public id: string;
   public type = 'browser-control';
-  public capabilities = ['real-browser-control', 'extension-bridge', 'dev-tools-access', 'live-interaction'];
+  public capabilities = [
+    'real-browser-control',
+    'extension-bridge',
+    'dev-tools-access',
+    'live-interaction',
+  ];
   public mcpTools: MCPToolRegistry;
 
   private browserMCP: BrowserMCP;
@@ -631,7 +654,7 @@ export class BrowserControlAgent extends EventEmitter implements MCPAgent {
       active: true,
       tasksCompleted: 0,
       tasksErrored: 0,
-      uptime: Date.now()
+      uptime: Date.now(),
     };
   }
 
@@ -657,7 +680,7 @@ export class BrowserControlAgent extends EventEmitter implements MCPAgent {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
-        metadata: { executionTime: Date.now() - startTime }
+        metadata: { executionTime: Date.now() - startTime },
       };
     } finally {
       this.status.currentTask = undefined;
@@ -667,7 +690,7 @@ export class BrowserControlAgent extends EventEmitter implements MCPAgent {
 
   private async controlBrowser(task: AgentTask): Promise<AgentResult> {
     const { command } = task.parameters;
-    
+
     const chrome = await this.browserMCP.connectToChrome();
     let result: any;
 
@@ -675,31 +698,31 @@ export class BrowserControlAgent extends EventEmitter implements MCPAgent {
       case 'navigate':
         result = await chrome.navigate(command.url);
         break;
-      
+
       case 'execute-script':
         result = await chrome.executeScript({
           target: { tabId: command.tabId },
-          function: command.script
+          function: command.script,
         });
         break;
-      
+
       case 'capture-screenshot':
         result = await chrome.captureVisibleTab({
           format: command.format || 'png',
-          quality: command.quality || 90
+          quality: command.quality || 90,
         });
-        
+
         // Store screenshot in Context7
         if (this.context7) {
           await this.context7.store(result, {
             category: 'browser-capture',
             capture_type: 'screenshot',
             agent_id: this.id,
-            timestamp: Date.now()
+            timestamp: Date.now(),
           });
         }
         break;
-      
+
       default:
         throw new Error(`Unknown browser command: ${command.action}`);
     }
@@ -707,13 +730,13 @@ export class BrowserControlAgent extends EventEmitter implements MCPAgent {
     return {
       success: true,
       data: result,
-      metadata: { executionTime: Date.now() - Date.now() }
+      metadata: { executionTime: Date.now() - Date.now() },
     };
   }
 
   private async captureState(task: AgentTask): Promise<AgentResult> {
     const { includeDOM = true, includeNetwork = false } = task.parameters;
-    
+
     const chrome = await this.browserMCP.connectToChrome();
     const state: any = {};
 
@@ -733,14 +756,14 @@ export class BrowserControlAgent extends EventEmitter implements MCPAgent {
       await this.context7.store(state, {
         category: 'browser-state',
         agent_id: this.id,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
 
     return {
       success: true,
       data: state,
-      metadata: { executionTime: Date.now() - Date.now() }
+      metadata: { executionTime: Date.now() - Date.now() },
     };
   }
 
@@ -757,21 +780,24 @@ export class BrowserControlAgent extends EventEmitter implements MCPAgent {
     return {
       success: true,
       data: { interactions: results },
-      metadata: { executionTime: Date.now() - Date.now() }
+      metadata: { executionTime: Date.now() - Date.now() },
     };
   }
 
-  private async executeInteraction(chrome: any, interaction: any): Promise<any> {
+  private async executeInteraction(
+    chrome: any,
+    interaction: any
+  ): Promise<any> {
     switch (interaction.type) {
       case 'click':
         return await chrome.click(interaction.selector);
-      
+
       case 'type':
         return await chrome.type(interaction.selector, interaction.text);
-      
+
       case 'scroll':
         return await chrome.scroll(interaction.x, interaction.y);
-      
+
       default:
         return { success: false, error: 'Unknown interaction type' };
     }
@@ -779,7 +805,7 @@ export class BrowserControlAgent extends EventEmitter implements MCPAgent {
 
   private async monitorNetwork(task: AgentTask): Promise<AgentResult> {
     const { duration = 30000, filters = [] } = task.parameters;
-    
+
     const chrome = await this.browserMCP.connectToChrome();
     const networkLog = await chrome.monitorNetwork(duration, filters);
 
@@ -788,14 +814,14 @@ export class BrowserControlAgent extends EventEmitter implements MCPAgent {
       await this.context7.store(networkLog, {
         category: 'network-monitoring',
         agent_id: this.id,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
 
     return {
       success: true,
       data: networkLog,
-      metadata: { executionTime: Date.now() - Date.now() }
+      metadata: { executionTime: Date.now() - Date.now() },
     };
   }
 
@@ -811,7 +837,12 @@ export class BrowserControlAgent extends EventEmitter implements MCPAgent {
 export class SequentialReasoningAgent extends EventEmitter implements MCPAgent {
   public id: string;
   public type = 'sequential-reasoning';
-  public capabilities = ['step-by-step-reasoning', 'logical-validation', 'complex-analysis', 'decision-trees'];
+  public capabilities = [
+    'step-by-step-reasoning',
+    'logical-validation',
+    'complex-analysis',
+    'decision-trees',
+  ];
   public mcpTools: MCPToolRegistry;
 
   private sequentialThinking: SequentialThinkingMCP;
@@ -822,13 +853,15 @@ export class SequentialReasoningAgent extends EventEmitter implements MCPAgent {
     super();
     this.id = id;
     this.mcpTools = mcpTools;
-    this.sequentialThinking = mcpTools.get<SequentialThinkingMCP>('sequential-thinking')!;
+    this.sequentialThinking = mcpTools.get<SequentialThinkingMCP>(
+      'sequential-thinking'
+    )!;
     this.context7 = mcpTools.get<Context7MCP>('context7');
     this.status = {
       active: true,
       tasksCompleted: 0,
       tasksErrored: 0,
-      uptime: Date.now()
+      uptime: Date.now(),
     };
   }
 
@@ -854,7 +887,7 @@ export class SequentialReasoningAgent extends EventEmitter implements MCPAgent {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
-        metadata: { executionTime: Date.now() - startTime }
+        metadata: { executionTime: Date.now() - startTime },
       };
     } finally {
       this.status.currentTask = undefined;
@@ -863,11 +896,11 @@ export class SequentialReasoningAgent extends EventEmitter implements MCPAgent {
   }
 
   private async analyzeProblem(task: AgentTask): Promise<AgentResult> {
-    const { 
-      problem, 
-      context = {}, 
+    const {
+      problem,
+      context = {},
       reasoningModel = 'step-by-step',
-      maxSteps = 20 
+      maxSteps = 20,
     } = task.parameters;
 
     // Get relevant context if available
@@ -875,7 +908,7 @@ export class SequentialReasoningAgent extends EventEmitter implements MCPAgent {
     if (this.context7 && problem.keywords) {
       const contextResults = await this.context7.search({
         query: problem.keywords.join(' '),
-        limit: 5
+        limit: 5,
       });
       relevantContext = { ...context, retrieved: contextResults };
     }
@@ -884,7 +917,7 @@ export class SequentialReasoningAgent extends EventEmitter implements MCPAgent {
       task: problem.description,
       context: relevantContext,
       reasoning_model: reasoningModel,
-      max_steps: maxSteps
+      max_steps: maxSteps,
     });
 
     const analysis = await this.executeReasoningSession(session);
@@ -895,14 +928,14 @@ export class SequentialReasoningAgent extends EventEmitter implements MCPAgent {
         category: 'reasoning-analysis',
         problem_type: problem.type,
         agent_id: this.id,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
 
     return {
       success: true,
       data: analysis,
-      metadata: { executionTime: Date.now() - Date.now() }
+      metadata: { executionTime: Date.now() - Date.now() },
     };
   }
 
@@ -924,7 +957,7 @@ export class SequentialReasoningAgent extends EventEmitter implements MCPAgent {
         reasoning: step.reasoning,
         conclusion: step.conclusion,
         confidence: validation.confidence,
-        valid: validation.isValid
+        valid: validation.isValid,
       });
 
       currentStep++;
@@ -935,67 +968,67 @@ export class SequentialReasoningAgent extends EventEmitter implements MCPAgent {
       steps,
       finalResult: session.getFinalResult(),
       totalSteps: steps.length,
-      completed: session.isComplete()
+      completed: session.isComplete(),
     };
   }
 
   private async validateReasoning(task: AgentTask): Promise<AgentResult> {
     const { reasoning, validationType = 'logical' } = task.parameters;
-    
+
     const validation = await this.sequentialThinking.validate({
       reasoning,
       validation_type: validationType,
       check_consistency: true,
-      check_premises: true
+      check_premises: true,
     });
 
     return {
       success: true,
       data: validation,
-      metadata: { executionTime: Date.now() - Date.now() }
+      metadata: { executionTime: Date.now() - Date.now() },
     };
   }
 
   private async buildDecisionTree(task: AgentTask): Promise<AgentResult> {
-    const { 
-      decision, 
-      criteria, 
+    const {
+      decision,
+      criteria,
       alternatives,
-      maxBranches = 5 
+      maxBranches = 5,
     } = task.parameters;
 
     const decisionTree = await this.sequentialThinking.buildDecisionTree({
       decision,
       criteria,
       alternatives,
-      max_branches: maxBranches
+      max_branches: maxBranches,
     });
 
     return {
       success: true,
       data: decisionTree,
-      metadata: { executionTime: Date.now() - Date.now() }
+      metadata: { executionTime: Date.now() - Date.now() },
     };
   }
 
   private async solveComplexTask(task: AgentTask): Promise<AgentResult> {
-    const { 
-      complexTask, 
+    const {
+      complexTask,
       reasoningModel = 'tree-of-thought',
-      requireValidation = true 
+      requireValidation = true,
     } = task.parameters;
 
     // Break down complex task into subtasks
     const subtasks = await this.sequentialThinking.decomposeTask(complexTask);
-    
+
     // Solve each subtask
     const subtaskResults = await Promise.all(
       subtasks.map(async (subtask: any) => {
         const session = await this.sequentialThinking.startSession({
           task: subtask.description,
-          reasoning_model: reasoningModel
+          reasoning_model: reasoningModel,
         });
-        
+
         return await this.executeReasoningSession(session);
       })
     );
@@ -1004,21 +1037,24 @@ export class SequentialReasoningAgent extends EventEmitter implements MCPAgent {
     const synthesis = await this.sequentialThinking.synthesizeResults({
       subtaskResults,
       originalTask: complexTask,
-      requireValidation
+      requireValidation,
     });
 
     // Store comprehensive solution
     if (this.context7) {
-      await this.context7.store({
-        originalTask: complexTask,
-        subtasks,
-        subtaskResults,
-        synthesis
-      }, {
-        category: 'complex-task-solution',
-        agent_id: this.id,
-        timestamp: Date.now()
-      });
+      await this.context7.store(
+        {
+          originalTask: complexTask,
+          subtasks,
+          subtaskResults,
+          synthesis,
+        },
+        {
+          category: 'complex-task-solution',
+          agent_id: this.id,
+          timestamp: Date.now(),
+        }
+      );
     }
 
     return {
@@ -1027,9 +1063,9 @@ export class SequentialReasoningAgent extends EventEmitter implements MCPAgent {
         subtasks,
         subtaskResults,
         synthesis,
-        confidence: synthesis.overallConfidence
+        confidence: synthesis.overallConfidence,
       },
-      metadata: { executionTime: Date.now() - Date.now() }
+      metadata: { executionTime: Date.now() - Date.now() },
     };
   }
 
@@ -1053,19 +1089,19 @@ export class MCPAgentFactory {
     switch (type) {
       case 'firecrawl-research':
         return new FirecrawlResearchAgent(id, this.mcpTools);
-      
+
       case 'context-manager':
         return new ContextManagerAgent(id, this.mcpTools);
-      
+
       case 'playwright-automation':
         return new PlaywrightAutomationAgent(id, this.mcpTools);
-      
+
       case 'browser-control':
         return new BrowserControlAgent(id, this.mcpTools);
-      
+
       case 'sequential-reasoning':
         return new SequentialReasoningAgent(id, this.mcpTools);
-      
+
       default:
         throw new Error(`Unknown agent type: ${type}`);
     }
@@ -1077,7 +1113,7 @@ export class MCPAgentFactory {
       'context-manager',
       'playwright-automation',
       'browser-control',
-      'sequential-reasoning'
+      'sequential-reasoning',
     ];
   }
 }
@@ -1090,7 +1126,7 @@ const MCPAgentPatternsExports = {
   PlaywrightAutomationAgent,
   BrowserControlAgent,
   SequentialReasoningAgent,
-  MCPAgentFactory
+  MCPAgentFactory,
 };
 
 export default MCPAgentPatternsExports;

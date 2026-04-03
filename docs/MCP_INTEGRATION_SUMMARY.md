@@ -3,8 +3,8 @@
 ## Overview
 
 This document provides a comprehensive implementation of MCP (Model Context Protocol) tools
-integration with Claude Flow and the Wundr ecosystem. The integration includes five specialized MCP
-tools with complete installation, configuration, and orchestration frameworks.
+integration with Ruflo and the Wundr ecosystem. The integration includes five specialized MCP tools
+with complete installation, configuration, and orchestration frameworks.
 
 ## Integrated MCP Tools
 
@@ -133,7 +133,7 @@ cp ~/.claude/.env.mcp-tools ~/.claude/.env
 
 4. **Claude Integrations**:
    - Claude MCP server registrations
-   - Claude Flow tool registrations
+   - Ruflo tool registrations
    - Swarm coordination setup
 
 ## Usage Examples

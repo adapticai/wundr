@@ -109,7 +109,7 @@ Thumbs.db
 analysis-output/
 *.analysis.json
 .hive-mind/
-.claude-flow/
+.ruflo/
 
 # Build outputs
 build/
@@ -135,13 +135,13 @@ junit.xml
 # yarn.lock          # if using npm or pnpm
 # pnpm-lock.yaml     # if using npm or yarn
 
-# Claude Flow generated files
+# Ruflo generated files
 .claude/settings.local.json
 .mcp.json
-claude-flow.config.json
+ruflo.config.json
 .swarm/
 .hive-mind/
-memory/claude-flow-data.json
+memory/ruflo-data.json
 memory/sessions/*
 !memory/sessions/README.md
 memory/agents/*
@@ -155,9 +155,9 @@ coordination/orchestration/*
 *.sqlite
 *.sqlite-journal
 *.sqlite-wal
-claude-flow
-claude-flow.bat
-claude-flow.ps1
+ruflo
+ruflo.bat
+ruflo.ps1
 hive-mind-prompt-*.txt
 package-lock.json
 npm-debug.log*

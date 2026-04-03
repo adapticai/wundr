@@ -3,7 +3,7 @@
 ## Purpose
 
 This directory stores session-based memory data, conversation history, and contextual information
-for development sessions using the Claude-Flow orchestration system.
+for development sessions using the Ruflo orchestration system.
 
 ## Structure
 

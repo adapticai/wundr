@@ -124,7 +124,7 @@ function checkpointMigrationExample(): void {
       createdAt: new Date(),
       updatedAt: new Date(),
     },
-    type: 'claude-flow',
+    type: 'ruflo',
     status: 'running',
     startedAt: new Date(),
     memoryContext: {

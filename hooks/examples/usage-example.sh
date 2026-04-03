@@ -108,34 +108,34 @@ echo "Session management complete!"
 echo ""
 
 ################################################################################
-# Example 4: With Claude Flow Integration
+# Example 4: With Ruflo Integration
 ################################################################################
 
-echo "Example 4: Claude Flow Integration"
+echo "Example 4: Ruflo Integration"
 echo "-----------------------------------"
 
 # Initialize swarm
 echo "1. Initializing swarm..."
-npx claude-flow@alpha hooks swarm-init \
+npx ruflo@latest hooks swarm-init \
     --topology "mesh" \
     --max-agents 3 \
-    --session-id "$SESSION_ID" || echo "Claude Flow not available"
+    --session-id "$SESSION_ID" || echo "Ruflo not available"
 
 # Spawn agents
 echo ""
 echo "2. Spawning agents..."
-npx claude-flow@alpha hooks agent-spawn \
+npx ruflo@latest hooks agent-spawn \
     --type "coder" \
-    --session-id "$SESSION_ID" || echo "Claude Flow not available"
+    --session-id "$SESSION_ID" || echo "Ruflo not available"
 
 # Check status
 echo ""
 echo "3. Checking swarm status..."
-npx claude-flow@alpha hooks swarm-status \
-    --session-id "$SESSION_ID" || echo "Claude Flow not available"
+npx ruflo@latest hooks swarm-status \
+    --session-id "$SESSION_ID" || echo "Ruflo not available"
 
 echo ""
-echo "Claude Flow integration complete!"
+echo "Ruflo integration complete!"
 echo ""
 
 ################################################################################

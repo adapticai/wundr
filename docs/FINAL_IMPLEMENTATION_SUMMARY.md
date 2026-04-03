@@ -86,7 +86,7 @@ packages/
   @wundr/cli:            ✅ Unified command interface
 
   # AI Integration
-  @wundr/ai-integration: 🔄 Claude Flow (existing)
+  @wundr/ai-integration: 🔄 Ruflo (existing)
   @wundr/security:       🔄 Security features (existing)
   @wundr/environment:    🔄 Environment management (existing)
   @wundr/docs:          🔄 Documentation site (existing)
@@ -116,7 +116,7 @@ packages/
 - **Containers**: Docker, Docker Compose, Kubernetes
 - **Cloud CLIs**: AWS, Google Cloud, Azure
 - **Databases**: PostgreSQL, MySQL, MongoDB, Redis
-- **AI Tools**: Claude Code, Claude Flow, MCP tools
+- **AI Tools**: Claude Code, Ruflo, MCP tools
 - **Editors**: VS Code, Vim, Neovim, Sublime Text
 
 ### Configuration Management

@@ -1,7 +1,6 @@
-# Claude Flow Troubleshooting Guide
+# Ruflo Troubleshooting Guide
 
-Comprehensive guide to diagnosing and fixing common issues with Claude Code and Claude Flow
-integration.
+Comprehensive guide to diagnosing and fixing common issues with Claude Code and Ruflo integration.
 
 ## Table of Contents
 
@@ -24,20 +23,20 @@ Run the diagnostic tool first:
 
 ```bash
 # Run full diagnostics
-npx claude-flow@alpha diagnostics --full
+npx ruflo@latest diagnostics --full
 
 # Quick health check
-npx claude-flow@alpha health-check
+npx ruflo@latest health-check
 
 # System info
-npx claude-flow@alpha system-info
+npx ruflo@latest system-info
 ```
 
 Expected output:
 
 ```
 ✓ Node.js version: 18.0.0 or higher
-✓ Claude Flow installed: v2.0.0
+✓ Ruflo installed: v2.0.0
 ✓ MCP server status: Running
 ✓ Git repository: Initialized
 ✓ Configuration: Valid
@@ -48,14 +47,14 @@ Expected output:
 
 ## Installation Issues
 
-### Issue: `npx claude-flow@alpha` command not found
+### Issue: `npx ruflo@latest` command not found
 
 **Symptoms**:
 
 ```bash
-$ npx claude-flow@alpha --version
+$ npx ruflo@latest --version
 npx: installed 0 in 0.123s
-Command not found: claude-flow@alpha
+Command not found: ruflo@latest
 ```
 
 **Solution**:
@@ -65,10 +64,10 @@ Command not found: claude-flow@alpha
 npm cache clean --force
 
 # Try global installation
-npm install -g @ruvnet/claude-flow@alpha
+npm install -g @ruvnet/ruflo@latest
 
 # Or use full package name
-npx @ruvnet/claude-flow@alpha --version
+npx @ruvnet/ruflo@latest --version
 
 # Check npm registry
 npm config get registry
@@ -103,7 +102,7 @@ echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.bashrc
 **Symptoms**:
 
 ```
-Warning: Claude Flow version mismatch
+Warning: Ruflo version mismatch
 Expected: >=2.0.0
 Found: 1.x.x
 ```
@@ -112,13 +111,13 @@ Found: 1.x.x
 
 ```bash
 # Uninstall old version
-npm uninstall -g claude-flow
+npm uninstall -g ruflo
 
 # Install latest
-npm install -g @ruvnet/claude-flow@alpha
+npm install -g @ruvnet/ruflo@latest
 
 # Verify version
-npx claude-flow@alpha --version
+npx ruflo@latest --version
 ```
 
 ## MCP Server Issues
@@ -129,24 +128,24 @@ npx claude-flow@alpha --version
 
 ```bash
 $ claude mcp list
-Error: MCP server 'claude-flow' not responding
+Error: MCP server 'ruflo' not responding
 ```
 
 **Solution**:
 
 ```bash
 # Remove existing MCP server
-claude mcp remove claude-flow
+claude mcp remove ruflo
 
 # Re-add MCP server
-claude mcp add claude-flow npx claude-flow@alpha mcp start
+claude mcp add ruflo npx ruflo@latest mcp start
 
 # Restart Claude Code
 # (Close and reopen application)
 
 # Verify MCP server
 claude mcp list
-claude mcp status claude-flow
+claude mcp status ruflo
 ```
 
 ### Issue: MCP tools not available
@@ -160,13 +159,13 @@ claude mcp status claude-flow
 
 ```bash
 # Check MCP server logs
-claude mcp logs claude-flow
+claude mcp logs ruflo
 
 # Restart MCP server
-claude mcp restart claude-flow
+claude mcp restart ruflo
 
 # Verify tools are registered
-npx claude-flow@alpha mcp list-tools
+npx ruflo@latest mcp list-tools
 
 # Check configuration
 cat ~/.config/claude-code/mcp.json
@@ -187,9 +186,9 @@ Error: MCP connection timeout after 30s
 # Edit ~/.config/claude-code/mcp.json
 {
   "servers": {
-    "claude-flow": {
+    "ruflo": {
       "command": "npx",
-      "args": ["claude-flow@alpha", "mcp", "start"],
+      "args": ["ruflo@latest", "mcp", "start"],
       "timeout": 60000  // Increase to 60s
     }
   }
@@ -213,16 +212,16 @@ Agent initialization timeout
 
 ```bash
 # Check agent configuration
-npx claude-flow@alpha agent list --all
+npx ruflo@latest agent list --all
 
 # Verify agent type exists
-npx claude-flow@alpha agent types
+npx ruflo@latest agent types
 
 # Reset agent system
-npx claude-flow@alpha agent reset
+npx ruflo@latest agent reset
 
 # Try spawning with debug
-npx claude-flow@alpha agent spawn --type coder --debug
+npx ruflo@latest agent spawn --type coder --debug
 ```
 
 ### Issue: Agent performance degradation
@@ -236,16 +235,16 @@ npx claude-flow@alpha agent spawn --type coder --debug
 
 ```bash
 # Check agent metrics
-npx claude-flow@alpha agent metrics --all
+npx ruflo@latest agent metrics --all
 
 # Check resource usage
-npx claude-flow@alpha monitor --agents
+npx ruflo@latest monitor --agents
 
 # Clear agent caches
-npx claude-flow@alpha agent clear-cache --all
+npx ruflo@latest agent clear-cache --all
 
 # Restart agents
-npx claude-flow@alpha agent restart --all
+npx ruflo@latest agent restart --all
 ```
 
 ### Issue: Agent coordination failures
@@ -261,18 +260,18 @@ Agents not communicating
 
 ```bash
 # Check swarm status
-npx claude-flow@alpha swarm status
+npx ruflo@latest swarm status
 
 # Reset swarm
-npx claude-flow@alpha swarm reset
+npx ruflo@latest swarm reset
 
 # Reinitialize with explicit topology
-npx claude-flow@alpha swarm start \
+npx ruflo@latest swarm start \
   --topology mesh \
   --max-agents 5
 
 # Check memory connectivity
-npx claude-flow@alpha memory test-connection
+npx ruflo@latest memory test-connection
 ```
 
 ## Common Error Messages
@@ -287,10 +286,10 @@ Error: SPARC mode 'invalid-mode' not found
 
 ```bash
 # List available modes
-npx claude-flow@alpha sparc modes
+npx ruflo@latest sparc modes
 
 # Use correct mode name
-npx claude-flow@alpha sparc run spec-pseudocode "task"
+npx ruflo@latest sparc run spec-pseudocode "task"
 ```
 
 ### Error: "Agent type not available"
@@ -303,10 +302,10 @@ Error: Agent type 'invalid-agent' not available
 
 ```bash
 # List available agent types
-npx claude-flow@alpha agent types
+npx ruflo@latest agent types
 
 # Use correct type
-npx claude-flow@alpha agent spawn --type coder
+npx ruflo@latest agent spawn --type coder
 ```
 
 ### Error: "Configuration validation failed"
@@ -320,13 +319,13 @@ Invalid value for 'agents.timeout'
 
 ```bash
 # Validate configuration
-npx claude-flow@alpha config validate
+npx ruflo@latest config validate
 
 # Show configuration schema
-npx claude-flow@alpha config schema
+npx ruflo@latest config schema
 
 # Fix configuration
-nano .claude-flow/config.json
+nano .ruflo/config.json
 ```
 
 ## Debug Mode
@@ -335,24 +334,24 @@ nano .claude-flow/config.json
 
 ```bash
 # Set debug environment variable
-export DEBUG=claude-flow:*
+export DEBUG=ruflo:*
 
 # Or for specific modules
-export DEBUG=claude-flow:agent,claude-flow:memory
+export DEBUG=ruflo:agent,ruflo:memory
 
 # Run command with debug
-npx claude-flow@alpha sparc tdd "task" --debug
+npx ruflo@latest sparc tdd "task" --debug
 ```
 
 ### Debug Configuration
 
 ```json
-// .claude-flow/config.json
+// .ruflo/config.json
 {
   "debug": {
     "enabled": true,
     "level": "verbose",
-    "logFile": ".claude-flow/debug.log",
+    "logFile": ".ruflo/debug.log",
     "modules": ["agents", "memory", "hooks", "sparc"]
   }
 }
@@ -362,7 +361,7 @@ npx claude-flow@alpha sparc tdd "task" --debug
 
 ```bash
 # Generate debug report
-npx claude-flow@alpha debug-report \
+npx ruflo@latest debug-report \
   --output debug-report.zip \
   --include-logs \
   --include-config \
@@ -386,23 +385,23 @@ npx claude-flow@alpha debug-report \
 
 ### Community
 
-- **GitHub Issues**: https://github.com/ruvnet/claude-flow/issues
-- **Discussions**: https://github.com/ruvnet/claude-flow/discussions
-- **Discord**: https://discord.gg/claude-flow
+- **GitHub Issues**: https://github.com/ruvnet/ruflo/issues
+- **Discussions**: https://github.com/ruvnet/ruflo/discussions
+- **Discord**: https://discord.gg/ruflo
 
 ### Support Channels
 
 1. **Check documentation first**
 2. **Search existing issues**
-3. **Run diagnostics**: `npx claude-flow@alpha diagnostics --full`
-4. **Create debug report**: `npx claude-flow@alpha debug-report`
+3. **Run diagnostics**: `npx ruflo@latest diagnostics --full`
+4. **Create debug report**: `npx ruflo@latest debug-report`
 5. **Open GitHub issue with debug report**
 
 ### Report a Bug
 
 ```bash
 # Generate bug report
-npx claude-flow@alpha bug-report \
+npx ruflo@latest bug-report \
   --output bug-report.zip \
   --description "Brief description of issue"
 

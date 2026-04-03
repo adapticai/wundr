@@ -60,3 +60,150 @@ files:
   - packages/@wundr/neolith/apps/web/next-env.d.ts
   - project_memory.log
 
+[2026-03-16]
+branch: master
+commit: feat: add AI-native documentation stack and rewrite CLAUDE.md
+files:
+  - CLAUDE.md
+  - docs/ai-ops/AGENT_RULES.md
+  - docs/ai-ops/AGENT_TASK_GRAPH.md
+  - docs/ai-ops/ARCHITECTURE.md
+  - docs/ai-ops/CONVENTIONS.md
+  - docs/ai-ops/DEBUGGING_PLAYBOOK.md
+  - docs/ai-ops/DOMAIN_MODELS.md
+  - docs/ai-ops/PR_CHECKLIST.md
+  - docs/ai-ops/REPO_MAP.md
+  - docs/ai-ops/SERVICE_BOUNDARIES.md
+  - docs/ai-ops/SUBAGENT_PROTOCOL.md
+  - docs/ai-ops/SYSTEM_CONTEXT.md
+  - docs/ai-ops/TESTING_STRATEGY.md
+  - project_memory.log
+  - tasks/lessons.md
+  - tasks/todo.md
+
+[2026-03-16]
+branch: feat/neolith-publication-readiness
+commit: feat: neolith publication readiness - wire up Coming Soon features
+files:
+  - packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceSlug]/channels/[channelId]/page.tsx
+  - packages/@wundr/neolith/apps/web/app/api/graphql/resolvers/workspace.ts
+  - packages/@wundr/neolith/apps/web/app/api/messages/route.ts
+  - packages/@wundr/neolith/apps/web/app/api/workspaces/[workspaceSlug]/typing/route.ts
+  - packages/@wundr/neolith/apps/web/components/channel/channel-header.tsx
+  - packages/@wundr/neolith/apps/web/components/settings/import-export-settings.tsx
+  - packages/@wundr/neolith/apps/web/hooks/use-realtime-channels.ts
+
+[2026-03-17]
+branch: feat/unified-conversational-ai
+commit: feat: add UnifiedChat orchestration component
+files:
+  - packages/@wundr/neolith/apps/web/components/ai/index.ts
+  - packages/@wundr/neolith/apps/web/components/ai/unified-chat/chat-header.tsx
+  - packages/@wundr/neolith/apps/web/components/ai/unified-chat/empty-state.tsx
+  - packages/@wundr/neolith/apps/web/components/ai/unified-chat/index.ts
+  - packages/@wundr/neolith/apps/web/components/ai/unified-chat/message-group.tsx
+  - packages/@wundr/neolith/apps/web/components/ai/unified-chat/progress-bar.tsx
+  - packages/@wundr/neolith/apps/web/components/ai/unified-chat/suggestion-chips.tsx
+  - packages/@wundr/neolith/apps/web/components/ai/unified-chat/types.ts
+  - packages/@wundr/neolith/apps/web/components/ai/unified-chat/unified-chat.tsx
+
+[2026-03-17]
+branch: feat/unified-conversational-ai
+commit: feat: wire UnifiedChat into workspace creation page
+files:
+  - packages/@wundr/neolith/apps/web/app/workspaces/new/page.tsx
+
+[2026-03-17]
+branch: feat/unified-conversational-ai
+commit: feat: transform org genesis wizard into conversational flow
+files:
+  - packages/@wundr/neolith/apps/web/components/org-genesis/org-genesis-wizard.tsx
+
+[2026-03-17]
+branch: feat/unified-conversational-ai
+commit: feat: wire UnifiedChat into ConversationalCreator for all entity types
+files:
+  - packages/@wundr/neolith/apps/web/components/channels/channel-ai-assistant.tsx
+  - packages/@wundr/neolith/apps/web/components/creation/ConversationalCreator.tsx
+  - packages/@wundr/neolith/apps/web/components/orchestrators/orchestrator-chat.tsx
+
+[2026-03-17]
+branch: feat/unified-conversational-ai
+commit: feat: wire UnifiedChat into channel AI assistant panel
+files:
+  - packages/@wundr/neolith/apps/web/components/channels/channel-ai-assistant.tsx
+  - packages/@wundr/neolith/apps/web/components/workflow/workflow-ai-assistant.tsx
+
+[2026-03-18]
+branch: master
+commit: fix: pass entityType to wizard chat API in UnifiedChat transport
+files:
+  - packages/@wundr/neolith/apps/web/components/ai/unified-chat/unified-chat.tsx
+
+[2026-03-18]
+branch: master
+commit: fix: defer parent callbacks in UnifiedChat to avoid setState-during-render
+files:
+  - packages/@wundr/neolith/apps/web/components/ai/unified-chat/unified-chat.tsx
+
+[2026-03-18]
+branch: master
+commit: fix: resolve UnifiedChat setState-during-render and silent form validation
+files:
+  - packages/@wundr/neolith/apps/web/components/wizard/workspace-review-form.tsx
+
+[2026-03-18]
+branch: master
+commit: fix: mount Sonner Toaster globally and auto-create org on workspace creation
+files:
+  - packages/@wundr/neolith/apps/web/app/layout.tsx
+  - packages/@wundr/neolith/apps/web/app/workspaces/new/page.tsx
+
+[2026-03-18]
+branch: master
+commit: fix: include required slug field when auto-creating organization
+files:
+  - packages/@wundr/neolith/apps/web/app/workspaces/new/page.tsx
+
+[2026-03-18]
+branch: master
+commit: fix: use valid org type enum value and sanitize slug for org creation
+files:
+  - packages/@wundr/neolith/apps/web/app/workspaces/new/page.tsx
+
+[2026-03-18]
+branch: master
+commit: feat: migrate lowercase conversational-creator to UnifiedChat
+files:
+  - packages/@wundr/neolith/apps/web/components/creation/conversational-creator.tsx
+
+[2026-03-18]
+branch: master
+commit: feat: migrate workflow creation page to UnifiedChat
+files:
+  - packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceSlug]/workflows/new/page.tsx
+
+[2026-03-18]
+branch: master
+commit: fix: resolve settings sidebar header overlapping with workspace header
+files:
+  - packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceSlug]/admin/settings/admin-settings-layout-client.tsx
+
+[2026-03-18]
+branch: master
+commit: fix: use flow-based layout for settings sidebar instead of fixed positioning
+files:
+  - packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceSlug]/admin/settings/admin-settings-layout-client.tsx
+
+[2026-03-18]
+branch: master
+commit: feat: add workspace icon upload API endpoint
+files:
+  - packages/@wundr/neolith/apps/web/app/api/workspaces/[workspaceSlug]/icon/route.ts
+
+[2026-03-18]
+branch: master
+commit: fix: replace label+asChild pattern with direct onClick for icon upload
+files:
+  - packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceSlug]/admin/settings/general/page.tsx
+

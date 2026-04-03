@@ -25,7 +25,7 @@ intelligent project detection, quality auditing, agent configuration, and MCP to
 
 - **claude-init** (200 lines): Initialize Claude Code configuration with interactive options
 - **claude-audit** (350 lines): Comprehensive repository audit with scoring and recommendations
-- **claude-setup** (300 lines): Complete setup including Claude Flow and MCP tools
+- **claude-setup** (300 lines): Complete setup including Ruflo and MCP tools
 - **wundr-claude** (150 lines): Main CLI entry point with help system
 - **global-installer** (200 lines): Global installation and shell integration
 

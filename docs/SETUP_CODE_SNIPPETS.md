@@ -21,7 +21,7 @@ export function createClaudeSetupCommand(): Command {
     .description('Complete setup for Claude Code integration')
     .option('-g, --global', 'Install tools globally')
     .option('--skip-mcp', 'Skip MCP tools installation')
-    .option('--skip-flow', 'Skip Claude Flow setup')
+    .option('--skip-flow', 'Skip Ruflo setup')
     .option('-t, --template <name>', 'Use specific project template')
     .argument('[path]', 'Path to repository (defaults to current directory)', '.')
     .action(async (path: string, options: SetupOptions) => {
@@ -35,9 +35,9 @@ export function createClaudeSetupCommand(): Command {
 **Setup Flow** (lines 29-62):
 
 ```typescript
-// Step 1: Claude Flow setup
+// Step 1: Ruflo setup
 if (!options.skipFlow) {
-  await setupClaudeFlow(spinner, repoPath, options.global);
+  await setupRuflo(spinner, repoPath, options.global);
 }
 
 // Step 2: MCP Tools setup
@@ -274,7 +274,7 @@ export class ClaudeSetupCommands {
     // Agent configuration
     claudeSetup
       .command('agents')
-      .description('Configure Claude Flow agents')
+      .description('Configure Ruflo agents')
       .option('--list', 'List available agents')
       .option('--enable <agents>', 'Enable specific agents (comma-separated)')
       .option('--profile <profile>', 'Use profile-specific agents')
@@ -322,7 +322,7 @@ private async configureAgents(options: any): Promise<void> {
     return;
   }
 
-  spinner.start('Configuring Claude Flow agents...');
+  spinner.start('Configuring Ruflo agents...');
 
   const agents = options.enable
     ? options.enable.split(',')
@@ -855,8 +855,8 @@ export async function createProjectTemplates(options: ProjectTemplateOptions): P
       await generateSlackTemplates(templateManager, options.projectPath, context);
     }
 
-    if (options.includeClaudeFlow) {
-      await generateClaudeFlowTemplates(templateManager, options.projectPath, context);
+    if (options.includeRuflo) {
+      await generateRufloTemplates(templateManager, options.projectPath, context);
     }
 
     console.log(chalk.green('✅ Project templates created successfully!'));

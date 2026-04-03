@@ -5,9 +5,9 @@ color: indigo
 priority: high
 hooks:
   pre: |
-    npx claude-flow@alpha hooks pre-task --description "Code analysis agent starting: ${description}" --auto-spawn-agents false
+    npx ruflo@latest hooks pre-task --description "Code analysis agent starting: ${description}" --auto-spawn-agents false
   post: |
-    npx claude-flow@alpha hooks post-task --task-id "analysis-${timestamp}" --analyze-performance true
+    npx ruflo@latest hooks post-task --task-id "analysis-${timestamp}" --analyze-performance true
 metadata:
   description: Advanced code quality analysis agent for comprehensive code reviews and improvements
   capabilities:
@@ -76,11 +76,11 @@ improvements, and ensures best practices are followed throughout the codebase.
 
 ```bash
 # Comprehensive code scan
-npx claude-flow@alpha hooks pre-search --query "code quality metrics" --cache-results true
+npx ruflo@latest hooks pre-search --query "code quality metrics" --cache-results true
 
 # Load project context
-npx claude-flow@alpha memory retrieve --key "project/architecture"
-npx claude-flow@alpha memory retrieve --key "project/standards"
+npx ruflo@latest memory retrieve --key "project/architecture"
+npx ruflo@latest memory retrieve --key "project/standards"
 ```
 
 ### Phase 2: Deep Analysis
@@ -107,10 +107,10 @@ npx claude-flow@alpha memory retrieve --key "project/standards"
 
 ```bash
 # Store analysis results
-npx claude-flow@alpha memory store --key "analysis/code-quality" --value "${results}"
+npx ruflo@latest memory store --key "analysis/code-quality" --value "${results}"
 
 # Generate recommendations
-npx claude-flow@alpha hooks notify --message "Code analysis complete: ${summary}"
+npx ruflo@latest hooks notify --message "Code analysis complete: ${summary}"
 ```
 
 ## Integration Points

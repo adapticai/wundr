@@ -252,7 +252,7 @@ export class ProfileManager {
       },
       aiTools: {
         claudeCode: true,
-        claudeFlow: true,
+        ruflo: true,
         mcpTools: ['all'],
         swarmAgents: ['default'],
         memoryAllocation: '2GB',

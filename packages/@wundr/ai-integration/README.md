@@ -5,7 +5,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.2-blue.svg)](https://www.typescriptlang.org/)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/adapticai/wundr/ci.yml)](https://github.com/adapticai/wundr/actions)
 
-> AI Integration Hive Queen - Orchestrating Claude Code, Claude Flow, and MCP tools for intelligent
+> AI Integration Hive Queen - Orchestrating Claude Code, Ruflo, and MCP tools for intelligent
 > development automation.
 
 ## Overview
@@ -64,15 +64,15 @@ npm install @wundr.io/ai-integration
 - Node.js 18+ or 20+
 - TypeScript 5.2+
 - Claude Code CLI
-- Claude Flow MCP server (optional but recommended)
+- Ruflo MCP server (optional but recommended)
 
 ### MCP Server Setup
 
-Add Claude Flow MCP server for full functionality:
+Add Ruflo MCP server for full functionality:
 
 ```bash
 # Add MCP server via Claude Code
-claude mcp add claude-flow npx claude-flow@alpha mcp start
+claude mcp add ruflo npx ruflo@latest mcp start
 
 # Verify installation
 claude mcp list
@@ -87,7 +87,7 @@ import { AIIntegrationHive } from '@wundr.io/ai-integration';
 
 // Initialize the AI Integration Hive
 const hive = new AIIntegrationHive({
-  claudeFlowEnabled: true,
+  rufloEnabled: true,
   neuralTrainingEnabled: true,
   swarmIntelligenceEnabled: true,
   githubIntegrationEnabled: true,
@@ -161,7 +161,7 @@ const prediction = await neuralPipeline.predictAgents({
 });
 ```
 
-## Claude Flow Agents
+## Ruflo Agents
 
 The AI Integration system provides **54 specialized agents** across 8 categories:
 
@@ -704,9 +704,9 @@ SWARM_CONSENSUS_THRESHOLD=0.75
 import { AIIntegrationHive } from '@wundr.io/ai-integration';
 
 const hive = new AIIntegrationHive({
-  // Claude Flow Integration
-  claudeFlowEnabled: true,
-  claudeFlowMCPServer: 'claude-flow',
+  // Ruflo Integration
+  rufloEnabled: true,
+  rufloMCPServer: 'ruflo',
 
   // Neural Training
   neuralTrainingEnabled: true,
@@ -764,7 +764,7 @@ await hive.initialize();
 ### Core Classes
 
 - `AIIntegrationHive` - Main orchestration hub
-- `ClaudeFlowOrchestrator` - Claude Flow coordination
+- `RufloOrchestrator` - Ruflo coordination
 - `SwarmIntelligence` - Swarm topology management
 - `NeuralTrainingPipeline` - Neural model training
 - `MemoryManager` - Cross-session persistence
@@ -803,7 +803,7 @@ await hive.initialize();
 | Agent Types                  | 54     | Specialized agents         |
 | Neural Models                | 4      | Deep learning models       |
 | Swarm Topologies             | 5      | Auto-adaptive              |
-| MCP Tools                    | 25+    | Claude Flow integration    |
+| MCP Tools                    | 25+    | Ruflo integration          |
 | Memory Backends              | 3      | SQLite, Redis, File        |
 | Max Concurrent Agents        | 50+    | Configurable per topology  |
 | Task Classification Accuracy | 92%+   | With 500+ training samples |

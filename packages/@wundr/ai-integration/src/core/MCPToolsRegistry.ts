@@ -111,7 +111,7 @@ export class MCPToolsRegistry extends EventEmitter {
       description: 'Configure Claude Code integration settings',
     },
 
-    // Claude Flow MCP Tools
+    // Ruflo MCP Tools
     swarm_init: {
       category: 'coordination',
       capabilities: [

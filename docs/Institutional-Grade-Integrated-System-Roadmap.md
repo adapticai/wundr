@@ -17,8 +17,7 @@ mission-critical system where:
 1. **Orchestrators are mapped 1:1 with Neolith Users** (flagged as `isOrchestrator=true`)
 2. **Messages to Orchestrator users route to OrchestratorDaemon sessions**
 3. **A dedicated `neolith-mcp-server` package** exposes all Neolith capabilities as MCP tools
-4. **gpt-5-mini/Claude sessions** (Claude Code / Claude Flow) can perform ANY action a human user
-   could do
+4. **gpt-5-mini/Claude sessions** (Claude Code / Ruflo) can perform ANY action a human user could do
 5. **Charter management** is fully integrated with Neolith UI for CRUD operations
 6. **Global and scoped Session Managers/Subagents** are manageable through the platform
 
@@ -36,8 +35,8 @@ This roadmap integrates key concepts from:
 
 **Key Architecture Principles:**
 
-- **Session Managers = Claude Code/Claude Flow sessions** dynamically compiled with CLAUDE.md,
-  workflow files, and subagent configurations
+- **Session Managers = Claude Code/Ruflo sessions** dynamically compiled with CLAUDE.md, workflow
+  files, and subagent configurations
 - **10 concurrent sessions per Orchestrator** running on dedicated Mac Mini/Studio machines
 - **20 subagents per session** running in parallel at any given time
 - **JIT Context Compilation**: Tools and context loaded dynamically based on task requirements

@@ -174,7 +174,7 @@ measurableObjectives:
 
 ### Wundr AI Integration (54 Agent Types)
 
-**File**: `@wundr/ai-integration/src/core/ClaudeFlowOrchestrator.ts`
+**File**: `@wundr/ai-integration/src/core/RufloOrchestrator.ts`
 
 Categories and counts: | Category | Count | Agent Types | |----------|-------|-------------| | Core
 Development | 5 | coder, reviewer, tester, planner, researcher | | Swarm Coordination | 5 |
@@ -595,7 +595,7 @@ function resolveTaskAgent(taskType: string): AgentDefinition[] {
 ## Migration Path
 
 1. **Phase 1**: Types and loader - Parse existing `.claude/agents/` files
-2. **Phase 2**: Registry - Replace hardcoded `AGENT_REGISTRY` in `ClaudeFlowOrchestrator.ts`
+2. **Phase 2**: Registry - Replace hardcoded `AGENT_REGISTRY` in `RufloOrchestrator.ts`
 3. **Phase 3**: Lifecycle - Replace in-memory `activeAgents` Map with full persistence
 4. **Phase 4**: Bridge to `@wundr/agent-delegation` HubCoordinator
 

@@ -5,7 +5,7 @@ Deep analysis of GitHub repository with AI insights.
 ## Usage
 
 ```bash
-npx claude-flow github repo-analyze [options]
+npx ruflo github repo-analyze [options]
 ```
 
 ## Options
@@ -18,11 +18,11 @@ npx claude-flow github repo-analyze [options]
 
 ```bash
 # Basic analysis
-npx claude-flow github repo-analyze --repository myorg/myrepo
+npx ruflo github repo-analyze --repository myorg/myrepo
 
 # Deep analysis
-npx claude-flow github repo-analyze --repository myorg/myrepo --deep
+npx ruflo github repo-analyze --repository myorg/myrepo --deep
 
 # Specific areas
-npx claude-flow github repo-analyze --repository myorg/myrepo --include issues,prs
+npx ruflo github repo-analyze --repository myorg/myrepo --include issues,prs
 ```

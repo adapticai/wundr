@@ -130,7 +130,7 @@ analyze_system() {
   "has_git": $(has_command git && echo true || echo false),
   "has_docker": $(has_command docker && echo true || echo false),
   "has_claude": $(has_command claude && echo true || echo false),
-  "has_claude_flow": $(has_command claude-flow && echo true || echo false),
+  "has_ruflo": $(has_command ruflo && echo true || echo false),
   "has_vscode": $(has_command code && echo true || echo false),
   "preset": "$PRESET"
 }
@@ -309,9 +309,9 @@ install_vscode_optimized() {
 # Install Claude AI tools (optimized)
 install_claude_optimized() {
     local has_claude=$(has_command claude)
-    local has_claude_flow=$(has_command claude-flow)
+    local has_ruflo=$(has_command ruflo)
     
-    if [[ "$has_claude" == true && "$has_claude_flow" == true ]]; then
+    if [[ "$has_claude" == true && "$has_ruflo" == true ]]; then
         progress "Claude tools already installed"
         return 0
     fi
@@ -324,8 +324,8 @@ install_claude_optimized() {
         tasks+=("execute_with_timeout 'npm install -g @anthropic-ai/claude-code || curl -fsSL claude.ai/install.sh | bash' 'Claude Code installation' 120")
     fi
     
-    if [[ "$has_claude_flow" != true ]]; then
-        tasks+=("execute_with_timeout 'npm install -g claude-flow@alpha' 'Claude Flow installation' 120")
+    if [[ "$has_ruflo" != true ]]; then
+        tasks+=("execute_with_timeout 'npm install -g ruflo@latest' 'Ruflo installation' 120")
     fi
     
     if [[ ${#tasks[@]} -gt 0 ]]; then
@@ -333,7 +333,7 @@ install_claude_optimized() {
     fi
     
     # Create basic configuration
-    mkdir -p "$HOME/.config/claude" "$HOME/.claude-flow"
+    mkdir -p "$HOME/.config/claude" "$HOME/.ruflo"
     
     cat > "$HOME/.config/claude/config.json" << EOF
 {
@@ -348,7 +348,7 @@ install_claude_optimized() {
 }
 EOF
     
-    cat > "$HOME/.claude-flow/global-config.json" << EOF
+    cat > "$HOME/.ruflo/global-config.json" << EOF
 {
   "version": "2.0.0-alpha",
   "global": {
@@ -406,7 +406,7 @@ alias gp='git push'
 
 # Claude shortcuts
 alias cl='claude'
-alias clf='claude-flow'
+alias clf='ruflo'
 
 export PATH="$HOME/.npm-global/bin:$PATH"
 EOF
@@ -553,8 +553,8 @@ main() {
     echo "   dev                    # Go to Development folder"
     echo "   claude                 # Start Claude AI assistant"
     
-    if has_command claude-flow; then
-        echo "   claude-flow status     # Check AI agents"
+    if has_command ruflo; then
+        echo "   ruflo status     # Check AI agents"
     fi
     
     echo -e "\n${GREEN}✨ Your optimized development environment is ready!${NC}"

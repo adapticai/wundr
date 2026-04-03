@@ -2,7 +2,7 @@
 
 /**
  * Global installer for Wundr Claude CLI
- * 
+ *
  * This script handles global installation and setup of the Wundr CLI
  * for Claude Code integration across any git repository.
  */
@@ -22,44 +22,47 @@ interface InstallOptions {
 
 async function installWundrClaude(options: InstallOptions = {}): Promise<void> {
   const spinner = ora('Installing Wundr Claude CLI globally...').start();
-  
+
   try {
     // Step 1: Verify prerequisites
     await verifyPrerequisites(spinner);
-    
+
     // Step 2: Install the package globally
     await installPackage(spinner, options);
-    
+
     // Step 3: Create global configuration
     await createGlobalConfig(spinner);
-    
+
     // Step 4: Set up shell integration
     await setupShellIntegration(spinner);
-    
+
     // Step 5: Verify installation
     if (!options.skipVerification) {
       await verifyInstallation(spinner);
     }
-    
+
     spinner.succeed('Wundr Claude CLI installed successfully!');
     displayPostInstallInstructions();
-    
   } catch (error) {
     spinner.stop();
     console.error(chalk.red('❌ Installation failed:'));
-    console.error(chalk.red(error instanceof Error ? error.message : String(error)));
+    console.error(
+      chalk.red(error instanceof Error ? error.message : String(error))
+    );
     process.exit(1);
   }
 }
 
 async function verifyPrerequisites(spinner: ora.Ora): Promise<void> {
   spinner.text = 'Verifying prerequisites...';
-  
+
   // Check Node.js version
   try {
-    const nodeVersion = execSync('node --version', { encoding: 'utf-8' }).trim();
+    const nodeVersion = execSync('node --version', {
+      encoding: 'utf-8',
+    }).trim();
     const majorVersion = parseInt(nodeVersion.slice(1).split('.')[0]);
-    
+
     if (majorVersion < 18) {
       throw new Error(`Node.js 18+ required. Found: ${nodeVersion}`);
     }
@@ -78,23 +81,28 @@ async function verifyPrerequisites(spinner: ora.Ora): Promise<void> {
   try {
     execSync('git --version', { stdio: 'ignore' });
   } catch (error) {
-    console.log(chalk.yellow('⚠️  Git not found. Some features may not work properly.'));
+    console.log(
+      chalk.yellow('⚠️  Git not found. Some features may not work properly.')
+    );
   }
 
   spinner.text = 'Prerequisites verified';
 }
 
-async function installPackage(spinner: ora.Ora, options: InstallOptions): Promise<void> {
+async function installPackage(
+  spinner: ora.Ora,
+  options: InstallOptions
+): Promise<void> {
   spinner.text = 'Installing Wundr Claude CLI package...';
-  
+
   try {
     // For development mode, link the local package
     if (options.dev) {
       execSync('npm link', { stdio: 'inherit' });
     } else {
       // Install from npm (when published)
-      execSync('npm install -g @adapticai/wundr', { 
-        stdio: options.force ? 'inherit' : 'pipe' 
+      execSync('npm install -g @adapticai/wundr', {
+        stdio: options.force ? 'inherit' : 'pipe',
       });
     }
   } catch (error) {
@@ -108,10 +116,10 @@ async function installPackage(spinner: ora.Ora, options: InstallOptions): Promis
 
 async function createGlobalConfig(spinner: ora.Ora): Promise<void> {
   spinner.text = 'Creating global configuration...';
-  
+
   const configDir = join(homedir(), '.wundr');
   const configFile = join(configDir, 'config.json');
-  
+
   // Create config directory
   if (!existsSync(configDir)) {
     mkdirSync(configDir, { recursive: true });
@@ -125,22 +133,22 @@ async function createGlobalConfig(spinner: ora.Ora): Promise<void> {
       defaultTemplate: 'typescript',
       enableAuditByDefault: true,
       verboseOutput: false,
-      autoUpdateClaudeConfig: true
+      autoUpdateClaudeConfig: true,
     },
     paths: {
       templatesDir: join(configDir, 'templates'),
-      cacheDir: join(configDir, 'cache')
+      cacheDir: join(configDir, 'cache'),
     },
     integrations: {
-      claudeFlow: {
+      ruflo: {
         enabled: true,
-        autoInstall: true
+        autoInstall: true,
       },
       mcpTools: {
         enabled: true,
-        autoSetup: true
-      }
-    }
+        autoSetup: true,
+      },
+    },
   };
 
   writeFileSync(configFile, JSON.stringify(defaultConfig, null, 2));
@@ -160,7 +168,7 @@ async function createGlobalConfig(spinner: ora.Ora): Promise<void> {
 
 async function setupShellIntegration(spinner: ora.Ora): Promise<void> {
   spinner.text = 'Setting up shell integration...';
-  
+
   const shellIntegrationScript = `
 # Wundr Claude CLI Integration
 # Auto-generated on ${new Date().toISOString()}
@@ -197,7 +205,7 @@ fi
   const shellFiles = [
     join(homedir(), '.bashrc'),
     join(homedir(), '.zshrc'),
-    join(homedir(), '.profile')
+    join(homedir(), '.profile'),
   ];
 
   const integrationFile = join(homedir(), '.wundr', 'shell-integration.sh');
@@ -224,11 +232,11 @@ fi
 
 async function verifyInstallation(spinner: ora.Ora): Promise<void> {
   spinner.text = 'Verifying installation...';
-  
+
   try {
     // Test the CLI command
     const output = execSync('wundr --version', { encoding: 'utf-8' });
-    
+
     if (!output.includes('1.0.0')) {
       throw new Error('CLI version verification failed');
     }
@@ -241,9 +249,10 @@ async function verifyInstallation(spinner: ora.Ora): Promise<void> {
     if (!existsSync(configDir)) {
       throw new Error('Configuration directory not found');
     }
-
   } catch (error) {
-    throw new Error(`Installation verification failed: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `Installation verification failed: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 
   spinner.text = 'Installation verified successfully';
@@ -252,7 +261,7 @@ async function verifyInstallation(spinner: ora.Ora): Promise<void> {
 function displayPostInstallInstructions(): void {
   console.log(chalk.green('\n🎉 Wundr Claude CLI Installation Complete!'));
   console.log(chalk.blue('==========================================='));
-  
+
   console.log(chalk.yellow('\n✅ What was installed:'));
   console.log('• Global wundr command');
   console.log('• Shell integration and aliases');
@@ -270,7 +279,9 @@ function displayPostInstallInstructions(): void {
   console.log('• wcs  → wundr claude-setup');
 
   console.log(chalk.yellow('\n🤖 Smart Features:'));
-  console.log('• Auto-detects project types (React, Node.js, TypeScript, etc.)');
+  console.log(
+    '• Auto-detects project types (React, Node.js, TypeScript, etc.)'
+  );
   console.log('• Suggests repository improvements');
   console.log('• Configures optimal agent swarms');
   console.log('• Sets up MCP tools automatically');
@@ -282,11 +293,13 @@ function displayPostInstallInstructions(): void {
 
   console.log(chalk.green('\n🔄 Next Steps:'));
   console.log('1. Restart your terminal (or run: source ~/.bashrc)');
-  console.log('2. Navigate to a project directory');  
+  console.log('2. Navigate to a project directory');
   console.log('3. Try: wundr claude-audit --detailed');
   console.log('4. Then: wundr claude-init --interactive');
 
-  console.log(chalk.blue('\n✨ Happy coding with optimized Claude Code integration!'));
+  console.log(
+    chalk.blue('\n✨ Happy coding with optimized Claude Code integration!')
+  );
 }
 
 // CLI interface for the installer
@@ -295,10 +308,10 @@ if (require.main === module) {
   const options: InstallOptions = {
     force: args.includes('--force'),
     dev: args.includes('--dev'),
-    skipVerification: args.includes('--skip-verification')
+    skipVerification: args.includes('--skip-verification'),
   };
 
-  installWundrClaude(options).catch((error) => {
+  installWundrClaude(options).catch(error => {
     console.error(chalk.red('Installation failed:'), error);
     process.exit(1);
   });

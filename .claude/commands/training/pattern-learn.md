@@ -5,7 +5,7 @@ Learn patterns from successful operations.
 ## Usage
 
 ```bash
-npx claude-flow training pattern-learn [options]
+npx ruflo training pattern-learn [options]
 ```
 
 ## Options
@@ -18,11 +18,11 @@ npx claude-flow training pattern-learn [options]
 
 ```bash
 # Learn from all ops
-npx claude-flow training pattern-learn
+npx ruflo training pattern-learn
 
 # High success only
-npx claude-flow training pattern-learn --threshold 0.9
+npx ruflo training pattern-learn --threshold 0.9
 
 # Save patterns
-npx claude-flow training pattern-learn --save optimal-patterns
+npx ruflo training pattern-learn --save optimal-patterns
 ```

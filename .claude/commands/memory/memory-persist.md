@@ -5,7 +5,7 @@ Persist memory across sessions.
 ## Usage
 
 ```bash
-npx claude-flow memory persist [options]
+npx ruflo memory persist [options]
 ```
 
 ## Options
@@ -18,11 +18,11 @@ npx claude-flow memory persist [options]
 
 ```bash
 # Export memory
-npx claude-flow memory persist --export memory-backup.json
+npx ruflo memory persist --export memory-backup.json
 
 # Import memory
-npx claude-flow memory persist --import memory-backup.json
+npx ruflo memory persist --import memory-backup.json
 
 # Compressed export
-npx claude-flow memory persist --export memory.gz --compress
+npx ruflo memory persist --export memory.gz --compress
 ```

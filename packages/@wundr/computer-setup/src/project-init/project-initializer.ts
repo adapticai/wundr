@@ -188,7 +188,7 @@ export class ProjectInitializer {
         ],
       },
       orchestration: options.enhanced?.orchestration ?? {
-        ...DEFAULT_ORCHESTRATION_CONFIGS['claude-flow'],
+        ...DEFAULT_ORCHESTRATION_CONFIGS['ruflo'],
       },
       promptConfig: options.enhanced?.promptConfig,
       security: options.enhanced?.security,
@@ -223,8 +223,8 @@ export class ProjectInitializer {
       );
     }
 
-    if (options.orchestration?.framework === 'claude-flow') {
-      steps.push(chalk.white('8. Run: npx claude-flow@alpha mcp start'));
+    if (options.orchestration?.framework === 'ruflo') {
+      steps.push(chalk.white('8. Run: npx ruflo@latest mcp start'));
     }
 
     steps.push(
@@ -954,8 +954,8 @@ export class ProjectInitializer {
     // Setup git hooks
     await this.setupGitHooks(options);
 
-    // Setup Claude Flow hooks
-    await this.setupClaudeFlowHooks(options);
+    // Setup Ruflo hooks
+    await this.setupRufloHooks(options);
 
     // Setup verification hooks
     await this.setupVerificationHooks(options);
@@ -1274,9 +1274,9 @@ if [ -f "package.json" ] && grep -q '"lint"' package.json; then
   ${packageManager} run lint --fix 2>/dev/null || true
 fi
 
-# Notify claude-flow of changes
+# Notify ruflo of changes
 if command -v npx &> /dev/null; then
-  npx claude-flow@alpha hooks notify --message "Files edited in ${projectName}" 2>/dev/null || true
+  npx ruflo@latest hooks notify --message "Files edited in ${projectName}" 2>/dev/null || true
 fi
 `;
   }
@@ -1299,7 +1299,7 @@ echo "Session ending, cleaning up..."
 
 # Export session metrics
 if command -v npx &> /dev/null; then
-  npx claude-flow@alpha hooks session-end --export-metrics true 2>/dev/null || true
+  npx ruflo@latest hooks session-end --export-metrics true 2>/dev/null || true
 fi
 
 # Cleanup temporary files
@@ -1533,11 +1533,11 @@ Systematic development using Specification, Pseudocode, Architecture, Refinement
 ## Commands
 \`\`\`bash
 # Run SPARC workflow
-npx claude-flow sparc tdd "<feature>"
+npx ruflo sparc tdd "<feature>"
 
 # Run specific phase
-npx claude-flow sparc run spec-pseudocode "<task>"
-npx claude-flow sparc run architect "<task>"
+npx ruflo sparc run spec-pseudocode "<task>"
+npx ruflo sparc run architect "<task>"
 
 # Check workflow status
 ${packageManager} run workflow:status
@@ -1583,8 +1583,8 @@ ${packageManager} run test:watch
 # Run tests with coverage
 ${packageManager} run test:coverage
 
-# Run TDD workflow with claude-flow
-npx claude-flow sparc tdd "<feature>"
+# Run TDD workflow with ruflo
+npx ruflo sparc tdd "<feature>"
 \`\`\`
 
 ## Best Practices
@@ -2727,48 +2727,46 @@ echo "Commit message format valid!"
     await fs.chmod(commitMsgPath, '755');
   }
 
-  private async setupClaudeFlowHooks(
-    options: ProjectInitOptions
-  ): Promise<void> {
-    const claudeFlowDir = path.join(
+  private async setupRufloHooks(options: ProjectInitOptions): Promise<void> {
+    const rufloHooksDir = path.join(
       options.projectPath,
       '.claude',
       'hooks',
-      'claude-flow'
+      'ruflo'
     );
-    await fs.ensureDir(claudeFlowDir);
+    await fs.ensureDir(rufloHooksDir);
 
     const preTaskHook = `#!/bin/bash
-# Claude Flow pre-task hook for ${options.projectName}
+# Ruflo pre-task hook for ${options.projectName}
 
 task_description=$1
 
-echo "Starting Claude Flow task: $task_description"
+echo "Starting Ruflo task: $task_description"
 
-# Register with Claude Flow if available
+# Register with Ruflo if available
 if command -v npx &> /dev/null; then
-  npx claude-flow@alpha hooks pre-task --description "$task_description" 2>/dev/null || true
+  npx ruflo@latest hooks pre-task --description "$task_description" 2>/dev/null || true
 fi
 `;
 
     const postTaskHook = `#!/bin/bash
-# Claude Flow post-task hook for ${options.projectName}
+# Ruflo post-task hook for ${options.projectName}
 
 task_id=$1
 
-echo "Completing Claude Flow task: $task_id"
+echo "Completing Ruflo task: $task_id"
 
-# Notify Claude Flow if available
+# Notify Ruflo if available
 if command -v npx &> /dev/null; then
-  npx claude-flow@alpha hooks post-task --task-id "$task_id" 2>/dev/null || true
+  npx ruflo@latest hooks post-task --task-id "$task_id" 2>/dev/null || true
 fi
 `;
 
-    await fs.writeFile(path.join(claudeFlowDir, 'pre-task.sh'), preTaskHook);
-    await fs.chmod(path.join(claudeFlowDir, 'pre-task.sh'), '755');
+    await fs.writeFile(path.join(rufloHooksDir, 'pre-task.sh'), preTaskHook);
+    await fs.chmod(path.join(rufloHooksDir, 'pre-task.sh'), '755');
 
-    await fs.writeFile(path.join(claudeFlowDir, 'post-task.sh'), postTaskHook);
-    await fs.chmod(path.join(claudeFlowDir, 'post-task.sh'), '755');
+    await fs.writeFile(path.join(rufloHooksDir, 'post-task.sh'), postTaskHook);
+    await fs.chmod(path.join(rufloHooksDir, 'post-task.sh'), '755');
   }
 
   private async setupVerificationHooks(
@@ -2863,17 +2861,17 @@ ${specializedAgents.map(agent => `- **${agent}**: Specialized for ${options.proj
 
 ### Spawn an Agent
 \`\`\`bash
-npx claude-flow agent spawn --type coder --task "implement feature"
+npx ruflo agent spawn --type coder --task "implement feature"
 \`\`\`
 
 ### List Active Agents
 \`\`\`bash
-npx claude-flow agent list
+npx ruflo agent list
 \`\`\`
 
 ### Check Agent Status
 \`\`\`bash
-npx claude-flow agent status --id <agent-id>
+npx ruflo agent status --id <agent-id>
 \`\`\`
 
 ## Agent Files Location
@@ -2893,21 +2891,21 @@ Type: ${options.projectType}
 Systematic development using Specification, Pseudocode, Architecture, Refinement, Completion.
 
 \`\`\`bash
-npx claude-flow sparc tdd "<feature description>"
+npx ruflo sparc tdd "<feature description>"
 \`\`\`
 
 ### TDD Workflow
 Test-Driven Development with Red-Green-Refactor cycle.
 
 \`\`\`bash
-npx claude-flow sparc run tdd "<feature description>"
+npx ruflo sparc run tdd "<feature description>"
 \`\`\`
 
 ### Review Workflow
 Code review process with automated checks.
 
 \`\`\`bash
-npx claude-flow sparc run review "<PR or branch>"
+npx ruflo sparc run review "<PR or branch>"
 \`\`\`
 
 ## Workflow Customization
@@ -2921,12 +2919,12 @@ Workflows can be customized in \`.claude/workflows/\`:
 
 ### Sequential Execution
 \`\`\`bash
-npx claude-flow sparc pipeline "<task>"
+npx ruflo sparc pipeline "<task>"
 \`\`\`
 
 ### Parallel Execution
 \`\`\`bash
-npx claude-flow sparc batch spec,arch,test "<task>"
+npx ruflo sparc batch spec,arch,test "<task>"
 \`\`\`
 
 See .claude/workflows/ for detailed configurations.
@@ -3078,7 +3076,7 @@ ${typeSpecificGuide}
         },
         aiTools: {
           claudeCode: true,
-          claudeFlow: true,
+          ruflo: true,
           mcpTools: [],
           swarmAgents: [],
           memoryAllocation: '2GB',
@@ -3118,7 +3116,7 @@ ${typeSpecificGuide}
       ...fleetSteps,
       ...gitWorktreeSteps,
       chalk.white(
-        `${4 + fleetSteps.length + gitWorktreeSteps.length}. Run: npx claude-flow@alpha mcp start`
+        `${4 + fleetSteps.length + gitWorktreeSteps.length}. Run: npx ruflo@latest mcp start`
       ),
       chalk.white(
         `${5 + fleetSteps.length + gitWorktreeSteps.length}. Start development with your chosen workflow`

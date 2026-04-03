@@ -121,7 +121,7 @@ export class NpmInstaller extends BaseInstaller {
     const packageMap: Record<string, string> = {
       pnpm: '@pnpm/exe',
       yarn: 'yarn',
-      'claude-flow': 'claude-flow@alpha',
+      ruflo: 'ruflo@latest',
       typescript: 'typescript',
       eslint: 'eslint',
       prettier: 'prettier',
@@ -135,7 +135,7 @@ export class NpmInstaller extends BaseInstaller {
    */
   private getCommandName(toolName: string): string {
     const commandMap: Record<string, string> = {
-      'claude-flow': 'claude-flow',
+      ruflo: 'ruflo',
     };
 
     return commandMap[toolName] || toolName;
@@ -148,7 +148,7 @@ export class NpmInstaller extends BaseInstaller {
     const versionCommands: Record<string, string> = {
       pnpm: 'pnpm --version',
       yarn: 'yarn --version',
-      'claude-flow': 'claude-flow --version',
+      ruflo: 'ruflo --version',
       typescript: 'tsc --version',
       eslint: 'eslint --version',
       prettier: 'prettier --version',

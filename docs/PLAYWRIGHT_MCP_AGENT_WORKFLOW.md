@@ -355,7 +355,7 @@ playwright_query_selector_all
 ### Specification Phase
 
 ```bash
-npx claude-flow sparc run spec-pseudocode "Create test specification for login page"
+npx ruflo sparc run spec-pseudocode "Create test specification for login page"
 
 # Playwright MCP helps by:
 1. Navigating to actual page
@@ -367,7 +367,7 @@ npx claude-flow sparc run spec-pseudocode "Create test specification for login p
 ### Pseudocode Phase
 
 ```bash
-npx claude-flow sparc run spec-pseudocode "Write test algorithm for form validation"
+npx ruflo sparc run spec-pseudocode "Write test algorithm for form validation"
 
 # Playwright MCP helps by:
 1. Testing actual form behavior
@@ -379,7 +379,7 @@ npx claude-flow sparc run spec-pseudocode "Write test algorithm for form validat
 ### Architecture Phase
 
 ```bash
-npx claude-flow sparc run architect "Design test framework for Neolith"
+npx ruflo sparc run architect "Design test framework for Neolith"
 
 # Playwright MCP helps by:
 1. Understanding page structure
@@ -391,7 +391,7 @@ npx claude-flow sparc run architect "Design test framework for Neolith"
 ### Refinement Phase
 
 ```bash
-npx claude-flow sparc tdd "Implement login tests with TDD"
+npx ruflo sparc tdd "Implement login tests with TDD"
 
 # Playwright MCP helps by:
 1. Write test first
@@ -403,7 +403,7 @@ npx claude-flow sparc tdd "Implement login tests with TDD"
 ### Completion Phase
 
 ```bash
-npx claude-flow sparc run integration "Integrate tests into CI/CD"
+npx ruflo sparc run integration "Integrate tests into CI/CD"
 
 # Playwright MCP helps by:
 1. Running tests in pipeline
@@ -578,7 +578,7 @@ screenshots/
 ### For QA Engineer Agent
 
 ```bash
-npx claude-flow sparc run qa-engineer "Execute smoke test suite for Neolith:
+npx ruflo sparc run qa-engineer "Execute smoke test suite for Neolith:
 1. Test all 24 pages load without errors
 2. Verify navigation between pages
 3. Test form submissions
@@ -590,7 +590,7 @@ npx claude-flow sparc run qa-engineer "Execute smoke test suite for Neolith:
 ### For Test Automation Engineer Agent
 
 ```bash
-npx claude-flow sparc run test-automation-engineer "Implement automated tests for workspace creation:
+npx ruflo sparc run test-automation-engineer "Implement automated tests for workspace creation:
 1. Write test cases using Playwright MCP
 2. Create page objects
 3. Implement helper functions
@@ -602,7 +602,7 @@ npx claude-flow sparc run test-automation-engineer "Implement automated tests fo
 ### For Frontend Engineer Agent
 
 ```bash
-npx claude-flow sparc run frontend-engineer "Verify profile settings page implementation:
+npx ruflo sparc run frontend-engineer "Verify profile settings page implementation:
 1. Navigate to settings page
 2. Test form validation
 3. Verify form submission

@@ -470,8 +470,8 @@ export NVM_DIR="$HOME/.nvm"
 export PNPM_HOME="$HOME/.pnpm"
 export PATH="$PNPM_HOME:$PATH"
 
-# Claude Flow configuration
-export CLAUDE_FLOW_MEMORY="${profile.preferences.aiTools.memoryAllocation}"
+# Ruflo configuration
+export RUFLO_MEMORY="${profile.preferences.aiTools.memoryAllocation}"
 
 # Custom functions
 function mkcd() {
@@ -512,24 +512,24 @@ function serve() {
   }
 
   /**
-   * Configure Claude Flow
+   * Configure Ruflo
    */
-  async configureClaudeFlow(aiTools: AIToolsConfiguration): Promise<void> {
-    logger.info('Configuring Claude Flow');
+  async configureRuflo(aiTools: AIToolsConfiguration): Promise<void> {
+    logger.info('Configuring Ruflo');
 
     const config = {
       memoryAllocation: aiTools.memoryAllocation,
       mcpTools: aiTools.mcpTools,
       swarmAgents: aiTools.swarmAgents,
       claudeCode: aiTools.claudeCode,
-      claudeFlow: aiTools.claudeFlow,
+      ruflo: aiTools.ruflo,
     };
 
-    const configPath = path.join(os.homedir(), '.claude-flow', 'config.json');
+    const configPath = path.join(os.homedir(), '.ruflo', 'config.json');
     await fs.ensureDir(path.dirname(configPath));
     await fs.writeJson(configPath, config, { spaces: 2 });
 
-    this.recordConfigChange(configPath, ['Claude Flow configuration']);
+    this.recordConfigChange(configPath, ['Ruflo configuration']);
   }
 
   /**

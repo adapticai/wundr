@@ -7,12 +7,12 @@ platform and 'new-starter' environment setup system into a comprehensive develop
 management platform. This unified system will serve as the central hub for development environment
 setup, code quality governance, AI-powered refactoring, and team collaboration.
 
-## 🧠 CLAUDE FLOW HIVE ORCHESTRATION STRATEGY
+## 🧠 RUFLO HIVE ORCHESTRATION STRATEGY
 
 ### Master Hive Architecture
 
 This project requires a **multi-hive orchestration** with specialized swarms working in parallel and
-coordination. The implementation will utilize Claude Flow's advanced swarm intelligence to manage
+coordination. The implementation will utilize Ruflo's advanced swarm intelligence to manage
 complexity at unprecedented scale.
 
 #### **🏛️ Hive Hierarchy Overview**
@@ -37,7 +37,7 @@ Master Coordination Hive (Queen + 6 Coordinators)
 
 ```bash
 # Initialize master coordination hive
-npx claude-flow@alpha hive create master-wundr-platform \
+npx ruflo@latest hive create master-wundr-platform \
   --queen-type strategic-orchestrator \
   --topology hierarchical \
   --max-agents 50 \
@@ -46,7 +46,7 @@ npx claude-flow@alpha hive create master-wundr-platform \
   --fault-tolerance byzantine
 
 # Spawn master coordination agents
-npx claude-flow@alpha agent spawn \
+npx ruflo@latest agent spawn \
   --hive master-wundr-platform \
   --agents "project-manager,tech-lead,qa-director,security-chief,docs-manager,deployment-lead" \
   --coordination-mode hierarchical \
@@ -62,7 +62,7 @@ Each hive operates semi-autonomously with cross-hive communication:
 #### **1. Architecture Hive**
 
 ```bash
-npx claude-flow@alpha hive create architecture-hive \
+npx ruflo@latest hive create architecture-hive \
   --queen-type system-architect \
   --topology star \
   --agents "specification,pseudocode,architecture,system-architect,technical-writer" \
@@ -81,7 +81,7 @@ npx claude-flow@alpha hive create architecture-hive \
 #### **2. Analysis Engine Hive**
 
 ```bash
-npx claude-flow@alpha hive create analysis-engine-hive \
+npx ruflo@latest hive create analysis-engine-hive \
   --queen-type code-analyzer \
   --topology mesh \
   --agents "coder,researcher,code-analyzer,performance-benchmarker,security-manager" \
@@ -100,7 +100,7 @@ npx claude-flow@alpha hive create analysis-engine-hive \
 #### **3. Environment Setup Hive**
 
 ```bash
-npx claude-flow@alpha hive create environment-hive \
+npx ruflo@latest hive create environment-hive \
   --queen-type system-architect \
   --topology pipeline \
   --agents "system-architect,backend-dev,cicd-engineer,security-manager,tester" \
@@ -119,7 +119,7 @@ npx claude-flow@alpha hive create environment-hive \
 #### **4. Dashboard Platform Hive**
 
 ```bash
-npx claude-flow@alpha hive create dashboard-hive \
+npx ruflo@latest hive create dashboard-hive \
   --queen-type system-architect \
   --topology hierarchical \
   --agents "mobile-dev,backend-dev,system-architect,code-analyzer,tester" \
@@ -138,7 +138,7 @@ npx claude-flow@alpha hive create dashboard-hive \
 #### **5. AI Integration Hive**
 
 ```bash
-npx claude-flow@alpha hive create ai-integration-hive \
+npx ruflo@latest hive create ai-integration-hive \
   --queen-type collective-intelligence-coordinator \
   --topology mesh \
   --agents "ml-developer,neural-sync,swarm-memory-manager,consensus-builder,smart-agent" \
@@ -148,7 +148,7 @@ npx claude-flow@alpha hive create ai-integration-hive \
 # AI Integration Responsibilities:
 # - MCP tools development
 # - Claude Code integration
-# - Claude Flow orchestration
+# - Ruflo orchestration
 # - Neural pattern training
 # - Swarm intelligence implementation
 # - Memory management systems
@@ -157,7 +157,7 @@ npx claude-flow@alpha hive create ai-integration-hive \
 #### **6. CLI Framework Hive**
 
 ```bash
-npx claude-flow@alpha hive create cli-hive \
+npx ruflo@latest hive create cli-hive \
   --queen-type task-orchestrator \
   --topology hierarchical \
   --agents "coder,system-architect,backend-dev,tester,reviewer" \
@@ -176,7 +176,7 @@ npx claude-flow@alpha hive create cli-hive \
 #### **7. Testing & Quality Hive**
 
 ```bash
-npx claude-flow@alpha hive create testing-hive \
+npx ruflo@latest hive create testing-hive \
   --queen-type production-validator \
   --topology star \
   --agents "tdd-london-swarm,tester,code-analyzer,performance-benchmarker,reviewer" \
@@ -195,7 +195,7 @@ npx claude-flow@alpha hive create testing-hive \
 #### **8. Documentation Hive**
 
 ```bash
-npx claude-flow@alpha hive create documentation-hive \
+npx ruflo@latest hive create documentation-hive \
   --queen-type researcher \
   --topology star \
   --agents "researcher,technical-writer,api-docs,system-architect,reviewer" \
@@ -214,7 +214,7 @@ npx claude-flow@alpha hive create documentation-hive \
 #### **9. Security & Compliance Hive**
 
 ```bash
-npx claude-flow@alpha hive create security-hive \
+npx ruflo@latest hive create security-hive \
   --queen-type security-manager \
   --topology fortress \
   --agents "security-manager,code-analyzer,reviewer,cicd-engineer,system-architect" \
@@ -233,7 +233,7 @@ npx claude-flow@alpha hive create security-hive \
 #### **10. Integration & Deployment Hive**
 
 ```bash
-npx claude-flow@alpha hive create deployment-hive \
+npx ruflo@latest hive create deployment-hive \
   --queen-type workflow-automation \
   --topology pipeline \
   --agents "cicd-engineer,release-manager,workflow-automation,system-architect,tester" \
@@ -255,13 +255,13 @@ npx claude-flow@alpha hive create deployment-hive \
 
 ```bash
 # Cross-hive memory synchronization
-npx claude-flow@alpha memory sync-hives \
+npx ruflo@latest memory sync-hives \
   --hives "architecture,analysis-engine,dashboard,cli" \
   --sync-frequency "real-time" \
   --conflict-resolution "consensus"
 
 # Progress coordination
-npx claude-flow@alpha coordination setup \
+npx ruflo@latest coordination setup \
   --master-hive "master-wundr-platform" \
   --child-hives "architecture,analysis-engine,environment,dashboard,ai-integration,cli,testing,documentation,security,deployment" \
   --status-reporting "hourly"
@@ -270,7 +270,7 @@ npx claude-flow@alpha coordination setup \
 #### **Dependency Management**
 
 ```yaml
-# .claude-flow/hive-dependencies.yml
+# .ruflo/hive-dependencies.yml
 dependencies:
   analysis-engine-hive:
     depends_on: [architecture-hive]
@@ -295,7 +295,7 @@ dependencies:
 
 ```bash
 # Activate foundation hives
-npx claude-flow@alpha phase execute foundation \
+npx ruflo@latest phase execute foundation \
   --hives "master,architecture,security" \
   --parallel false \
   --validation-gates true
@@ -310,7 +310,7 @@ npx claude-flow@alpha phase execute foundation \
 
 ```bash
 # Activate core development hives
-npx claude-flow@alpha phase execute core-development \
+npx ruflo@latest phase execute core-development \
   --hives "analysis-engine,environment,cli" \
   --parallel true \
   --cross-hive-sync true
@@ -325,14 +325,14 @@ npx claude-flow@alpha phase execute core-development \
 
 ```bash
 # Activate platform hives
-npx claude-flow@alpha phase execute platform-development \
+npx ruflo@latest phase execute platform-development \
   --hives "dashboard,ai-integration,documentation" \
   --parallel true \
   --ui-validation true
 
 # Task Distribution:
 # Dashboard Hive: Web interface development
-# AI Integration Hive: Claude Flow integration
+# AI Integration Hive: Ruflo integration
 # Documentation Hive: User guides and API docs
 ```
 
@@ -340,7 +340,7 @@ npx claude-flow@alpha phase execute platform-development \
 
 ```bash
 # Activate integration hives
-npx claude-flow@alpha phase execute integration \
+npx ruflo@latest phase execute integration \
   --hives "testing,deployment" \
   --parallel false \
   --quality-gates "comprehensive"
@@ -356,14 +356,14 @@ npx claude-flow@alpha phase execute integration \
 
 ```bash
 # Start hive monitoring
-npx claude-flow@alpha monitor start \
+npx ruflo@latest monitor start \
   --dashboard-port 3001 \
   --metrics "performance,progress,quality,errors" \
   --alerts true \
   --real-time true
 
 # Monitor specific hives
-npx claude-flow@alpha monitor hive analysis-engine-hive \
+npx ruflo@latest monitor hive analysis-engine-hive \
   --metrics "code-coverage,performance,blockers" \
   --frequency "10min"
 ```
@@ -372,14 +372,14 @@ npx claude-flow@alpha monitor hive analysis-engine-hive \
 
 ```bash
 # Major decision voting
-npx claude-flow@alpha consensus vote \
+npx ruflo@latest consensus vote \
   --topic "technology-stack-selection" \
   --participants "architecture-hive,analysis-engine-hive,dashboard-hive,cli-hive" \
   --algorithm "weighted-byzantine" \
   --timeout "24h"
 
 # Conflict resolution
-npx claude-flow@alpha conflict resolve \
+npx ruflo@latest conflict resolve \
   --hives "dashboard-hive,cli-hive" \
   --issue "ui-component-architecture" \
   --mediator "architecture-hive" \
@@ -411,13 +411,13 @@ dashboard-hive:
 
 ```bash
 # Track inter-hive communication
-npx claude-flow@alpha metrics track \
+npx ruflo@latest metrics track \
   --type "coordination" \
   --metrics "message-latency,consensus-time,conflict-resolution-rate" \
   --export-format "prometheus"
 
 # Performance optimization
-npx claude-flow@alpha optimize \
+npx ruflo@latest optimize \
   --target "cross-hive-communication" \
   --algorithm "genetic-algorithm" \
   --objective "minimize-coordination-overhead"
@@ -429,13 +429,13 @@ npx claude-flow@alpha optimize \
 
 ```bash
 # Automatic failure detection
-npx claude-flow@alpha failsafe setup \
+npx ruflo@latest failsafe setup \
   --monitor-interval "5min" \
   --health-checks "agent-responsiveness,memory-usage,task-progress" \
   --recovery-strategy "graceful-restart"
 
 # Cross-hive backup mechanisms
-npx claude-flow@alpha backup configure \
+npx ruflo@latest backup configure \
   --strategy "distributed-redundancy" \
   --backup-frequency "hourly" \
   --critical-hives "architecture,analysis-engine,security"
@@ -445,13 +445,13 @@ npx claude-flow@alpha backup configure \
 
 ```bash
 # Workload redistribution
-npx claude-flow@alpha loadbalance \
+npx ruflo@latest loadbalance \
   --algorithm "adaptive-weighted-round-robin" \
   --metrics "cpu-usage,memory-consumption,task-complexity" \
   --rebalance-threshold "80%"
 
 # Agent migration between hives
-npx claude-flow@alpha migrate-agent \
+npx ruflo@latest migrate-agent \
   --from-hive "overloaded-hive" \
   --to-hive "available-hive" \
   --agent-type "coder" \
@@ -464,20 +464,20 @@ npx claude-flow@alpha migrate-agent \
 
 ```bash
 # 1. Initialize the master coordination hive
-npx claude-flow@alpha hive create master-wundr-platform \
+npx ruflo@latest hive create master-wundr-platform \
   --queen-type strategic-orchestrator \
   --agents "project-manager,tech-lead,qa-director,security-chief,docs-manager,deployment-lead" \
   --memory-pool shared-enterprise \
   --consensus-algorithm raft
 
 # 2. Set up project workspace and memory
-npx claude-flow@alpha workspace init wundr-unified \
+npx ruflo@latest workspace init wundr-unified \
   --memory-strategy "distributed" \
   --backup-strategy "redundant" \
   --coordination-protocol "hierarchical"
 
 # 3. Establish cross-hive communication channels
-npx claude-flow@alpha network setup \
+npx ruflo@latest network setup \
   --topology "star-with-mesh-overlays" \
   --encryption "end-to-end" \
   --monitoring "comprehensive"
@@ -487,19 +487,19 @@ npx claude-flow@alpha network setup \
 
 ```bash
 # Day 2-3: Architecture Hive
-npx claude-flow@alpha hive create architecture-hive \
+npx ruflo@latest hive create architecture-hive \
   --dependencies "master-hive" \
   --priority "critical-path" \
   --deliverables "system-design,api-specs,tech-stack"
 
 # Day 4-5: Security Hive
-npx claude-flow@alpha hive create security-hive \
+npx ruflo@latest hive create security-hive \
   --dependencies "architecture-hive" \
   --security-clearance "enterprise" \
   --compliance-frameworks "SOC2,GDPR,HIPAA"
 
 # Day 6-7: Cross-hive synchronization and validation
-npx claude-flow@alpha validate \
+npx ruflo@latest validate \
   --hives "master,architecture,security" \
   --validation-type "comprehensive" \
   --approval-gates "architectural-review,security-review"
@@ -509,14 +509,14 @@ npx claude-flow@alpha validate \
 
 ```bash
 # Parallel hive activation
-npx claude-flow@alpha phase execute core-development \
+npx ruflo@latest phase execute core-development \
   --hives "analysis-engine,environment,cli" \
   --parallel true \
   --coordination-frequency "4-hourly" \
   --blocker-escalation "architecture-hive"
 
 # Daily standups across hives
-npx claude-flow@alpha standup schedule \
+npx ruflo@latest standup schedule \
   --frequency "daily" \
   --participants "all-queens" \
   --duration "30min" \
@@ -527,14 +527,14 @@ npx claude-flow@alpha standup schedule \
 
 ```bash
 # UI/UX focused hives
-npx claude-flow@alpha phase execute platform \
+npx ruflo@latest phase execute platform \
   --hives "dashboard,ai-integration,documentation" \
   --ui-validation true \
   --user-testing "continuous" \
   --design-system "unified"
 
 # Integration testing between hives
-npx claude-flow@alpha integration-test \
+npx ruflo@latest integration-test \
   --test-pairs "dashboard<->cli,ai-integration<->analysis-engine" \
   --automation "continuous" \
   --regression-prevention true
@@ -544,14 +544,14 @@ npx claude-flow@alpha integration-test \
 
 ```bash
 # Testing and deployment hives
-npx claude-flow@alpha phase execute final \
+npx ruflo@latest phase execute final \
   --hives "testing,deployment" \
   --quality-gates "comprehensive" \
   --performance-benchmarks true \
   --launch-readiness-check true
 
 # Final coordination and release
-npx claude-flow@alpha release coordinate \
+npx ruflo@latest release coordinate \
   --all-hives true \
   --release-strategy "blue-green" \
   --rollback-plan "automatic" \
@@ -697,7 +697,7 @@ with proper oversight, quality control, and efficient resource allocation.
 
 2. **AI Development Environment**
    - Claude Code installation and configuration
-   - Claude Flow with 54 specialized agents
+   - Ruflo with 54 specialized agents
    - 87 MCP tools integration
    - SPARC methodology implementation
    - Swarm intelligence orchestration
@@ -724,7 +724,7 @@ with proper oversight, quality control, and efficient resource allocation.
    - Commitlint for conventional commits
    - Lint-staged for incremental checks
 
-5. **Claude Flow Advanced Features**
+5. **Ruflo Advanced Features**
    - Auto topology selection (hierarchical, mesh, adaptive)
    - Parallel execution (2.8-4.4x speed)
    - Neural training with 27+ models
@@ -781,7 +781,7 @@ with proper oversight, quality control, and efficient resource allocation.
 ### 4. AI Integration Layer
 
 - Claude Code interface
-- Claude Flow orchestration
+- Ruflo orchestration
 - MCP tools registry
 - Agent coordination
 - Memory management
@@ -858,7 +858,7 @@ Interactive examples
 
 1. Integrate dashboard with setup tools
 2. Combine MCP tools
-3. Merge Claude Flow configurations
+3. Merge Ruflo configurations
 4. Unify template systems
 5. Consolidate CI/CD workflows
 
@@ -969,7 +969,7 @@ Options:
 
 2. **AI Agent Profile**
    - Claude Code optimization
-   - Claude Flow configuration
+   - Ruflo configuration
    - MCP tools setup
    - Memory allocation
    - Neural model selection
@@ -1012,7 +1012,7 @@ Options:
 
 ### 2.4 AI-Powered Development (ENHANCED)
 
-#### **Claude Flow Integration**
+#### **Ruflo Integration**
 
 ```javascript
 // Automatic swarm configuration based on project
@@ -1500,7 +1500,7 @@ interface DashboardCapabilities {
 ### Quarter 2: Integration
 
 - Week 13-14: MCP tools
-- Week 15-16: Claude Flow integration
+- Week 15-16: Ruflo integration
 - Week 17-18: Plugin system
 - Week 19-20: Advanced analysis
 - Week 21-22: Dashboard features

@@ -97,7 +97,7 @@ export class MetricsCollector {
    */
   recordSessionStart(
     orchestratorId: string,
-    sessionType: 'claude-code' | 'claude-flow'
+    sessionType: 'claude-code' | 'ruflo'
   ): void {
     if (this.config.enableBatching) {
       this.queueBatchedUpdate({
@@ -123,7 +123,7 @@ export class MetricsCollector {
    */
   recordSessionEnd(
     orchestratorId: string,
-    sessionType: 'claude-code' | 'claude-flow'
+    sessionType: 'claude-code' | 'ruflo'
   ): void {
     if (this.config.enableBatching) {
       this.queueBatchedUpdate({

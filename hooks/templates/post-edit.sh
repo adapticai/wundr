@@ -276,7 +276,7 @@ store_in_memory() {
     local metadata_file="$metadata_dir/${file_hash}.json"
 
     if [[ -f "$metadata_file" ]]; then
-        npx claude-flow@alpha hooks memory-store \
+        npx ruflo@latest hooks memory-store \
             --key "$effective_memory_key" \
             --file "$metadata_file" \
             2>&1 | tee -a "$LOG_FILE" || {
@@ -288,7 +288,7 @@ store_in_memory() {
     if [[ -f "$FILE_PATH" ]]; then
         local file_size=$(stat -f %z "$FILE_PATH" 2>/dev/null || stat -c %s "$FILE_PATH")
         if [[ $file_size -lt 10240 ]]; then  # Less than 10KB
-            npx claude-flow@alpha hooks memory-store \
+            npx ruflo@latest hooks memory-store \
                 --key "${effective_memory_key}/content" \
                 --file "$FILE_PATH" \
                 2>&1 | tee -a "$LOG_FILE" || {
@@ -373,7 +373,7 @@ learn_patterns() {
     local metadata_file="$metadata_dir/${file_hash}.json"
 
     if [[ -f "$metadata_file" ]]; then
-        npx claude-flow@alpha hooks neural-train \
+        npx ruflo@latest hooks neural-train \
             --pattern-type "file-edit" \
             --input "$metadata_file" \
             --auto-learn true \
@@ -410,7 +410,7 @@ send_notification() {
         return 0
     fi
 
-    npx claude-flow@alpha hooks notify \
+    npx ruflo@latest hooks notify \
         --message "File edited: $(basename "$FILE_PATH") ($EDIT_TYPE)" \
         --level "info" \
         --session-id "$SESSION_ID" \

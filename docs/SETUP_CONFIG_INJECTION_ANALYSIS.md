@@ -476,14 +476,14 @@ resources/
 **Line 113:**
 
 ```json
-"enabledMcpjsonServers": ["claude-flow", "ruv-swarm"]
+"enabledMcpjsonServers": ["ruflo", "ruv-swarm"]
 ```
 
 ### In claude-installer.ts (Lines 38-46)
 
 ```typescript
 private readonly mcpServers = [
-    'claude-flow',       // Orchestration & coordination
+    'ruflo',       // Orchestration & coordination
     'ruv-swarm',         // Swarm coordination
     'firecrawl',         // Web scraping
     'context7',          // Context management
@@ -497,7 +497,7 @@ private readonly mcpServers = [
 
 ```javascript
 ## MCP Tools
-- claude-flow: Orchestration and coordination
+- ruflo: Orchestration and coordination
 - firecrawl: Web scraping if needed
 - playwright: E2E testing
 ${hasReact ? '- browser: Real browser testing' : ''}
@@ -706,8 +706,8 @@ For feature development using SPARC methodology:
 1. Create specification worktree: \`\`\`bash git worktree add ../wundr-spec-<feature> --track
    origin/master cd ../wundr-spec-<feature> git checkout -b spec/<feature> \`\`\`
 
-2. Run specification phase: \`\`\`bash npx claude-flow sparc run spec-pseudocode
-   "<feature description>" \`\`\`
+2. Run specification phase: \`\`\`bash npx ruflo sparc run spec-pseudocode "<feature description>"
+   \`\`\`
 
 3. Merge when complete, move to architecture worktree
 4. Follow same pattern for each SPARC phase

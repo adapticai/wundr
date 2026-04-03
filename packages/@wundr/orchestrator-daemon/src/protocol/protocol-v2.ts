@@ -258,7 +258,7 @@ export type AuthLogoutParams = z.infer<typeof AuthLogoutParamsSchema>;
 // Session domain
 // ---------------------------------------------------------------------------
 
-export const SessionTypeSchema = z.enum(['claude-code', 'claude-flow']);
+export const SessionTypeSchema = z.enum(['claude-code', 'ruflo']);
 
 export const SessionCreateParamsSchema = z.object({
   orchestratorId: z.string().min(1),

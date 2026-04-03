@@ -262,7 +262,7 @@ echo "Analysis workspace ready"
 ```bash
 echo "Log analysis complete"
 # Store analysis results
-npx claude-flow@alpha hooks post-task --task-id "log-analyzer-${TIMESTAMP}"
+npx ruflo@latest hooks post-task --task-id "log-analyzer-${TIMESTAMP}"
 ```
 
 ## Codebase Search

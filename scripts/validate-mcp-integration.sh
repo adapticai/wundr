@@ -185,16 +185,16 @@ test_browser_extension() {
     fi
 }
 
-# Test Claude Flow integration
-test_claude_flow() {
+# Test Ruflo integration
+test_ruflo() {
     echo
-    echo "=== Testing Claude Flow Integration ==="
+    echo "=== Testing Ruflo Integration ==="
     
-    run_test "Claude Flow available" "npx claude-flow --version"
+    run_test "Ruflo available" "npx ruflo --version"
     
-    if npx claude-flow --version >/dev/null 2>&1; then
-        run_test_with_output "Claude Flow MCP list" "npx claude-flow mcp list"
-        run_test_with_output "Claude Flow swarm status" "npx claude-flow swarm status"
+    if npx ruflo --version >/dev/null 2>&1; then
+        run_test_with_output "Ruflo MCP list" "npx ruflo mcp list"
+        run_test_with_output "Ruflo swarm status" "npx ruflo swarm status"
     fi
 }
 
@@ -304,25 +304,25 @@ run_performance_test() {
     fi
     ((TOTAL_TESTS++))
     
-    # Test Claude Flow response time
-    if command -v npx >/dev/null 2>&1 && npx claude-flow --version >/dev/null 2>&1; then
+    # Test Ruflo response time
+    if command -v npx >/dev/null 2>&1 && npx ruflo --version >/dev/null 2>&1; then
         local start_time=$(date +%s%N)
-        if npx claude-flow --version >/dev/null 2>&1; then
+        if npx ruflo --version >/dev/null 2>&1; then
             local end_time=$(date +%s%N)
             local duration=$(( (end_time - start_time) / 1000000 ))
             
             if [[ $duration -lt 3000 ]]; then
-                log_success "Claude Flow response time: ${duration}ms"
+                log_success "Ruflo response time: ${duration}ms"
                 ((PASSED_TESTS++))
             else
-                log_warning "Claude Flow response time slow: ${duration}ms"
+                log_warning "Ruflo response time slow: ${duration}ms"
             fi
         else
-            log_failure "Claude Flow performance test failed"
+            log_failure "Ruflo performance test failed"
             ((FAILED_TESTS++))
         fi
     else
-        log_warning "Claude Flow not available for performance testing"
+        log_warning "Ruflo not available for performance testing"
     fi
     ((TOTAL_TESTS++))
 }
@@ -347,13 +347,13 @@ async function testMCPIntegration() {
         const claudeList = execSync('claude mcp list', { encoding: 'utf8' });
         console.log('Claude MCP servers:', claudeList);
         
-        // Test Claude Flow (if available)
+        // Test Ruflo (if available)
         try {
-            console.log('Testing Claude Flow...');
-            const flowVersion = execSync('npx claude-flow --version', { encoding: 'utf8' });
-            console.log('Claude Flow version:', flowVersion);
+            console.log('Testing Ruflo...');
+            const flowVersion = execSync('npx ruflo --version', { encoding: 'utf8' });
+            console.log('Ruflo version:', flowVersion);
         } catch (e) {
-            console.log('Claude Flow not available or not working');
+            console.log('Ruflo not available or not working');
         }
         
         console.log('Basic integration test passed!');
@@ -409,8 +409,8 @@ generate_report() {
         echo
         echo "Next steps:"
         echo "1. Start using MCP tools with Claude Code"
-        echo "2. Create your first workflow: npx claude-flow workflow create"
-        echo "3. Monitor tool performance: npx claude-flow monitor"
+        echo "2. Create your first workflow: npx ruflo workflow create"
+        echo "3. Monitor tool performance: npx ruflo monitor"
     else
         log_warning "Some issues found. Please review the failed tests above."
         echo
@@ -453,7 +453,7 @@ main() {
     test_claude_mcp_config
     test_config_files
     test_browser_extension
-    test_claude_flow
+    test_ruflo
     test_environment
     test_directory_structure
     test_mcp_connectivity

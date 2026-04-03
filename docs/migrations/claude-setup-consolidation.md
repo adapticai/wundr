@@ -16,7 +16,7 @@ The codebase contained two separate implementations of the Claude setup command:
 1. **`/src/cli/commands/claude-setup.ts`** (374 lines)
    - Function-based approach using `createClaudeSetupCommand()`
    - Focused on project-level setup with templates
-   - Features: Git init, Claude Flow, MCP tools directory, CLAUDE.md generation, project templates
+   - Features: Git init, Ruflo, MCP tools directory, CLAUDE.md generation, project templates
 
 2. **`/packages/@wundr/cli/src/commands/claude-setup.ts`** (697 lines)
    - Class-based approach using `ClaudeSetupCommands`
@@ -62,7 +62,7 @@ The consolidated version (1280 lines) preserves ALL functionality from both impl
 | ---------------------------- | --------------- | ------------------ | ---------------------------- |
 | Project setup with templates | Yes             | No                 | Yes (`project` subcommand)   |
 | Git repository init          | Yes             | No                 | Yes                          |
-| Claude Flow setup            | Yes             | Yes                | Yes                          |
+| Ruflo setup                  | Yes             | Yes                | Yes                          |
 | MCP tools directory          | Yes             | No                 | Yes                          |
 | CLAUDE.md generation         | Yes             | No                 | Yes (`config` subcommand)    |
 | TypeScript template          | Yes             | No                 | Yes                          |
@@ -101,14 +101,14 @@ wundr claude-setup config [path]      # Generate CLAUDE.md
 - `--skip-chrome` - Skip Chrome installation
 - `--skip-mcp` - Skip MCP tools installation
 - `--skip-agents` - Skip agent configuration
-- `--skip-flow` - Skip Claude Flow setup
+- `--skip-flow` - Skip Ruflo setup
 - `-g, --global` - Install tools globally
 
 **`project` command:**
 
 - `-g, --global` - Install tools globally
 - `--skip-mcp` - Skip MCP tools installation
-- `--skip-flow` - Skip Claude Flow setup
+- `--skip-flow` - Skip Ruflo setup
 - `-t, --template <name>` - Use template (typescript, react, nodejs, monorepo)
 
 **`mcp` command:**
@@ -208,7 +208,7 @@ git checkout HEAD~1 -- packages/@wundr/cli/src/commands/claude-setup.ts
 ### What Was Kept from `/src/cli/commands/claude-setup.ts`
 
 - Git repository initialization with prompt
-- Claude Flow local/global installation logic
+- Ruflo local/global installation logic
 - MCP tools directory creation with install.sh script
 - CLAUDE.md generation via ClaudeConfigGenerator
 - All 4 project templates (typescript, react, nodejs, monorepo)

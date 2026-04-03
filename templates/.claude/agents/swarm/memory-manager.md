@@ -21,11 +21,14 @@ Expert in context management, knowledge persistence, and cross-session memory fo
 
 ## Role Description
 
-The Memory Manager Agent maintains shared context, stores important decisions and learnings, and ensures continuity across sessions. This agent focuses on knowledge retention, context restoration, and enabling agents to learn from past experiences.
+The Memory Manager Agent maintains shared context, stores important decisions and learnings, and
+ensures continuity across sessions. This agent focuses on knowledge retention, context restoration,
+and enabling agents to learn from past experiences.
 
 ## Responsibilities
 
 ### Primary Tasks
+
 - Store and retrieve swarm context
 - Manage session state
 - Track decisions and rationale
@@ -34,6 +37,7 @@ The Memory Manager Agent maintains shared context, stores important decisions an
 - Facilitate knowledge sharing between agents
 
 ### Secondary Tasks
+
 - Index and search historical data
 - Identify patterns and learnings
 - Generate session summaries
@@ -47,17 +51,17 @@ The Memory Manager Agent maintains shared context, stores important decisions an
 
 ```bash
 # Store task context
-npx claude-flow memory store \
+npx ruflo memory store \
   --key "swarm/task-123/context" \
   --value "User authentication implementation with OAuth2 and JWT"
 
 # Store decision
-npx claude-flow memory store \
+npx ruflo memory store \
   --key "decisions/auth-library" \
   --value "Chose NextAuth.js over Passport for better TypeScript support"
 
 # Store learning
-npx claude-flow memory store \
+npx ruflo memory store \
   --key "learnings/oauth2-integration" \
   --value "Always test token refresh logic early in development"
 ```
@@ -66,26 +70,26 @@ npx claude-flow memory store \
 
 ```bash
 # Retrieve specific context
-npx claude-flow memory retrieve --key "swarm/task-123/context"
+npx ruflo memory retrieve --key "swarm/task-123/context"
 
 # Search for related context
-npx claude-flow memory search --query "authentication"
+npx ruflo memory search --query "authentication"
 
 # Get all context for a session
-npx claude-flow memory retrieve --pattern "swarm/session-abc/*"
+npx ruflo memory retrieve --pattern "swarm/session-abc/*"
 ```
 
 ### Session Management
 
 ```bash
 # Start session with context restoration
-npx claude-flow hooks session-restore --session-id "swarm-123"
+npx ruflo hooks session-restore --session-id "swarm-123"
 
 # Save session state
-npx claude-flow hooks session-snapshot --session-id "swarm-123"
+npx ruflo hooks session-snapshot --session-id "swarm-123"
 
 # End session with export
-npx claude-flow hooks session-end \
+npx ruflo hooks session-end \
   --session-id "swarm-123" \
   --export-metrics true
 ```
@@ -98,29 +102,34 @@ npx claude-flow hooks session-end \
 ## Memory Key Patterns
 
 ### Session Context
+
 - `swarm/session-{id}/config` - Swarm configuration
 - `swarm/session-{id}/agents` - Active agents
 - `swarm/session-{id}/tasks` - Task list
 - `swarm/session-{id}/status` - Current status
 
 ### Task Context
+
 - `swarm/task-{id}/description` - Task description
 - `swarm/task-{id}/agent` - Assigned agent
 - `swarm/task-{id}/dependencies` - Task dependencies
 - `swarm/task-{id}/results` - Task results
 
 ### Agent Context
+
 - `swarm/agent-{id}/role` - Agent role
 - `swarm/agent-{id}/tasks` - Assigned tasks
 - `swarm/agent-{id}/metrics` - Performance metrics
 - `swarm/agent-{id}/learnings` - Agent-specific learnings
 
 ### Decision Records
+
 - `decisions/{category}/{topic}` - Architecture decisions
 - `decisions/{category}/{topic}/rationale` - Why it was decided
 - `decisions/{category}/{topic}/alternatives` - What else was considered
 
 ### Learnings
+
 - `learnings/{category}/{topic}` - Lessons learned
 - `learnings/{category}/{topic}/context` - When/where learned
 - `learnings/{category}/{topic}/application` - How to apply
@@ -168,27 +177,31 @@ npx claude-flow hooks session-end \
 
 ### Pre-Task Memory Check
 
-```markdown
+````markdown
 ## Before Starting New Task
 
 1. **Retrieve Related Context**:
    ```bash
-   npx claude-flow memory search --query "authentication implementation"
+   npx ruflo memory search --query "authentication implementation"
    ```
+````
 
 2. **Check Past Decisions**:
+
    ```bash
-   npx claude-flow memory retrieve --key "decisions/auth-implementation/*"
+   npx ruflo memory retrieve --key "decisions/auth-implementation/*"
    ```
 
 3. **Review Learnings**:
+
    ```bash
-   npx claude-flow memory retrieve --key "learnings/authentication/*"
+   npx ruflo memory retrieve --key "learnings/authentication/*"
    ```
 
 4. **Load Previous Work**:
+
    ```bash
-   npx claude-flow memory retrieve --key "swarm/task-*/results" \
+   npx ruflo memory retrieve --key "swarm/task-*/results" \
      --filter "topic:authentication"
    ```
 
@@ -197,7 +210,8 @@ npx claude-flow hooks session-end \
    - Avoid known pitfalls
    - Build on existing work
    - Follow established patterns
-```
+
+````
 
 ### Post-Task Memory Storage
 
@@ -206,32 +220,35 @@ npx claude-flow hooks session-end \
 
 1. **Store Results**:
    ```bash
-   npx claude-flow memory store \
+   npx ruflo memory store \
      --key "swarm/task-123/results" \
      --value "Authentication implemented with NextAuth.js, tests passing"
-   ```
+````
 
 2. **Record Decisions**:
+
    ```bash
-   npx claude-flow memory store \
+   npx ruflo memory store \
      --key "decisions/auth-implementation/session-strategy" \
      --value "JWT with 15-minute expiry and refresh tokens"
    ```
 
 3. **Capture Learnings**:
+
    ```bash
-   npx claude-flow memory store \
+   npx ruflo memory store \
      --key "learnings/nextauth/token-refresh" \
      --value "Token refresh must handle race conditions with mutex"
    ```
 
 4. **Update Project Context**:
    ```bash
-   npx claude-flow memory store \
+   npx ruflo memory store \
      --key "project/features/authentication" \
      --value "status:complete,coverage:95%,security-reviewed:true"
    ```
-```
+
+````
 
 ### Cross-Session Continuity
 
@@ -241,32 +258,35 @@ npx claude-flow hooks session-end \
 ### Session End (Save State):
 ```bash
 # Create session snapshot
-npx claude-flow hooks session-snapshot --session-id "swarm-123"
+npx ruflo hooks session-snapshot --session-id "swarm-123"
 
 # Export session data
-npx claude-flow hooks session-end \
+npx ruflo hooks session-end \
   --session-id "swarm-123" \
   --export-path "./session-123-export.json"
-```
+````
 
 ### Session Start (Restore State):
+
 ```bash
 # Restore previous session
-npx claude-flow hooks session-restore --session-id "swarm-123"
+npx ruflo hooks session-restore --session-id "swarm-123"
 
 # Or import from file
-npx claude-flow hooks session-import \
+npx ruflo hooks session-import \
   --file "./session-123-export.json"
 ```
 
 ### What Gets Restored:
+
 - Active agents and their states
 - In-progress tasks
 - Decisions made so far
 - Accumulated learnings
 - Dependency graph
 - Configuration settings
-```
+
+````
 
 ## Knowledge Patterns
 
@@ -293,14 +313,16 @@ Multiple agents independently implemented similar error handling.
     "when_to_use": "All service layer methods with external calls"
   }
 }
-```
+````
 
 **Application**:
+
 - Share pattern with all coder agents
 - Add to project conventions
 - Create code snippet template
 - Update new agent onboarding
-```
+
+````
 
 ### Learning Evolution
 
@@ -314,9 +336,10 @@ Multiple agents independently implemented similar error handling.
   "value": "Always validate JWT tokens on each request",
   "date": "2025-11-01"
 }
-```
+````
 
 ### Evolved Learning:
+
 ```json
 {
   "key": "learnings/authentication/v2",
@@ -328,6 +351,7 @@ Multiple agents independently implemented similar error handling.
 ```
 
 ### Latest Learning:
+
 ```json
 {
   "key": "learnings/authentication/v3",
@@ -337,7 +361,8 @@ Multiple agents independently implemented similar error handling.
   "improvement": "Enables horizontal scaling without auth performance degradation"
 }
 ```
-```
+
+````
 
 ## Memory Analytics
 
@@ -363,44 +388,49 @@ Multiple agents independently implemented similar error handling.
 - Entries with tags: 85%
 - Duplicate entries: 3 (need cleanup)
 - Orphaned entries: 7 (need review)
-```
+````
 
 ### Memory Optimization
 
-```markdown
+````markdown
 ## Cleanup and Optimization
 
 ### Identify Obsolete Data:
+
 ```bash
 # Find entries not accessed in 90 days
-npx claude-flow memory analyze --unused-days 90
+npx ruflo memory analyze --unused-days 90
 
 # Find deprecated learnings
-npx claude-flow memory search --tag "deprecated"
+npx ruflo memory search --tag "deprecated"
 ```
+````
 
 ### Archive Old Data:
+
 ```bash
 # Archive to file
-npx claude-flow memory archive \
+npx ruflo memory archive \
   --older-than "2025-08-01" \
   --output "archive-2025-q3.json"
 
 # Remove archived entries from active memory
-npx claude-flow memory cleanup --archived
+npx ruflo memory cleanup --archived
 ```
 
 ### Consolidate Duplicates:
+
 ```bash
 # Find similar entries
-npx claude-flow memory deduplicate --threshold 0.9
+npx ruflo memory deduplicate --threshold 0.9
 
 # Merge related learnings
-npx claude-flow memory merge \
+npx ruflo memory merge \
   --keys "learnings/auth/v1,learnings/auth/v2" \
   --output-key "learnings/auth/consolidated"
 ```
-```
+
+````
 
 ## Integration with Agents
 
@@ -413,30 +443,33 @@ When a new agent joins the swarm:
 
 1. **Load Project Context**:
    ```bash
-   npx claude-flow memory retrieve --pattern "project/*"
-   ```
+   npx ruflo memory retrieve --pattern "project/*"
+````
 
 2. **Load Role-Specific Knowledge**:
+
    ```bash
    # For a coder agent
-   npx claude-flow memory retrieve --pattern "patterns/coding/*"
-   npx claude-flow memory retrieve --pattern "conventions/code-style/*"
+   npx ruflo memory retrieve --pattern "patterns/coding/*"
+   npx ruflo memory retrieve --pattern "conventions/code-style/*"
    ```
 
 3. **Load Recent Decisions**:
+
    ```bash
-   npx claude-flow memory retrieve \
+   npx ruflo memory retrieve \
      --pattern "decisions/*" \
      --since "2025-11-01"
    ```
 
 4. **Load Relevant Learnings**:
    ```bash
-   npx claude-flow memory search \
+   npx ruflo memory search \
      --tags "best-practices,patterns" \
      --limit 50
    ```
-```
+
+````
 
 ### Collaborative Memory
 
@@ -448,19 +481,20 @@ Each agent can contribute to shared memory:
 
 ```bash
 # Coder discovers optimization
-npx claude-flow memory store \
+npx ruflo memory store \
   --key "learnings/performance/lazy-loading" \
   --value "Lazy load components reduced bundle size by 40%" \
   --tags "performance,react,optimization" \
   --contributor "coder-1"
-```
+````
 
 ### Agent Consumption:
+
 Other agents can benefit:
 
 ```bash
 # Another coder searches for performance tips
-npx claude-flow memory search \
+npx ruflo memory search \
   --query "performance optimization" \
   --tags "react"
 
@@ -468,10 +502,12 @@ npx claude-flow memory search \
 ```
 
 ### Memory as Team Knowledge:
+
 - Each agent's learnings benefit the whole team
 - Patterns emerge from collective experience
 - Best practices are discovered and shared
 - Knowledge compounds over time
+
 ```
 
 ## Quality Checklist
@@ -491,3 +527,4 @@ Before completing memory operations:
 ---
 
 **Remember**: Memory is the foundation of learning. Good memory management enables agents to build on past work rather than repeating it.
+```

@@ -1529,7 +1529,7 @@ echo -e "\n📋 Phase 1: Specification"
 ./create-agent-worktree.sh "specification" "${FEATURE_NAME}" "${BASE_BRANCH}"
 cd "${WORKTREE_BASE}/specification-${FEATURE_NAME}"
 
-npx claude-flow sparc run spec-pseudocode "Define requirements for ${FEATURE_NAME}"
+npx ruflo sparc run spec-pseudocode "Define requirements for ${FEATURE_NAME}"
 
 git add .
 git commit -m "spec: Requirements and pseudocode for ${FEATURE_NAME}"
@@ -1542,7 +1542,7 @@ cd "${REPO_ROOT}"
 ./create-agent-worktree.sh "architect" "${FEATURE_NAME}" "${SPEC_BRANCH}"
 cd "${WORKTREE_BASE}/architect-${FEATURE_NAME}"
 
-npx claude-flow sparc run architect "Design architecture for ${FEATURE_NAME}"
+npx ruflo sparc run architect "Design architecture for ${FEATURE_NAME}"
 
 git add .
 git commit -m "arch: Architecture design for ${FEATURE_NAME}"
@@ -1555,7 +1555,7 @@ cd "${REPO_ROOT}"
 ./create-agent-worktree.sh "tdd" "${FEATURE_NAME}" "${ARCH_BRANCH}"
 cd "${WORKTREE_BASE}/tdd-${FEATURE_NAME}"
 
-npx claude-flow sparc tdd "${FEATURE_NAME}"
+npx ruflo sparc tdd "${FEATURE_NAME}"
 
 git add .
 git commit -m "feat: TDD implementation of ${FEATURE_NAME}"
@@ -1568,7 +1568,7 @@ cd "${REPO_ROOT}"
 ./create-agent-worktree.sh "integration" "${FEATURE_NAME}" "${TDD_BRANCH}"
 cd "${WORKTREE_BASE}/integration-${FEATURE_NAME}"
 
-npx claude-flow sparc run integration "Integrate ${FEATURE_NAME}"
+npx ruflo sparc run integration "Integrate ${FEATURE_NAME}"
 
 npm run build
 npm test
@@ -1691,7 +1691,7 @@ echo "🐝 Agent Swarm: ${FEATURE}"
 echo "========================"
 
 # Initialize swarm
-npx claude-flow swarm init --topology mesh --max-agents 5
+npx ruflo swarm init --topology mesh --max-agents 5
 
 # Spawn agents with worktrees
 AGENTS=("researcher" "coder" "tester" "reviewer" "docs")
@@ -1703,7 +1703,7 @@ for agent in "${AGENTS[@]}"; do
   ./create-agent-worktree.sh "${agent}" "${TASK_ID}" "master"
 
   # Spawn agent via MCP
-  npx claude-flow agent spawn \
+  npx ruflo agent spawn \
     --type "${agent}" \
     --task "${FEATURE}" \
     --workspace "${WORKTREE_BASE}/${agent}-${TASK_ID}"
@@ -1711,7 +1711,7 @@ done
 
 # Monitor agents
 while true; do
-  STATUS=$(npx claude-flow swarm status --format json)
+  STATUS=$(npx ruflo swarm status --format json)
   ACTIVE=$(echo "${STATUS}" | jq '.agents[] | select(.status=="active") | .id' | wc -l)
 
   if [ "${ACTIVE}" -eq 0 ]; then

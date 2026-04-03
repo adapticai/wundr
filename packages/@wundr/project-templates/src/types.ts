@@ -3,7 +3,7 @@
  * Definitions for wundr-compliant project creation
  */
 
-export type ProjectType = 
+export type ProjectType =
   | 'frontend'
   | 'backend'
   | 'fullstack'
@@ -13,7 +13,7 @@ export type ProjectType =
   | 'api'
   | 'mobile';
 
-export type FrameworkType = 
+export type FrameworkType =
   | 'next'
   | 'react'
   | 'vue'
@@ -98,7 +98,7 @@ export interface DriftConfig {
 }
 
 export interface AIConfig {
-  claudeFlow: boolean;
+  ruflo: boolean;
   swarmConfig?: {
     topology: 'mesh' | 'hierarchical' | 'star';
     maxAgents: number;

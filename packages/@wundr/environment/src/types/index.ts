@@ -104,7 +104,7 @@ export interface SystemInfo {
 
 export interface AgentConfiguration {
   claudeCode: boolean;
-  claudeFlow: boolean;
+  ruflo: boolean;
   mcpTools: string[];
   swarmCapabilities: boolean;
   neuralFeatures: boolean;

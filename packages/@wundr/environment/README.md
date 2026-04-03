@@ -1,13 +1,14 @@
 # @wundr/environment
 
-Cross-platform development environment setup and management tools for modern software development workflows.
+Cross-platform development environment setup and management tools for modern software development
+workflows.
 
 ## 🚀 Features
 
 - **Multi-Platform Support**: macOS, Linux, Windows, and Docker
 - **Profile-Based Setup**: Human developer, AI agent, and CI/CD runner profiles
 - **Tool Management**: Automated installation and configuration of development tools
-- **AI Agent Integration**: Claude Code, Claude Flow, and MCP tools support
+- **AI Agent Integration**: Claude Code, Ruflo, and MCP tools support
 - **Package Manager Support**: npm, pnpm, and yarn integration
 - **Environment Validation**: Comprehensive health checks and validation
 - **Docker Support**: Containerized development environments
@@ -101,7 +102,7 @@ Complete development environment for human developers:
 
 Optimized environment for AI agents and automation:
 
-- **Tools**: Node.js, Git, Claude Code, Claude Flow, MCP tools
+- **Tools**: Node.js, Git, Claude Code, Ruflo, MCP tools
 - **Features**: Swarm intelligence, neural patterns, automation
 - **Use Case**: Autonomous code generation, AI-driven development
 
@@ -123,6 +124,7 @@ Minimal environment for continuous integration:
 ```
 
 **Features:**
+
 - Homebrew package management
 - Xcode Command Line Tools integration
 - Native app installations (VS Code, Docker Desktop)
@@ -135,6 +137,7 @@ Minimal environment for continuous integration:
 ```
 
 **Features:**
+
 - Multiple distribution support
 - Package manager detection (apt, dnf, yum, pacman)
 - Homebrew for Linux support
@@ -147,6 +150,7 @@ Minimal environment for continuous integration:
 ```
 
 **Features:**
+
 - Chocolatey and Windows Package Manager
 - WSL2 integration
 - PowerShell profile configuration
@@ -170,18 +174,20 @@ wundr-env update --profile ai-agent
 ```
 
 **Features:**
+
 - Automatic model selection (Claude Opus 4.1)
 - Code generation optimization
 - Integration with development workflow
 
-### Claude Flow Orchestration
+### Ruflo Orchestration
 
 ```bash
 # Initialize swarm capabilities
-claude-flow swarm init --agents 54
+ruflo swarm init --agents 54
 ```
 
 **Features:**
+
 - 54-agent swarm topology
 - Neural pattern recognition
 - Distributed memory system
@@ -191,7 +197,7 @@ claude-flow swarm init --agents 54
 
 ```bash
 # Available MCP tools
-- claude-flow: Orchestration and swarm management
+- ruflo: Orchestration and swarm management
 - wundr-toolkit: Quality and governance tools
 - filesystem: File operations
 - git: Version control operations
@@ -243,7 +249,7 @@ Tools are configured with dependencies, installers, and platform support:
   "platform": ["macos", "linux"],
   "config": {
     "extensions": ["ms-vscode.vscode-typescript-next"],
-    "settings": {"editor.formatOnSave": true}
+    "settings": { "editor.formatOnSave": true }
   }
 }
 ```
@@ -261,9 +267,9 @@ docker-compose up human-dev
 ### AI Agent Container
 
 ```bash
-# Start with Claude Flow orchestration
+# Start with Ruflo orchestration
 docker-compose up ai-agent
-# Claude Flow API at http://localhost:3100
+# Ruflo API at http://localhost:3100
 ```
 
 ### Development with Docker
@@ -286,6 +292,7 @@ wundr-env validate --verbose
 ```
 
 **Checks:**
+
 - Tool installation and versions
 - Platform compatibility
 - Dependency resolution
@@ -347,7 +354,7 @@ const manager = new EnvironmentManager();
 // Initialize environment
 await manager.initialize('human', {
   email: 'user@example.com',
-  fullName: 'User Name'
+  fullName: 'User Name',
 });
 
 // Install tools
@@ -431,7 +438,8 @@ pnpm run build
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](../../../LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](../../../LICENSE) file for
+details.
 
 ## 🙏 Acknowledgments
 

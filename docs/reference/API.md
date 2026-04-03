@@ -1,6 +1,6 @@
-# Claude Flow API Reference
+# Ruflo API Reference
 
-Complete API reference for Claude Flow CLI commands, MCP tools, and configuration options.
+Complete API reference for Ruflo CLI commands, MCP tools, and configuration options.
 
 ## Table of Contents
 
@@ -32,10 +32,10 @@ All commands support these global options:
 
 #### `init`
 
-Initialize Claude Flow in a project.
+Initialize Ruflo in a project.
 
 ```bash
-npx claude-flow@alpha init [options]
+npx ruflo@latest init [options]
 ```
 
 **Options**:
@@ -52,16 +52,16 @@ npx claude-flow@alpha init [options]
 
 ```bash
 # Basic initialization
-npx claude-flow@alpha init
+npx ruflo@latest init
 
 # With template
-npx claude-flow@alpha init --template react
+npx ruflo@latest init --template react
 
 # Interactive
-npx claude-flow@alpha init --interactive
+npx ruflo@latest init --interactive
 
 # Force overwrite
-npx claude-flow@alpha init --force
+npx ruflo@latest init --force
 ```
 
 #### `config`
@@ -69,7 +69,7 @@ npx claude-flow@alpha init --force
 Manage configuration.
 
 ```bash
-npx claude-flow@alpha config <subcommand> [options]
+npx ruflo@latest config <subcommand> [options]
 ```
 
 **Subcommands**:
@@ -77,45 +77,45 @@ npx claude-flow@alpha config <subcommand> [options]
 **`config init`** - Initialize configuration
 
 ```bash
-npx claude-flow@alpha config init [--interactive]
+npx ruflo@latest config init [--interactive]
 ```
 
 **`config get`** - Get configuration value
 
 ```bash
-npx claude-flow@alpha config get <key>
+npx ruflo@latest config get <key>
 
 # Examples
-npx claude-flow@alpha config get agents.defaults.timeout
-npx claude-flow@alpha config get hooks.pre-commit.enabled
+npx ruflo@latest config get agents.defaults.timeout
+npx ruflo@latest config get hooks.pre-commit.enabled
 ```
 
 **`config set`** - Set configuration value
 
 ```bash
-npx claude-flow@alpha config set <key> <value>
+npx ruflo@latest config set <key> <value>
 
 # Examples
-npx claude-flow@alpha config set agents.defaults.timeout 600000
-npx claude-flow@alpha config set hooks.pre-commit.enabled true
+npx ruflo@latest config set agents.defaults.timeout 600000
+npx ruflo@latest config set hooks.pre-commit.enabled true
 ```
 
 **`config validate`** - Validate configuration
 
 ```bash
-npx claude-flow@alpha config validate [--fix]
+npx ruflo@latest config validate [--fix]
 ```
 
 **`config schema`** - Show configuration schema
 
 ```bash
-npx claude-flow@alpha config schema [--format json|yaml]
+npx ruflo@latest config schema [--format json|yaml]
 ```
 
 **`config merge`** - Merge configuration files
 
 ```bash
-npx claude-flow@alpha config merge <source> [--output <path>]
+npx ruflo@latest config merge <source> [--output <path>]
 ```
 
 ### SPARC Commands
@@ -125,7 +125,7 @@ npx claude-flow@alpha config merge <source> [--output <path>]
 List available SPARC modes.
 
 ```bash
-npx claude-flow@alpha sparc modes [--format table|json]
+npx ruflo@latest sparc modes [--format table|json]
 ```
 
 **Output**:
@@ -149,7 +149,7 @@ Available SPARC Modes:
 Run specific SPARC mode.
 
 ```bash
-npx claude-flow@alpha sparc run <mode> "<task>" [options]
+npx ruflo@latest sparc run <mode> "<task>" [options]
 ```
 
 **Options**:
@@ -165,14 +165,14 @@ npx claude-flow@alpha sparc run <mode> "<task>" [options]
 
 ```bash
 # Run specification
-npx claude-flow@alpha sparc run spec-pseudocode "Build user authentication"
+npx ruflo@latest sparc run spec-pseudocode "Build user authentication"
 
 # Run with specific agents
-npx claude-flow@alpha sparc run architect "Design microservices" \
+npx ruflo@latest sparc run architect "Design microservices" \
   --agents architect,backend-dev
 
 # Run with timeout
-npx claude-flow@alpha sparc run refinement "Implement API" \
+npx ruflo@latest sparc run refinement "Implement API" \
   --timeout 900000
 ```
 
@@ -181,7 +181,7 @@ npx claude-flow@alpha sparc run refinement "Implement API" \
 Run complete TDD workflow.
 
 ```bash
-npx claude-flow@alpha sparc tdd "<feature>" [options]
+npx ruflo@latest sparc tdd "<feature>" [options]
 ```
 
 **Options**:
@@ -197,14 +197,14 @@ npx claude-flow@alpha sparc tdd "<feature>" [options]
 
 ```bash
 # Basic TDD
-npx claude-flow@alpha sparc tdd "Add user login"
+npx ruflo@latest sparc tdd "Add user login"
 
 # With coverage requirement
-npx claude-flow@alpha sparc tdd "Add payment processing" \
+npx ruflo@latest sparc tdd "Add payment processing" \
   --coverage 90
 
 # With worktrees
-npx claude-flow@alpha sparc tdd "Build dashboard" \
+npx ruflo@latest sparc tdd "Build dashboard" \
   --worktree-mode parallel
 ```
 
@@ -213,18 +213,18 @@ npx claude-flow@alpha sparc tdd "Build dashboard" \
 Run multiple modes in parallel.
 
 ```bash
-npx claude-flow@alpha sparc batch <modes> "<task>" [options]
+npx ruflo@latest sparc batch <modes> "<task>" [options]
 ```
 
 **Examples**:
 
 ```bash
 # Run spec and architect in parallel
-npx claude-flow@alpha sparc batch spec-pseudocode,architect \
+npx ruflo@latest sparc batch spec-pseudocode,architect \
   "Design authentication system"
 
 # Run with all modes
-npx claude-flow@alpha sparc batch all "Complete feature implementation"
+npx ruflo@latest sparc batch all "Complete feature implementation"
 ```
 
 #### `sparc pipeline`
@@ -232,17 +232,17 @@ npx claude-flow@alpha sparc batch all "Complete feature implementation"
 Run full SPARC pipeline.
 
 ```bash
-npx claude-flow@alpha sparc pipeline "<task>" [options]
+npx ruflo@latest sparc pipeline "<task>" [options]
 ```
 
 **Examples**:
 
 ```bash
 # Full pipeline
-npx claude-flow@alpha sparc pipeline "Build payment system"
+npx ruflo@latest sparc pipeline "Build payment system"
 
 # With custom agents
-npx claude-flow@alpha sparc pipeline "Create admin dashboard" \
+npx ruflo@latest sparc pipeline "Create admin dashboard" \
   --agents backend-dev,frontend-dev,tester
 ```
 
@@ -253,7 +253,7 @@ npx claude-flow@alpha sparc pipeline "Create admin dashboard" \
 List available agent types.
 
 ```bash
-npx claude-flow@alpha agent types [--format table|json]
+npx ruflo@latest agent types [--format table|json]
 ```
 
 #### `agent list`
@@ -261,7 +261,7 @@ npx claude-flow@alpha agent types [--format table|json]
 List active agents.
 
 ```bash
-npx claude-flow@alpha agent list [options]
+npx ruflo@latest agent list [options]
 ```
 
 **Options**:
@@ -277,7 +277,7 @@ npx claude-flow@alpha agent list [options]
 Spawn new agent.
 
 ```bash
-npx claude-flow@alpha agent spawn --type <type> [options]
+npx ruflo@latest agent spawn --type <type> [options]
 ```
 
 **Options**:
@@ -293,14 +293,14 @@ npx claude-flow@alpha agent spawn --type <type> [options]
 
 ```bash
 # Spawn coder
-npx claude-flow@alpha agent spawn --type coder
+npx ruflo@latest agent spawn --type coder
 
 # Spawn with custom config
-npx claude-flow@alpha agent spawn --type backend-dev \
-  --config .claude-flow/agents/custom-backend.json
+npx ruflo@latest agent spawn --type backend-dev \
+  --config .ruflo/agents/custom-backend.json
 
 # Spawn in worktree
-npx claude-flow@alpha agent spawn --type tester \
+npx ruflo@latest agent spawn --type tester \
   --worktree .worktrees/testing
 ```
 
@@ -309,7 +309,7 @@ npx claude-flow@alpha agent spawn --type tester \
 Get agent metrics.
 
 ```bash
-npx claude-flow@alpha agent metrics [agent-id] [options]
+npx ruflo@latest agent metrics [agent-id] [options]
 ```
 
 **Options**:
@@ -324,13 +324,13 @@ npx claude-flow@alpha agent metrics [agent-id] [options]
 
 ```bash
 # Single agent
-npx claude-flow@alpha agent metrics coder-123
+npx ruflo@latest agent metrics coder-123
 
 # All agents
-npx claude-flow@alpha agent metrics --all
+npx ruflo@latest agent metrics --all
 
 # Last 7 days
-npx claude-flow@alpha agent metrics --all --period 7d
+npx ruflo@latest agent metrics --all --period 7d
 ```
 
 #### `agent configure`
@@ -338,7 +338,7 @@ npx claude-flow@alpha agent metrics --all --period 7d
 Configure agent.
 
 ```bash
-npx claude-flow@alpha agent configure <type> [options]
+npx ruflo@latest agent configure <type> [options]
 ```
 
 **Options**:
@@ -355,13 +355,13 @@ npx claude-flow@alpha agent configure <type> [options]
 
 ```bash
 # Configure coder
-npx claude-flow@alpha agent configure coder \
+npx ruflo@latest agent configure coder \
   --timeout 600000 \
   --languages typescript,python \
   --frameworks react,express
 
 # Configure tester
-npx claude-flow@alpha agent configure tester \
+npx ruflo@latest agent configure tester \
   --framework jest \
   --coverage-min 80
 ```
@@ -373,7 +373,7 @@ npx claude-flow@alpha agent configure tester \
 Initialize agent swarm.
 
 ```bash
-npx claude-flow@alpha swarm init [options]
+npx ruflo@latest swarm init [options]
 ```
 
 **Options**:
@@ -388,13 +388,13 @@ npx claude-flow@alpha swarm init [options]
 
 ```bash
 # Basic swarm
-npx claude-flow@alpha swarm init
+npx ruflo@latest swarm init
 
 # Hierarchical
-npx claude-flow@alpha swarm init --topology hierarchical
+npx ruflo@latest swarm init --topology hierarchical
 
 # With limits
-npx claude-flow@alpha swarm init \
+npx ruflo@latest swarm init \
   --topology mesh \
   --max-agents 10
 ```
@@ -404,7 +404,7 @@ npx claude-flow@alpha swarm init \
 Start swarm for task.
 
 ```bash
-npx claude-flow@alpha swarm start [options]
+npx ruflo@latest swarm start [options]
 ```
 
 **Options**:
@@ -420,12 +420,12 @@ npx claude-flow@alpha swarm start [options]
 
 ```bash
 # Basic swarm
-npx claude-flow@alpha swarm start \
+npx ruflo@latest swarm start \
   --topology mesh \
   --task "Build authentication system"
 
 # With specific agents
-npx claude-flow@alpha swarm start \
+npx ruflo@latest swarm start \
   --topology hierarchical \
   --agents backend-dev,tester,reviewer \
   --task "Implement payment processing"
@@ -436,7 +436,7 @@ npx claude-flow@alpha swarm start \
 Get swarm status.
 
 ```bash
-npx claude-flow@alpha swarm status [--format json|table]
+npx ruflo@latest swarm status [--format json|table]
 ```
 
 #### `swarm reset`
@@ -444,7 +444,7 @@ npx claude-flow@alpha swarm status [--format json|table]
 Reset swarm state.
 
 ```bash
-npx claude-flow@alpha swarm reset [--confirm]
+npx ruflo@latest swarm reset [--confirm]
 ```
 
 ### Hook Commands
@@ -454,7 +454,7 @@ npx claude-flow@alpha swarm reset [--confirm]
 List hooks.
 
 ```bash
-npx claude-flow@alpha hooks list [options]
+npx ruflo@latest hooks list [options]
 ```
 
 **Options**:
@@ -470,7 +470,7 @@ npx claude-flow@alpha hooks list [options]
 Install Git hooks.
 
 ```bash
-npx claude-flow@alpha hooks install [--force]
+npx ruflo@latest hooks install [--force]
 ```
 
 #### `hooks register`
@@ -478,14 +478,14 @@ npx claude-flow@alpha hooks install [--force]
 Register custom hook.
 
 ```bash
-npx claude-flow@alpha hooks register --file <path>
+npx ruflo@latest hooks register --file <path>
 ```
 
 **Example**:
 
 ```bash
-npx claude-flow@alpha hooks register \
-  --file .claude-flow/hooks/my-hook.js
+npx ruflo@latest hooks register \
+  --file .ruflo/hooks/my-hook.js
 ```
 
 #### `hooks enable/disable`
@@ -493,8 +493,8 @@ npx claude-flow@alpha hooks register \
 Enable or disable hook.
 
 ```bash
-npx claude-flow@alpha hooks enable <hook-name>
-npx claude-flow@alpha hooks disable <hook-name>
+npx ruflo@latest hooks enable <hook-name>
+npx ruflo@latest hooks disable <hook-name>
 ```
 
 #### `hooks test`
@@ -502,7 +502,7 @@ npx claude-flow@alpha hooks disable <hook-name>
 Test hook execution.
 
 ```bash
-npx claude-flow@alpha hooks test <hook-name> [options]
+npx ruflo@latest hooks test <hook-name> [options]
 ```
 
 **Options**:
@@ -519,7 +519,7 @@ npx claude-flow@alpha hooks test <hook-name> [options]
 Store value in memory.
 
 ```bash
-npx claude-flow@alpha memory store [options]
+npx ruflo@latest memory store [options]
 ```
 
 **Options**:
@@ -535,18 +535,18 @@ npx claude-flow@alpha memory store [options]
 
 ```bash
 # Store global value
-npx claude-flow@alpha memory store \
+npx ruflo@latest memory store \
   --key "project/status" \
   --value "In progress"
 
 # Store with TTL
-npx claude-flow@alpha memory store \
+npx ruflo@latest memory store \
   --key "temp/data" \
   --value "..." \
   --ttl 3600000
 
 # Store agent-scoped
-npx claude-flow@alpha memory store \
+npx ruflo@latest memory store \
   --key "coder/preferences" \
   --value '{"style": "airbnb"}' \
   --scope agent
@@ -557,7 +557,7 @@ npx claude-flow@alpha memory store \
 Retrieve value from memory.
 
 ```bash
-npx claude-flow@alpha memory retrieve --key <key> [options]
+npx ruflo@latest memory retrieve --key <key> [options]
 ```
 
 **Options**:
@@ -571,10 +571,10 @@ npx claude-flow@alpha memory retrieve --key <key> [options]
 
 ```bash
 # Retrieve value
-npx claude-flow@alpha memory retrieve --key "project/status"
+npx ruflo@latest memory retrieve --key "project/status"
 
 # With default
-npx claude-flow@alpha memory retrieve \
+npx ruflo@latest memory retrieve \
   --key "missing/key" \
   --default "Not found"
 ```
@@ -584,7 +584,7 @@ npx claude-flow@alpha memory retrieve \
 List memory entries.
 
 ```bash
-npx claude-flow@alpha memory list [options]
+npx ruflo@latest memory list [options]
 ```
 
 **Options**:
@@ -600,7 +600,7 @@ npx claude-flow@alpha memory list [options]
 Clean up old memory entries.
 
 ```bash
-npx claude-flow@alpha memory cleanup [options]
+npx ruflo@latest memory cleanup [options]
 ```
 
 **Options**:
@@ -618,7 +618,7 @@ npx claude-flow@alpha memory cleanup [options]
 Create new worktree.
 
 ```bash
-npx claude-flow@alpha worktree create [options]
+npx ruflo@latest worktree create [options]
 ```
 
 **Options**:
@@ -633,12 +633,12 @@ npx claude-flow@alpha worktree create [options]
 
 ```bash
 # Basic worktree
-npx claude-flow@alpha worktree create \
+npx ruflo@latest worktree create \
   --name backend \
   --branch feature/api
 
 # With agent
-npx claude-flow@alpha worktree create \
+npx ruflo@latest worktree create \
   --name testing \
   --branch feature/tests \
   --agent tester
@@ -649,7 +649,7 @@ npx claude-flow@alpha worktree create \
 List worktrees.
 
 ```bash
-npx claude-flow@alpha worktree list [--format table|json]
+npx ruflo@latest worktree list [--format table|json]
 ```
 
 #### `worktree merge`
@@ -657,7 +657,7 @@ npx claude-flow@alpha worktree list [--format table|json]
 Merge worktree.
 
 ```bash
-npx claude-flow@alpha worktree merge [options]
+npx ruflo@latest worktree merge [options]
 ```
 
 **Options**:
@@ -675,7 +675,7 @@ npx claude-flow@alpha worktree merge [options]
 Analyze repository.
 
 ```bash
-npx claude-flow@alpha github repo-analyze [options]
+npx ruflo@latest github repo-analyze [options]
 ```
 
 **Options**:
@@ -690,7 +690,7 @@ npx claude-flow@alpha github repo-analyze [options]
 Review pull request.
 
 ```bash
-npx claude-flow@alpha github review-pr <pr-number> [options]
+npx ruflo@latest github review-pr <pr-number> [options]
 ```
 
 **Options**:
@@ -705,10 +705,10 @@ npx claude-flow@alpha github review-pr <pr-number> [options]
 
 ```bash
 # Review PR
-npx claude-flow@alpha github review-pr 123
+npx ruflo@latest github review-pr 123
 
 # With specific reviewers
-npx claude-flow@alpha github review-pr 123 \
+npx ruflo@latest github review-pr 123 \
   --agents security-manager,reviewer
 ```
 
@@ -717,7 +717,7 @@ npx claude-flow@alpha github review-pr 123 \
 Enhance pull request.
 
 ```bash
-npx claude-flow@alpha github pr-enhance <pr-number> [options]
+npx ruflo@latest github pr-enhance <pr-number> [options]
 ```
 
 **Options**:
@@ -735,7 +735,7 @@ npx claude-flow@alpha github pr-enhance <pr-number> [options]
 Run diagnostics.
 
 ```bash
-npx claude-flow@alpha diagnostics [options]
+npx ruflo@latest diagnostics [options]
 ```
 
 **Options**:
@@ -751,7 +751,7 @@ npx claude-flow@alpha diagnostics [options]
 Quick health check.
 
 ```bash
-npx claude-flow@alpha health-check
+npx ruflo@latest health-check
 ```
 
 #### `metrics`
@@ -759,7 +759,7 @@ npx claude-flow@alpha health-check
 Show metrics.
 
 ```bash
-npx claude-flow@alpha metrics [options]
+npx ruflo@latest metrics [options]
 ```
 
 **Options**:
@@ -775,7 +775,7 @@ npx claude-flow@alpha metrics [options]
 Run benchmarks.
 
 ```bash
-npx claude-flow@alpha benchmark [options]
+npx ruflo@latest benchmark [options]
 ```
 
 **Options**:
@@ -963,7 +963,7 @@ GitHub swarm operations.
   "memory": {
     "enabled": true,
     "backend": "file",
-    "path": ".claude-flow/memory",
+    "path": ".ruflo/memory",
     "ttl": 2592000000
   },
   "performance": {
@@ -981,7 +981,7 @@ GitHub swarm operations.
 See full schema:
 
 ```bash
-npx claude-flow@alpha config schema --format json
+npx ruflo@latest config schema --format json
 ```
 
 ## Summary

@@ -4,7 +4,8 @@ Complete guide for using the .claude directory template in your projects.
 
 ## Overview
 
-This template provides a comprehensive .claude directory structure for Claude Code projects, including:
+This template provides a comprehensive .claude directory structure for Claude Code projects,
+including:
 
 - **Core Configuration**: CLAUDE.md and conventions.md
 - **Agent Definitions**: 13+ specialized agent roles
@@ -177,8 +178,8 @@ chmod +x .claude/hooks/*.sh
 **Use**: Full setup with methodology integration
 
 ```bash
-# 1. Install claude-flow
-npm install -g claude-flow@alpha
+# 1. Install ruflo
+npm install -g ruflo@latest
 
 # 2. Copy template
 cp -r /path/to/templates/.claude ./
@@ -191,7 +192,7 @@ vim .claude/conventions.md
 chmod +x .claude/hooks/*.sh
 
 # 5. Use SPARC workflow
-npx claude-flow sparc tdd "Feature description"
+npx ruflo sparc tdd "Feature description"
 
 # This will use:
 # - .claude/agents/sparc/specification.md
@@ -211,25 +212,18 @@ npx claude-flow sparc tdd "Feature description"
 ```markdown
 ## Project Overview
 
-**Project Type**: React Web Application
-**Tech Stack**: React 18, TypeScript, Vite, TailwindCSS
-**State Management**: Zustand
-**API**: REST + React Query
+**Project Type**: React Web Application **Tech Stack**: React 18, TypeScript, Vite, TailwindCSS
+**State Management**: Zustand **API**: REST + React Query
 
 ## Directory Structure
+```
 
-```
-src/
-├── components/          # Reusable components
-│   ├── ui/             # Base UI components
-│   └── features/       # Feature-specific components
-├── pages/               # Page components (routes)
-├── hooks/               # Custom React hooks
-├── stores/              # Zustand stores
-├── services/            # API services
-├── utils/               # Utility functions
-└── types/               # TypeScript types
-```
+src/ ├── components/ # Reusable components │ ├── ui/ # Base UI components │ └── features/ #
+Feature-specific components ├── pages/ # Page components (routes) ├── hooks/ # Custom React hooks
+├── stores/ # Zustand stores ├── services/ # API services ├── utils/ # Utility functions └──
+types/ # TypeScript types
+
+````
 
 ## Build Commands
 
@@ -240,11 +234,12 @@ npm run preview          # Preview production build
 npm run test             # Vitest tests
 npm run lint             # ESLint
 npm run type-check       # TypeScript check
-```
+````
 
 ## Code Style
 
 ### Component Structure
+
 ```typescript
 // ComponentName.tsx
 import { useState } from 'react';
@@ -267,11 +262,13 @@ export function ComponentName({ prop1, prop2 }: ComponentNameProps) {
 ```
 
 ### File Naming
+
 - Components: `ComponentName.tsx`
 - Hooks: `useHookName.ts`
 - Utils: `util-name.ts`
 - Types: `types.ts` (co-located)
-```
+
+````
 
 **conventions.md additions**:
 
@@ -298,7 +295,7 @@ export function ComponentName({ prop1, prop2 }: ComponentNameProps) {
 - Use TailwindCSS utility classes
 - Create components in `components/ui/` for reusable styled elements
 - Avoid inline styles unless dynamic
-```
+````
 
 ### Example 2: Node.js API Project
 
@@ -307,26 +304,18 @@ export function ComponentName({ prop1, prop2 }: ComponentNameProps) {
 ```markdown
 ## Project Overview
 
-**Project Type**: REST API Backend
-**Tech Stack**: Node.js, Express, TypeScript, PostgreSQL
-**ORM**: Prisma
-**Authentication**: JWT
-**API Documentation**: OpenAPI/Swagger
+**Project Type**: REST API Backend **Tech Stack**: Node.js, Express, TypeScript, PostgreSQL **ORM**:
+Prisma **Authentication**: JWT **API Documentation**: OpenAPI/Swagger
 
 ## Directory Structure
+```
 
-```
-src/
-├── api/                 # API routes
-│   ├── routes/         # Express routes
-│   ├── controllers/    # Route controllers
-│   └── validators/     # Request validators
-├── services/            # Business logic
-├── repositories/        # Database access layer
-├── middleware/          # Express middleware
-├── utils/               # Utilities
-└── types/               # TypeScript types
-```
+src/ ├── api/ # API routes │ ├── routes/ # Express routes │ ├── controllers/ # Route controllers │
+└── validators/ # Request validators ├── services/ # Business logic ├── repositories/ # Database
+access layer ├── middleware/ # Express middleware ├── utils/ # Utilities └── types/ # TypeScript
+types
+
+````
 
 ## Build Commands
 
@@ -337,11 +326,12 @@ npm run start            # Production server
 npm run test             # Jest tests
 npm run migrate          # Prisma migrations
 npm run db:studio        # Prisma Studio
-```
+````
 
 ## API Conventions
 
 ### Endpoint Structure
+
 ```
 GET    /api/v1/users              # List
 GET    /api/v1/users/:id          # Get one
@@ -351,6 +341,7 @@ DELETE /api/v1/users/:id          # Delete
 ```
 
 ### Response Format
+
 ```typescript
 // Success
 {
@@ -367,7 +358,8 @@ DELETE /api/v1/users/:id          # Delete
   }
 }
 ```
-```
+
+````
 
 ### Example 3: Monorepo Setup
 
@@ -388,18 +380,12 @@ DELETE /api/v1/users/:id          # Delete
 
 ## Directory Structure
 
-```
-packages/
-├── web/                 # Web application
-│   └── src/
-├── api/                 # API server
-│   └── src/
-├── shared/              # Shared code
-│   ├── types/
-│   └── utils/
-└── mobile/              # Mobile app
-    └── src/
-```
+````
+
+packages/ ├── web/ # Web application │ └── src/ ├── api/ # API server │ └── src/ ├── shared/ #
+Shared code │ ├── types/ │ └── utils/ └── mobile/ # Mobile app └── src/
+
+````
 
 ## Build Commands
 
@@ -413,8 +399,9 @@ pnpm clean               # Clean all packages
 # Package-specific
 pnpm --filter @myapp/web dev
 pnpm --filter @myapp/api test
-```
-```
+````
+
+````
 
 ## Advanced Features
 
@@ -431,7 +418,7 @@ npx husky install
 npx husky add .husky/pre-commit ".claude/hooks/post-edit.sh"
 
 # Now files are auto-formatted on commit
-```
+````
 
 ### Using with CI/CD
 
@@ -492,16 +479,16 @@ Then reference it:
 You: "Act as the My Custom agent and [task description]"
 ```
 
-### Memory Integration (with claude-flow)
+### Memory Integration (with ruflo)
 
 ```bash
 # Store important decisions
-npx claude-flow memory store \
+npx ruflo memory store \
   --key "decisions/architecture/database" \
   --value "Using PostgreSQL with Prisma ORM"
 
 # Retrieve later
-npx claude-flow memory retrieve \
+npx ruflo memory retrieve \
   --key "decisions/architecture/database"
 
 # Enable automatic memory in hooks
@@ -536,6 +523,7 @@ npx claude-flow memory retrieve \
 **Cause**: File not in correct location or not readable
 
 **Fix**:
+
 ```bash
 # Verify location
 ls -la .claude/CLAUDE.md
@@ -551,6 +539,7 @@ chmod 644 .claude/CLAUDE.md
 ### Hooks don't execute
 
 **Fix**:
+
 ```bash
 # Make executable
 chmod +x .claude/hooks/*.sh
@@ -565,6 +554,7 @@ bash -n .claude/hooks/pre-task.sh
 ### Commands not found
 
 **Fix**:
+
 ```bash
 # Verify location
 ls .claude/commands/*.md
@@ -603,5 +593,4 @@ See the following files for complete examples:
 
 ---
 
-**Version**: 1.0.0
-**Last Updated**: 2025-11-21
+**Version**: 1.0.0 **Last Updated**: 2025-11-21

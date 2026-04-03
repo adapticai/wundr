@@ -15,7 +15,7 @@ import type { Session, Task } from '../types';
 export interface NodeCapabilities {
   canSpawnSessions: boolean;
   maxConcurrentSessions: number;
-  supportedSessionTypes: Array<'claude-code' | 'claude-flow'>;
+  supportedSessionTypes: Array<'claude-code' | 'ruflo'>;
   hasGPUAccess: boolean;
   hasHighMemory: boolean;
   customCapabilities?: Record<string, boolean>;
@@ -40,7 +40,7 @@ export interface NodeHealth {
 export interface SessionSpawnRequest {
   orchestratorId: string;
   task: Task;
-  sessionType: 'claude-code' | 'claude-flow';
+  sessionType: 'claude-code' | 'ruflo';
   memoryProfile?: string;
   priority?: 'low' | 'medium' | 'high' | 'critical';
 }

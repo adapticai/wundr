@@ -347,8 +347,8 @@ export class InitCommands {
     options: any
   ): Promise<void> {
     const directories = options.monorepo
-      ? ['packages', 'apps', 'tools', 'docs', 'scripts', '.claude-flow']
-      : ['src', 'tests', 'docs', 'scripts', '.claude-flow'];
+      ? ['packages', 'apps', 'tools', 'docs', 'scripts', '.ruflo']
+      : ['src', 'tests', 'docs', 'scripts', '.ruflo'];
 
     for (const dir of directories) {
       await fs.ensureDir(path.join(projectPath, dir));
@@ -719,7 +719,7 @@ _(None yet - will be populated when failures are resolved)_
     };
 
     await fs.writeJson(
-      path.join(projectPath, '.claude-flow', 'verification-hooks.json'),
+      path.join(projectPath, '.ruflo', 'verification-hooks.json'),
       verificationHooks,
       { spaces: 2 }
     );

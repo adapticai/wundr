@@ -3,8 +3,8 @@
 ## Executive Summary
 
 This document outlines the unified architecture for merging wundr (monorepo auditing) and
-new-starter (environment setup) into a comprehensive developer platform orchestrated by Claude Flow
-Hive Mind collective intelligence.
+new-starter (environment setup) into a comprehensive developer platform orchestrated by Ruflo Hive
+Mind collective intelligence.
 
 ## 🏗️ Core Architecture
 
@@ -16,7 +16,7 @@ Hive Mind collective intelligence.
 │  - CLI Interface    - Web Dashboard    - IDE Extensions       │
 ├─────────────────────────────────────────────────────────────┤
 │                    Orchestration Layer                        │
-│  - Claude Flow Hive Mind    - Task Distribution              │
+│  - Ruflo Hive Mind    - Task Distribution              │
 │  - Swarm Intelligence       - Byzantine Consensus            │
 ├─────────────────────────────────────────────────────────────┤
 │                     Service Layer                            │
@@ -53,7 +53,7 @@ packages/:
   @wundr/tool-installer:  # Tool installation
 
   # AI Integration
-  @wundr/ai-integration:  # Claude Flow orchestration
+  @wundr/ai-integration:  # Ruflo orchestration
   @wundr/mcp-tools:       # MCP tool implementations
   @wundr/swarm-manager:   # Swarm coordination
 
@@ -121,7 +121,7 @@ interface TechnologyStack {
   };
 
   ai: {
-    orchestration: 'Claude Flow';
+    orchestration: 'Ruflo';
     agents: '54 specialized agents';
     tools: '87+ MCP tools';
     memory: 'Persistent cross-session';
@@ -167,7 +167,7 @@ interface TechnologyStack {
 
 #### 5. AI Integration Hive
 
-- Claude Flow orchestration
+- Ruflo orchestration
 - MCP tools development
 - Neural pattern training
 

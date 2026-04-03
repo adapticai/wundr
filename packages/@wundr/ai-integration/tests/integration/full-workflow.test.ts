@@ -11,7 +11,7 @@ describe('Full AI Integration Workflow', () => {
 
   beforeAll(async () => {
     config = {
-      claudeFlow: {
+      ruflo: {
         sessionPath: './test-sessions',
         maxConcurrentAgents: 10,
         defaultTopology: 'adaptive',
@@ -393,7 +393,7 @@ describe('Full AI Integration Workflow', () => {
 
       // Verify all subsystem metrics are available
       expect(metrics.hive).toBeDefined();
-      expect(metrics.claudeFlow).toBeDefined();
+      expect(metrics.ruflo).toBeDefined();
       expect(metrics.mcpTools).toBeDefined();
       expect(metrics.neural).toBeDefined();
       expect(metrics.swarm).toBeDefined();

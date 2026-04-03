@@ -77,27 +77,27 @@ install_claude_cli() {
     fi
 }
 
-# Step 3: Install Claude Flow MCP
-install_claude_flow() {
-    print_status "Installing Claude Flow MCP server..."
+# Step 3: Install Ruflo MCP
+install_ruflo() {
+    print_status "Installing Ruflo MCP server..."
     
-    # Add Claude Flow MCP server
-    npx claude mcp add claude-flow npx claude-flow@alpha mcp start
+    # Add Ruflo MCP server
+    npx claude mcp add ruflo npx ruflo@latest mcp start
     
-    # Configure Claude Flow
-    cat > ~/.claude/.claude-flow/config.json << 'EOF'
+    # Configure Ruflo
+    cat > ~/.claude/.ruflo/config.json << 'EOF'
 {
   "memory": {
     "backend": "sqlite",
-    "path": "~/.claude/.claude-flow/memory.db"
+    "path": "~/.claude/.ruflo/memory.db"
   },
   "neural": {
     "enabled": true,
-    "modelPath": "~/.claude/.claude-flow/models"
+    "modelPath": "~/.claude/.ruflo/models"
   },
   "metrics": {
     "enabled": true,
-    "exportPath": "~/.claude/.claude-flow/metrics"
+    "exportPath": "~/.claude/.ruflo/metrics"
   },
   "agents": {
     "maxConcurrent": 10,
@@ -106,7 +106,7 @@ install_claude_flow() {
 }
 EOF
     
-    print_success "Claude Flow configured"
+    print_success "Ruflo configured"
 }
 
 # Step 4: Install Firecrawl MCP
@@ -427,7 +427,7 @@ configure_claude_settings() {
 {
   "claudeCodeOptions": {
     "enabledMcpjsonServers": [
-      "claude-flow",
+      "ruflo",
       "firecrawl",
       "context7",
       "playwright",
@@ -439,12 +439,12 @@ configure_claude_settings() {
     "enableHooks": true
   },
   "mcpServers": {
-    "claude-flow": {
+    "ruflo": {
       "command": "npx",
-      "args": ["claude-flow@alpha", "mcp", "start"],
+      "args": ["ruflo@latest", "mcp", "start"],
       "env": {
-        "CLAUDE_FLOW_MEMORY_BACKEND": "sqlite",
-        "CLAUDE_FLOW_ENABLE_NEURAL": "true"
+        "RUFLO_MEMORY_BACKEND": "sqlite",
+        "RUFLO_ENABLE_NEURAL": "true"
       }
     },
     "firecrawl": {
@@ -536,7 +536,7 @@ check_dir "/Applications/Google Chrome.app" "Google Chrome"
 
 echo -e "\nMCP Servers:"
 check_file ~/.claude/settings.json "Claude settings"
-check_dir ~/.claude/.claude-flow "Claude Flow directory"
+check_dir ~/.claude/.ruflo "Ruflo directory"
 check_dir ~/.claude/browser-extension "Browser extension"
 check_dir ~/.claude/mcp-servers/sequentialthinking "Sequential Thinking"
 
@@ -566,7 +566,7 @@ main() {
     # Run installations
     install_chrome
     install_claude_cli
-    install_claude_flow
+    install_ruflo
     install_firecrawl
     install_context7
     install_playwright
@@ -587,7 +587,7 @@ main() {
     echo "4. Restart Claude Desktop to load new MCP servers"
     echo ""
     echo "📚 Documentation:"
-    echo "- Claude Flow: https://github.com/ruvnet/claude-flow"
+    echo "- Ruflo: https://github.com/ruvnet/ruflo"
     echo "- Firecrawl: https://docs.firecrawl.dev"
     echo "- Context7: https://context7.ai/docs"
     echo "- Playwright: https://playwright.dev"

@@ -1,8 +1,8 @@
 # @wundr.io/orchestrator-daemon
 
-> Machine-level supervisor daemon for orchestrating Claude Code and Claude Flow sessions with
-> real-time WebSocket communication, distributed session management, and MemGPT-inspired tiered
-> memory architecture.
+> Machine-level supervisor daemon for orchestrating Claude Code and Ruflo sessions with real-time
+> WebSocket communication, distributed session management, and MemGPT-inspired tiered memory
+> architecture.
 
 [![Version](https://img.shields.io/badge/version-1.0.6-blue.svg)](https://www.npmjs.com/package/@wundr.io/orchestrator-daemon)
 [![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org)
@@ -359,7 +359,7 @@ ws.send(
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
-      sessionType: 'claude-code', // or 'claude-flow'
+      sessionType: 'claude-code', // or 'ruflo'
     },
   })
 );
@@ -1331,7 +1331,7 @@ See [API documentation](./docs/README.md) for detailed reference.
 
 - ✅ Neolith web app integration
 - ✅ Claude Code session spawning
-- ✅ Claude Flow orchestration
+- ✅ Ruflo orchestration
 - ✅ Custom WebSocket clients
 - ✅ REST API compatibility layer
 

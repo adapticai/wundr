@@ -1,6 +1,7 @@
 # .claude Directory Structure
 
-This directory contains Claude Code configuration, agent definitions, automation hooks, and custom commands for your project.
+This directory contains Claude Code configuration, agent definitions, automation hooks, and custom
+commands for your project.
 
 ## Directory Structure
 
@@ -30,15 +31,18 @@ This directory contains Claude Code configuration, agent definitions, automation
 
 ### Root Configuration Files
 
-- **CLAUDE.md**: Master configuration file that Claude Code reads on startup. Defines project rules, workflows, tool usage, and best practices.
-- **conventions.md**: Project-specific coding standards, naming conventions, architecture patterns, and style guides.
+- **CLAUDE.md**: Master configuration file that Claude Code reads on startup. Defines project rules,
+  workflows, tool usage, and best practices.
+- **conventions.md**: Project-specific coding standards, naming conventions, architecture patterns,
+  and style guides.
 - **README.md**: This file - documentation about the .claude directory structure.
 
 ### Agents Directory
 
 Agent files define specialized roles and personas for different tasks:
 
-- **core/**: Essential agents for everyday development (coder, reviewer, tester, planner, researcher)
+- **core/**: Essential agents for everyday development (coder, reviewer, tester, planner,
+  researcher)
 - **swarm/**: Coordination agents for multi-agent orchestration
 - **github/**: GitHub-specific agents for PR management, code review, issue tracking
 - **sparc/**: SPARC methodology agents for systematic development
@@ -107,30 +111,35 @@ Claude should automatically read `.claude/CLAUDE.md` on startup.
 ### When to Modify Each Component
 
 **CLAUDE.md**: Modify when you need to:
+
 - Change development workflows
 - Add new tools or integrations
 - Define project-specific rules
 - Update file organization standards
 
 **conventions.md**: Modify when you need to:
+
 - Establish coding standards
 - Define naming conventions
 - Set architecture patterns
 - Document API design guidelines
 
 **agents/**: Modify when you need to:
+
 - Add new specialized roles
 - Customize agent behaviors
 - Create domain-specific experts
 - Adjust agent coordination
 
 **hooks/**: Modify when you need to:
+
 - Automate repetitive tasks
 - Enforce quality gates
 - Integrate with external tools
 - Customize workflows
 
 **commands/**: Modify when you need to:
+
 - Create shortcuts for common tasks
 - Package complex workflows
 - Standardize team processes
@@ -177,12 +186,14 @@ Create `.claude/agents/specialized/api-designer.md`:
 Expert in RESTful API design, following project conventions.
 
 ## Responsibilities
+
 - Design API endpoints
 - Define request/response schemas
 - Document API contracts
 - Ensure consistency with existing APIs
 
 ## Guidelines
+
 - Follow OpenAPI 3.0 specification
 - Use project naming conventions
 - Include error handling patterns
@@ -208,16 +219,19 @@ fi
 ## Troubleshooting
 
 **Claude doesn't read CLAUDE.md**:
+
 - Ensure file is in project root: `.claude/CLAUDE.md`
 - Check file permissions are readable
 - Verify file encoding is UTF-8
 
 **Hooks don't execute**:
+
 - Make scripts executable: `chmod +x .claude/hooks/*.sh`
 - Check script syntax: `bash -n .claude/hooks/script.sh`
 - Verify shebang is correct: `#!/bin/bash`
 
 **Commands not found**:
+
 - Ensure command files are in `.claude/commands/`
 - Check file extension is `.md`
 - Verify command name matches filename
@@ -225,12 +239,13 @@ fi
 ## Resources
 
 - [Claude Code Documentation](https://docs.anthropic.com/claude-code)
-- [SPARC Methodology](https://github.com/ruvnet/claude-flow)
+- [SPARC Methodology](https://github.com/ruvnet/ruflo)
 - [MCP Tools](https://github.com/ruvnet/wundr)
 
 ## Support
 
 For issues or questions:
+
 1. Check project documentation
 2. Review example configurations
 3. Consult team guidelines

@@ -135,7 +135,7 @@ export class PermissionsInstaller implements BaseInstaller {
       `${homeDir}/.config`,
       `${homeDir}/.cache`,
       `${homeDir}/.claude`,
-      `${homeDir}/.claude-flow`,
+      `${homeDir}/.ruflo`,
     ];
 
     for (const dir of dirs) {
@@ -254,7 +254,7 @@ export class PermissionsInstaller implements BaseInstaller {
       `${rootDir}/tools`,
       `${rootDir}/sandbox`,
       `${rootDir}/.config`,
-      `${rootDir}/.claude-flow`,
+      `${rootDir}/.ruflo`,
       `${homeDir}/.local/bin`,
     ];
 

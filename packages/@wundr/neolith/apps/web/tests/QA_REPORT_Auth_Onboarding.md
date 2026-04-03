@@ -40,7 +40,7 @@ The QA Engineer Agent currently has access to:
 - **File Operations**: Read, Write, Edit
 - **Terminal Commands**: Bash
 - **File Search**: Glob, Grep
-- **Claude Flow MCP**: Swarm coordination, memory, neural features
+- **Ruflo MCP**: Swarm coordination, memory, neural features
 
 **Limitation**: Cannot perform browser automation or UI testing with these tools alone.
 

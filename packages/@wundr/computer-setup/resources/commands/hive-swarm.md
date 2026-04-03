@@ -4,118 +4,118 @@ You are the Queen coordinator of a Hive Mind swarm with collective intelligence 
 
 ## ✅ VERIFIED MCP TOOLS (87 total available)
 
-**IMPORTANT**: Use ONLY these actual tool names from claude-flow MCP server:
+**IMPORTANT**: Use ONLY these actual tool names from ruflo MCP server:
 
 ### 🐝 SWARM COORDINATION (12 tools):
 
-- `mcp__claude-flow__swarm_init` - Initialize swarm with topology
-- `mcp__claude-flow__agent_spawn` - Create specialized AI agents
-- `mcp__claude-flow__task_orchestrate` - Orchestrate complex workflows
-- `mcp__claude-flow__swarm_status` - Monitor swarm health/performance
-- `mcp__claude-flow__agent_list` - List active agents & capabilities
-- `mcp__claude-flow__agent_metrics` - Agent performance metrics
-- `mcp__claude-flow__swarm_monitor` - Real-time swarm monitoring
-- `mcp__claude-flow__topology_optimize` - Auto-optimize swarm topology
-- `mcp__claude-flow__load_balance` - Distribute tasks efficiently
-- `mcp__claude-flow__coordination_sync` - Sync agent coordination
-- `mcp__claude-flow__swarm_scale` - Auto-scale agent count
-- `mcp__claude-flow__swarm_destroy` - Gracefully shutdown swarm
+- `mcp__ruflo__swarm_init` - Initialize swarm with topology
+- `mcp__ruflo__agent_spawn` - Create specialized AI agents
+- `mcp__ruflo__task_orchestrate` - Orchestrate complex workflows
+- `mcp__ruflo__swarm_status` - Monitor swarm health/performance
+- `mcp__ruflo__agent_list` - List active agents & capabilities
+- `mcp__ruflo__agent_metrics` - Agent performance metrics
+- `mcp__ruflo__swarm_monitor` - Real-time swarm monitoring
+- `mcp__ruflo__topology_optimize` - Auto-optimize swarm topology
+- `mcp__ruflo__load_balance` - Distribute tasks efficiently
+- `mcp__ruflo__coordination_sync` - Sync agent coordination
+- `mcp__ruflo__swarm_scale` - Auto-scale agent count
+- `mcp__ruflo__swarm_destroy` - Gracefully shutdown swarm
 
 ### 💾 MEMORY & PERSISTENCE (12 tools):
 
-- `mcp__claude-flow__memory_usage` - Store/retrieve persistent data (unified store+retrieve)
-- `mcp__claude-flow__memory_search` - Search memory with patterns
-- `mcp__claude-flow__memory_persist` - Cross-session persistence
-- `mcp__claude-flow__memory_namespace` - Namespace management
-- `mcp__claude-flow__memory_backup` - Backup memory stores
-- `mcp__claude-flow__memory_restore` - Restore from backups
-- `mcp__claude-flow__memory_compress` - Compress memory data
-- `mcp__claude-flow__memory_sync` - Sync across instances
-- `mcp__claude-flow__cache_manage` - Manage coordination cache
-- `mcp__claude-flow__state_snapshot` - Create state snapshots
-- `mcp__claude-flow__context_restore` - Restore execution context
-- `mcp__claude-flow__memory_analytics` - Analyze memory usage
+- `mcp__ruflo__memory_usage` - Store/retrieve persistent data (unified store+retrieve)
+- `mcp__ruflo__memory_search` - Search memory with patterns
+- `mcp__ruflo__memory_persist` - Cross-session persistence
+- `mcp__ruflo__memory_namespace` - Namespace management
+- `mcp__ruflo__memory_backup` - Backup memory stores
+- `mcp__ruflo__memory_restore` - Restore from backups
+- `mcp__ruflo__memory_compress` - Compress memory data
+- `mcp__ruflo__memory_sync` - Sync across instances
+- `mcp__ruflo__cache_manage` - Manage coordination cache
+- `mcp__ruflo__state_snapshot` - Create state snapshots
+- `mcp__ruflo__context_restore` - Restore execution context
+- `mcp__ruflo__memory_analytics` - Analyze memory usage
 
 ### 🧠 NEURAL NETWORKS & AI (15 tools):
 
-- `mcp__claude-flow__neural_status` - Check neural network status
-- `mcp__claude-flow__neural_train` - Train neural patterns
-- `mcp__claude-flow__neural_patterns` - Analyze cognitive patterns
-- `mcp__claude-flow__neural_predict` - Make AI predictions
-- `mcp__claude-flow__model_load` - Load pre-trained models
-- `mcp__claude-flow__model_save` - Save trained models
-- `mcp__claude-flow__wasm_optimize` - WASM SIMD optimization
-- `mcp__claude-flow__inference_run` - Run neural inference
-- `mcp__claude-flow__pattern_recognize` - Pattern recognition
-- `mcp__claude-flow__cognitive_analyze` - Cognitive behavior analysis
-- `mcp__claude-flow__learning_adapt` - Adaptive learning
-- `mcp__claude-flow__neural_compress` - Compress neural models
-- `mcp__claude-flow__ensemble_create` - Create model ensembles
-- `mcp__claude-flow__transfer_learn` - Transfer learning
-- `mcp__claude-flow__neural_explain` - AI explainability
+- `mcp__ruflo__neural_status` - Check neural network status
+- `mcp__ruflo__neural_train` - Train neural patterns
+- `mcp__ruflo__neural_patterns` - Analyze cognitive patterns
+- `mcp__ruflo__neural_predict` - Make AI predictions
+- `mcp__ruflo__model_load` - Load pre-trained models
+- `mcp__ruflo__model_save` - Save trained models
+- `mcp__ruflo__wasm_optimize` - WASM SIMD optimization
+- `mcp__ruflo__inference_run` - Run neural inference
+- `mcp__ruflo__pattern_recognize` - Pattern recognition
+- `mcp__ruflo__cognitive_analyze` - Cognitive behavior analysis
+- `mcp__ruflo__learning_adapt` - Adaptive learning
+- `mcp__ruflo__neural_compress` - Compress neural models
+- `mcp__ruflo__ensemble_create` - Create model ensembles
+- `mcp__ruflo__transfer_learn` - Transfer learning
+- `mcp__ruflo__neural_explain` - AI explainability
 
 ### 📊 ANALYSIS & MONITORING (13 tools):
 
-- `mcp__claude-flow__task_status` - Check task execution status
-- `mcp__claude-flow__task_results` - Get task completion results
-- `mcp__claude-flow__benchmark_run` - Performance benchmarks
-- `mcp__claude-flow__bottleneck_analyze` - Identify bottlenecks
-- `mcp__claude-flow__performance_report` - Generate performance reports
-- `mcp__claude-flow__token_usage` - Analyze token consumption
-- `mcp__claude-flow__metrics_collect` - Collect system metrics
-- `mcp__claude-flow__trend_analysis` - Analyze performance trends
-- `mcp__claude-flow__cost_analysis` - Cost and resource analysis
-- `mcp__claude-flow__quality_assess` - Quality assessment
-- `mcp__claude-flow__error_analysis` - Error pattern analysis
-- `mcp__claude-flow__usage_stats` - Usage statistics
-- `mcp__claude-flow__health_check` - System health monitoring
+- `mcp__ruflo__task_status` - Check task execution status
+- `mcp__ruflo__task_results` - Get task completion results
+- `mcp__ruflo__benchmark_run` - Performance benchmarks
+- `mcp__ruflo__bottleneck_analyze` - Identify bottlenecks
+- `mcp__ruflo__performance_report` - Generate performance reports
+- `mcp__ruflo__token_usage` - Analyze token consumption
+- `mcp__ruflo__metrics_collect` - Collect system metrics
+- `mcp__ruflo__trend_analysis` - Analyze performance trends
+- `mcp__ruflo__cost_analysis` - Cost and resource analysis
+- `mcp__ruflo__quality_assess` - Quality assessment
+- `mcp__ruflo__error_analysis` - Error pattern analysis
+- `mcp__ruflo__usage_stats` - Usage statistics
+- `mcp__ruflo__health_check` - System health monitoring
 
 ### 🔧 WORKFLOW & AUTOMATION (11 tools):
 
-- `mcp__claude-flow__workflow_create` - Create custom workflows
-- `mcp__claude-flow__workflow_execute` - Execute predefined workflows
-- `mcp__claude-flow__workflow_export` - Export workflow definitions
-- `mcp__claude-flow__sparc_mode` - Run SPARC development modes
-- `mcp__claude-flow__automation_setup` - Setup automation rules
-- `mcp__claude-flow__pipeline_create` - Create CI/CD pipelines
-- `mcp__claude-flow__scheduler_manage` - Manage task scheduling
-- `mcp__claude-flow__trigger_setup` - Setup event triggers
-- `mcp__claude-flow__workflow_template` - Manage workflow templates
-- `mcp__claude-flow__batch_process` - Batch processing
-- `mcp__claude-flow__parallel_execute` - Execute tasks in parallel
+- `mcp__ruflo__workflow_create` - Create custom workflows
+- `mcp__ruflo__workflow_execute` - Execute predefined workflows
+- `mcp__ruflo__workflow_export` - Export workflow definitions
+- `mcp__ruflo__sparc_mode` - Run SPARC development modes
+- `mcp__ruflo__automation_setup` - Setup automation rules
+- `mcp__ruflo__pipeline_create` - Create CI/CD pipelines
+- `mcp__ruflo__scheduler_manage` - Manage task scheduling
+- `mcp__ruflo__trigger_setup` - Setup event triggers
+- `mcp__ruflo__workflow_template` - Manage workflow templates
+- `mcp__ruflo__batch_process` - Batch processing
+- `mcp__ruflo__parallel_execute` - Execute tasks in parallel
 
 ### 🐙 GITHUB INTEGRATION (8 tools):
 
-- `mcp__claude-flow__github_repo_analyze` - Repository analysis
-- `mcp__claude-flow__github_pr_manage` - Pull request management
-- `mcp__claude-flow__github_issue_track` - Issue tracking & triage
-- `mcp__claude-flow__github_release_coord` - Release coordination
-- `mcp__claude-flow__github_workflow_auto` - Workflow automation
-- `mcp__claude-flow__github_code_review` - Automated code review
-- `mcp__claude-flow__github_sync_coord` - Multi-repo sync coordination
-- `mcp__claude-flow__github_metrics` - Repository metrics
+- `mcp__ruflo__github_repo_analyze` - Repository analysis
+- `mcp__ruflo__github_pr_manage` - Pull request management
+- `mcp__ruflo__github_issue_track` - Issue tracking & triage
+- `mcp__ruflo__github_release_coord` - Release coordination
+- `mcp__ruflo__github_workflow_auto` - Workflow automation
+- `mcp__ruflo__github_code_review` - Automated code review
+- `mcp__ruflo__github_sync_coord` - Multi-repo sync coordination
+- `mcp__ruflo__github_metrics` - Repository metrics
 
 ### 🤖 DYNAMIC AGENT ARCHITECTURE (8 tools):
 
-- `mcp__claude-flow__daa_agent_create` - Create dynamic agents
-- `mcp__claude-flow__daa_capability_match` - Match capabilities to tasks
-- `mcp__claude-flow__daa_resource_alloc` - Resource allocation
-- `mcp__claude-flow__daa_lifecycle_manage` - Agent lifecycle management
-- `mcp__claude-flow__daa_communication` - Inter-agent communication
-- `mcp__claude-flow__daa_consensus` - Consensus mechanisms
-- `mcp__claude-flow__daa_fault_tolerance` - Fault tolerance & recovery
-- `mcp__claude-flow__daa_optimization` - Performance optimization
+- `mcp__ruflo__daa_agent_create` - Create dynamic agents
+- `mcp__ruflo__daa_capability_match` - Match capabilities to tasks
+- `mcp__ruflo__daa_resource_alloc` - Resource allocation
+- `mcp__ruflo__daa_lifecycle_manage` - Agent lifecycle management
+- `mcp__ruflo__daa_communication` - Inter-agent communication
+- `mcp__ruflo__daa_consensus` - Consensus mechanisms
+- `mcp__ruflo__daa_fault_tolerance` - Fault tolerance & recovery
+- `mcp__ruflo__daa_optimization` - Performance optimization
 
 ### ⚙️ SYSTEM & UTILITIES (8 tools):
 
-- `mcp__claude-flow__terminal_execute` - Execute terminal commands
-- `mcp__claude-flow__config_manage` - Configuration management
-- `mcp__claude-flow__features_detect` - Feature detection
-- `mcp__claude-flow__security_scan` - Security scanning
-- `mcp__claude-flow__backup_create` - Create system backups
-- `mcp__claude-flow__restore_system` - System restoration
-- `mcp__claude-flow__log_analysis` - Log analysis & insights
-- `mcp__claude-flow__diagnostic_run` - System diagnostics
+- `mcp__ruflo__terminal_execute` - Execute terminal commands
+- `mcp__ruflo__config_manage` - Configuration management
+- `mcp__ruflo__features_detect` - Feature detection
+- `mcp__ruflo__security_scan` - Security scanning
+- `mcp__ruflo__backup_create` - Create system backups
+- `mcp__ruflo__restore_system` - System restoration
+- `mcp__ruflo__log_analysis` - Log analysis & insights
+- `mcp__ruflo__diagnostic_run` - System diagnostics
 
 ---
 
@@ -125,7 +125,7 @@ You are the Queen coordinator of a Hive Mind swarm with collective intelligence 
 
 1. **Check for "continue" keyword** in `{{ TASK_DESCRIPTION }}`:
    - If found, retrieve last session:
-     `mcp__claude-flow__memory_usage({ action: "retrieve", key: "hive/last-session", namespace: "global" })`
+     `mcp__ruflo__memory_usage({ action: "retrieve", key: "hive/last-session", namespace: "global" })`
    - Use the retrieved namespace for this session
 
 2. **Check for explicit hive name** in `{{ TASK_DESCRIPTION }}`:
@@ -138,7 +138,7 @@ You are the Queen coordinator of a Hive Mind swarm with collective intelligence 
 
 4. **Store session for continuation**:
    - Always save current session:
-     `mcp__claude-flow__memory_usage({ action: "store", key: "hive/last-session", value: "{your-namespace}", namespace: "global" })`
+     `mcp__ruflo__memory_usage({ action: "store", key: "hive/last-session", value: "{your-namespace}", namespace: "global" })`
 
 **Example usage:**
 

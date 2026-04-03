@@ -1,9 +1,9 @@
-# Claude and Claude Flow Complete Integration Guide
+# Claude and Ruflo Complete Integration Guide
 
 ## ✅ Integration Complete!
 
-All Claude and Claude Flow components have been successfully integrated into the Wundr
-computer-setup scripts and CLI flow.
+All Claude and Ruflo components have been successfully integrated into the Wundr computer-setup
+scripts and CLI flow.
 
 ## 📦 What's Been Integrated
 
@@ -59,7 +59,7 @@ computer-setup scripts and CLI flow.
 
 ### 4. **Profile Integration**
 
-All developer profiles now include Claude and Claude Flow:
+All developer profiles now include Claude and Ruflo:
 
 - **Frontend**: Claude + mobile-dev agent
 - **Backend**: Claude + backend-dev, system-architect agents
@@ -114,13 +114,13 @@ wundr claude-init --interactive
 - `~/.claude/settings.json` - Main Claude configuration
 - `~/.claude/agents/*.json` - 54 agent configurations
 - `~/.claude/browser-extension/` - Chrome extension files
-- `~/.claude/.claude-flow/config.json` - Claude Flow settings
+- `~/.claude/.ruflo/config.json` - Ruflo settings
 - `~/.claude/.env.*` - MCP tool API configurations
 
 ### Project-Specific
 
 - `CLAUDE.md` - Project-specific Claude configuration
-- `.claude-flow/config.json` - Project Claude Flow settings
+- `.ruflo/config.json` - Project Ruflo settings
 - `.claude/agents/` - Project-specific agents
 - `.claude/hooks/` - Quality enforcement hooks
 
@@ -172,7 +172,7 @@ wundr claude-init --interactive
 
 ## ✨ Advanced Features
 
-### Claude Flow Orchestration
+### Ruflo Orchestration
 
 - SPARC methodology integration
 - Swarm coordination with multiple topologies
@@ -214,8 +214,8 @@ wundr claude-setup validate --fix
 # Check Claude CLI
 claude --version
 
-# Check Claude Flow
-npx claude-flow@alpha --version
+# Check Ruflo
+npx ruflo@latest --version
 
 # Check MCP servers
 ~/.claude/validate-mcp.sh
@@ -242,24 +242,24 @@ npx claude-flow@alpha --version
    wundr claude-init
    ```
 
-4. **Start Using Claude Flow**:
+4. **Start Using Ruflo**:
    ```bash
-   npx claude-flow@alpha sparc tdd "your feature"
+   npx ruflo@latest sparc tdd "your feature"
    ```
 
 ## 📚 Documentation References
 
-- Claude Flow: https://github.com/ruvnet/claude-flow
+- Ruflo: https://github.com/ruvnet/ruflo
 - MCP Protocol: https://modelcontextprotocol.io
 - Wundr CLI: `/packages/@wundr/cli/README.md`
 - Computer Setup: `/packages/@wundr/computer-setup/README.md`
 
 ## 🔄 Updates & Maintenance
 
-### Update Claude Flow
+### Update Ruflo
 
 ```bash
-npm update -g claude-flow@alpha
+npm update -g ruflo@latest
 ```
 
 ### Update MCP Tools
@@ -297,5 +297,5 @@ wundr claude-setup agents --profile fullstack
 **Integration Status**: ✅ **COMPLETE**
 
 All scripts and commands are fully integrated into the main computer-setup flow and CLI commands.
-Claude and Claude Flow will be automatically installed and configured when running any of the setup
+Claude and Ruflo will be automatically installed and configured when running any of the setup
 commands.

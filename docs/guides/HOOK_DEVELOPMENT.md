@@ -1,7 +1,7 @@
-# Hook Development Guide: Custom Automation with Claude Flow
+# Hook Development Guide: Custom Automation with Ruflo
 
-Complete guide to creating and customizing hooks for automated workflows in Claude Flow integration
-with Claude Code.
+Complete guide to creating and customizing hooks for automated workflows in Ruflo integration with
+Claude Code.
 
 ## Table of Contents
 
@@ -17,8 +17,8 @@ with Claude Code.
 
 ## Hook System Overview
 
-Hooks are automated scripts that run at specific points in the Claude Flow workflow, enabling
-powerful automation and customization.
+Hooks are automated scripts that run at specific points in the Ruflo workflow, enabling powerful
+automation and customization.
 
 ### Hook Architecture
 
@@ -72,7 +72,7 @@ User Action / Agent Task
 Runs before task execution begins.
 
 ```bash
-npx claude-flow@alpha hooks pre-task \
+npx ruflo@latest hooks pre-task \
   --description "Implement user authentication" \
   --agent-type backend-dev
 ```
@@ -90,7 +90,7 @@ npx claude-flow@alpha hooks pre-task \
 Runs before file editing.
 
 ```bash
-npx claude-flow@alpha hooks pre-edit \
+npx ruflo@latest hooks pre-edit \
   --file src/auth/login.ts \
   --backup true
 ```
@@ -109,7 +109,7 @@ Runs before git commit.
 
 ```bash
 # Automatically installed
-npx claude-flow@alpha hooks install
+npx ruflo@latest hooks install
 ```
 
 **Default Actions**:
@@ -127,7 +127,7 @@ npx claude-flow@alpha hooks install
 Runs after file is edited.
 
 ```bash
-npx claude-flow@alpha hooks post-edit \
+npx ruflo@latest hooks post-edit \
   --file src/auth/login.ts \
   --memory-key "auth/login/updated"
 ```
@@ -145,7 +145,7 @@ npx claude-flow@alpha hooks post-edit \
 Runs after task completion.
 
 ```bash
-npx claude-flow@alpha hooks post-task \
+npx ruflo@latest hooks post-task \
   --task-id task-123 \
   --success true
 ```
@@ -177,7 +177,7 @@ Runs after git commit.
 Runs at beginning of session.
 
 ```bash
-npx claude-flow@alpha hooks session-start \
+npx ruflo@latest hooks session-start \
   --session-id swarm-$(date +%s)
 ```
 
@@ -194,7 +194,7 @@ npx claude-flow@alpha hooks session-start \
 Runs to restore previous session.
 
 ```bash
-npx claude-flow@alpha hooks session-restore \
+npx ruflo@latest hooks session-restore \
   --session-id swarm-1234567890
 ```
 
@@ -211,7 +211,7 @@ npx claude-flow@alpha hooks session-restore \
 Runs to save session state.
 
 ```bash
-npx claude-flow@alpha hooks session-save \
+npx ruflo@latest hooks session-save \
   --session-id swarm-1234567890 \
   --compress true
 ```
@@ -229,7 +229,7 @@ npx claude-flow@alpha hooks session-save \
 Runs at end of session.
 
 ```bash
-npx claude-flow@alpha hooks session-end \
+npx ruflo@latest hooks session-end \
   --export-metrics true \
   --generate-summary true
 ```
@@ -249,7 +249,7 @@ npx claude-flow@alpha hooks session-end \
 Send notifications to various channels.
 
 ```bash
-npx claude-flow@alpha hooks notify \
+npx ruflo@latest hooks notify \
   --message "Feature implementation complete" \
   --channels "slack,email" \
   --priority high
@@ -259,7 +259,7 @@ npx claude-flow@alpha hooks notify \
 
 ### Basic Custom Hook
 
-Create `.claude-flow/hooks/my-hook.js`:
+Create `.ruflo/hooks/my-hook.js`:
 
 ```javascript
 module.exports = {
@@ -371,15 +371,15 @@ module.exports = {
 
 ```bash
 # Register the hook
-npx claude-flow@alpha hooks register \
-  --file .claude-flow/hooks/my-hook.js
+npx ruflo@latest hooks register \
+  --file .ruflo/hooks/my-hook.js
 
 # Verify registration
-npx claude-flow@alpha hooks list --custom
+npx ruflo@latest hooks list --custom
 
 # Enable/disable
-npx claude-flow@alpha hooks enable my-custom-hook
-npx claude-flow@alpha hooks disable my-custom-hook
+npx ruflo@latest hooks enable my-custom-hook
+npx ruflo@latest hooks disable my-custom-hook
 ```
 
 ### Git Hook Integration
@@ -389,8 +389,8 @@ Create `.git/hooks/pre-commit`:
 ```bash
 #!/bin/bash
 
-# Run Claude Flow pre-commit hooks
-npx claude-flow@alpha hooks pre-commit
+# Run Ruflo pre-commit hooks
+npx ruflo@latest hooks pre-commit
 
 # Exit with hook status
 exit $?
@@ -734,15 +734,15 @@ module.exports = {
 ### Pattern 5: Plugin Hook System
 
 ```javascript
-// .claude-flow/hooks/plugin-system.js
+// .ruflo/hooks/plugin-system.js
 module.exports = {
   name: 'plugin-hook-system',
 
   // Plugins to load
   plugins: [
-    '@claude-flow/plugin-prettier',
-    '@claude-flow/plugin-eslint',
-    '@claude-flow/plugin-jest',
+    '@ruflo/plugin-prettier',
+    '@ruflo/plugin-eslint',
+    '@ruflo/plugin-jest',
     './custom-plugins/my-plugin',
   ],
 
@@ -786,7 +786,7 @@ class Plugin {
 
 ### Hook Configuration File
 
-Create `.claude-flow/hooks.config.json`:
+Create `.ruflo/hooks.config.json`:
 
 ```json
 {
@@ -860,7 +860,7 @@ module.exports = {
 ### Example 1: Auto-Documentation Hook
 
 ```javascript
-// .claude-flow/hooks/auto-docs.js
+// .ruflo/hooks/auto-docs.js
 module.exports = {
   name: 'auto-documentation',
   type: 'post-edit',
@@ -923,7 +923,7 @@ module.exports = {
 ### Example 2: Performance Tracking Hook
 
 ```javascript
-// .claude-flow/hooks/performance-tracker.js
+// .ruflo/hooks/performance-tracker.js
 module.exports = {
   name: 'performance-tracker',
   type: 'post-task',
@@ -978,7 +978,7 @@ module.exports = {
 ### Example 3: Test Coverage Enforcement Hook
 
 ```javascript
-// .claude-flow/hooks/coverage-enforcer.js
+// .ruflo/hooks/coverage-enforcer.js
 module.exports = {
   name: 'coverage-enforcer',
   type: 'pre-commit',
@@ -1038,7 +1038,7 @@ module.exports = {
 ### Example 4: Dependency Security Scanner Hook
 
 ```javascript
-// .claude-flow/hooks/security-scanner.js
+// .ruflo/hooks/security-scanner.js
 module.exports = {
   name: 'security-scanner',
   type: 'post-install',
@@ -1230,7 +1230,7 @@ module.exports = {
 
 ```javascript
 // tests/hooks/my-hook.test.js
-const hook = require('../../.claude-flow/hooks/my-hook');
+const hook = require('../../.ruflo/hooks/my-hook');
 
 describe('my-hook', () => {
   it('should format code', async () => {
@@ -1264,11 +1264,11 @@ describe('my-hook', () => {
 
 ```bash
 # Test hook in isolation
-npx claude-flow@alpha hooks test my-hook \
+npx ruflo@latest hooks test my-hook \
   --context test-context.json
 
 # Test hook chain
-npx claude-flow@alpha hooks test-chain \
+npx ruflo@latest hooks test-chain \
   --hooks "format,lint,test" \
   --context test-context.json
 ```
@@ -1277,12 +1277,12 @@ npx claude-flow@alpha hooks test-chain \
 
 ```bash
 # Enable hook debugging
-npx claude-flow@alpha hooks debug my-hook \
+npx ruflo@latest hooks debug my-hook \
   --verbose \
   --log-file hooks.log
 
 # Trace hook execution
-npx claude-flow@alpha hooks trace \
+npx ruflo@latest hooks trace \
   --session-id swarm-123
 ```
 

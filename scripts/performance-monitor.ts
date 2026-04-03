@@ -30,7 +30,7 @@ async function main() {
     const report = await analyzer.analyzePostChangePerformance();
 
     // Save detailed report
-    const reportPath = `/Users/layla/wundr/.claude-flow/metrics/performance-impact-report.json`;
+    const reportPath = `/Users/layla/wundr/.ruflo/metrics/performance-impact-report.json`;
     await analyzer.saveReport(report, reportPath);
 
     // Display summary
@@ -50,11 +50,18 @@ async function main() {
     }
 
     // Performance verdict
-    if (report.impact.overallImpact === 'negative' && report.impact.severity === 'critical') {
-      console.log('🔴 VERDICT: CRITICAL PERFORMANCE REGRESSION - IMMEDIATE ACTION REQUIRED');
+    if (
+      report.impact.overallImpact === 'negative' &&
+      report.impact.severity === 'critical'
+    ) {
+      console.log(
+        '🔴 VERDICT: CRITICAL PERFORMANCE REGRESSION - IMMEDIATE ACTION REQUIRED'
+      );
       process.exit(1);
     } else if (report.impact.overallImpact === 'negative') {
-      console.log('🟡 VERDICT: PERFORMANCE DEGRADATION DETECTED - REVIEW RECOMMENDED');
+      console.log(
+        '🟡 VERDICT: PERFORMANCE DEGRADATION DETECTED - REVIEW RECOMMENDED'
+      );
       process.exit(1);
     } else if (report.impact.overallImpact === 'positive') {
       console.log('🟢 VERDICT: PERFORMANCE IMPROVEMENTS DETECTED');
@@ -63,7 +70,6 @@ async function main() {
     }
 
     console.log(`\n📄 Detailed report saved: ${reportPath}`);
-
   } catch (error) {
     logger.error('Performance analysis failed', { error });
     console.error('❌ Performance analysis failed:', error.message);

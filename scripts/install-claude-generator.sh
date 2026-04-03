@@ -83,7 +83,7 @@ cat > "$HOME/.wundr/config.json" << 'EOF'
     "cacheDir": "$HOME/.wundr/cache"
   },
   "integrations": {
-    "claudeFlow": {
+    "ruflo": {
       "enabled": true,
       "autoInstall": true
     },

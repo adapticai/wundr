@@ -254,19 +254,19 @@ EOF
 fi
 
 # -----------------------------------------------------------------------------
-# CLAUDE-FLOW INTEGRATION
+# RUFLO INTEGRATION
 # -----------------------------------------------------------------------------
 
 echo ""
-echo "--- Claude-Flow Integration ---"
+echo "--- Ruflo Integration ---"
 
 if command -v npx &> /dev/null; then
-    if npx claude-flow@alpha --version &> /dev/null 2>&1; then
-        echo "Storing task completion in Claude-Flow..."
-        npx claude-flow@alpha hooks post-task --task-id "$TASK_ID" 2>/dev/null || echo "  Post-task hook skipped"
-        npx claude-flow@alpha hooks notify --message "Task completed: $TASK_DESC" 2>/dev/null || echo "  Notification skipped"
+    if npx ruflo@latest --version &> /dev/null 2>&1; then
+        echo "Storing task completion in Ruflo..."
+        npx ruflo@latest hooks post-task --task-id "$TASK_ID" 2>/dev/null || echo "  Post-task hook skipped"
+        npx ruflo@latest hooks notify --message "Task completed: $TASK_DESC" 2>/dev/null || echo "  Notification skipped"
     else
-        echo "Claude-Flow not available"
+        echo "Ruflo not available"
     fi
 fi
 

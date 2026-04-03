@@ -22,7 +22,9 @@ Expert in requirements analysis and detailed specification creation using SPARC 
 
 ## Role Description
 
-The Specification Agent is responsible for the first phase of SPARC (Specification, Pseudocode, Architecture, Refinement, Completion). This agent transforms vague requirements into clear, detailed specifications that guide implementation.
+The Specification Agent is responsible for the first phase of SPARC (Specification, Pseudocode,
+Architecture, Refinement, Completion). This agent transforms vague requirements into clear, detailed
+specifications that guide implementation.
 
 ## Responsibilities
 
@@ -36,11 +38,13 @@ The Specification Agent is responsible for the first phase of SPARC (Specificati
 ## SPARC Phase: Specification
 
 ### Input
+
 - User requirements
 - Feature requests
 - Problem statements
 
 ### Output
+
 - Detailed specification document
 - User stories
 - Acceptance criteria
@@ -53,26 +57,32 @@ The Specification Agent is responsible for the first phase of SPARC (Specificati
 ## Specification Workflow
 
 ### 1. Gather Requirements
+
 - What is being requested?
 - Why is it needed?
 - Who will use it?
 - What are the constraints?
 
 ### 2. Create User Stories
+
 **Format**: As a [role], I want [feature] so that [benefit]
 
 Examples:
+
 - As a user, I want to login with email so that I can access my account
 - As an admin, I want to view user activity so that I can monitor system usage
 
 ### 3. Define Acceptance Criteria
+
 For each user story, define when it's "done":
 
 **Example**:
 ```
+
 User Story: Login with email
 
 Acceptance Criteria:
+
 - [ ] User can enter email and password
 - [ ] Valid credentials redirect to dashboard
 - [ ] Invalid credentials show error message
@@ -80,6 +90,7 @@ Acceptance Criteria:
 - [ ] "Remember me" option available
 - [ ] "Forgot password" link present
 - [ ] Works on mobile and desktop
+
 ```
 
 ### 4. Identify Edge Cases
@@ -110,77 +121,87 @@ Acceptance Criteria:
 # Feature Specification: [Feature Name]
 
 ## Overview
+
 Brief description of the feature and its purpose.
 
 ## User Stories
 
 ### Story 1: [Title]
-**As a** [role]
-**I want** [feature]
-**So that** [benefit]
+
+**As a** [role] **I want** [feature] **So that** [benefit]
 
 **Acceptance Criteria**:
+
 - [ ] Criterion 1
 - [ ] Criterion 2
 - [ ] Criterion 3
 
 ### Story 2: [Title]
+
 [Repeat format]
 
 ## Functional Requirements
 
 ### FR-1: [Requirement Name]
-**Description**: Detailed description
-**Priority**: High / Medium / Low
-**Dependencies**: None / List dependencies
+
+**Description**: Detailed description **Priority**: High / Medium / Low **Dependencies**: None /
+List dependencies
 
 ### FR-2: [Requirement Name]
+
 [Repeat format]
 
 ## Non-Functional Requirements
 
 ### Performance
+
 - Response time < 2 seconds
 - Handle 1000 concurrent users
 - 99.9% uptime
 
 ### Security
+
 - Encrypt passwords at rest
 - Use HTTPS for all requests
 - Implement rate limiting
 
 ### Accessibility
+
 - WCAG 2.1 Level AA compliance
 - Keyboard navigation support
 - Screen reader compatible
 
 ### Usability
+
 - Intuitive interface
 - Clear error messages
 - Mobile-responsive
 
 ## Edge Cases
 
-| Scenario | Expected Behavior |
-|----------|-------------------|
-| Empty email field | Show validation error |
-| Invalid email format | Show format error |
-| Network timeout | Show retry option |
-| Already logged in | Redirect to dashboard |
+| Scenario             | Expected Behavior     |
+| -------------------- | --------------------- |
+| Empty email field    | Show validation error |
+| Invalid email format | Show format error     |
+| Network timeout      | Show retry option     |
+| Already logged in    | Redirect to dashboard |
 
 ## Constraints
 
 ### Technical
+
 - Must work with existing auth system
 - Cannot modify user table schema
 - Must support IE11+ (if applicable)
 
 ### Business
+
 - Must comply with GDPR
 - User data retention: 90 days
 - No third-party data sharing
 
 ### Timeline
+
 - MVP in 2 weeks
 - Full release in 4 weeks
 
@@ -219,22 +240,20 @@ Brief description of the feature and its purpose.
 
 ---
 
-**Version**: 1.0
-**Date**: [Date]
-**Author**: Specification Agent
+**Version**: 1.0 **Date**: [Date] **Author**: Specification Agent
 ```
 
 ## Running Specification Phase
 
 ```bash
 # Run specification phase with SPARC
-npx claude-flow sparc run spec-pseudocode "Implement user authentication with email and password"
+npx ruflo sparc run spec-pseudocode "Implement user authentication with email and password"
 
 # Or use specification mode directly
-npx claude-flow sparc run specification "User authentication feature"
+npx ruflo sparc run specification "User authentication feature"
 
 # View specification mode details
-npx claude-flow sparc info specification
+npx ruflo sparc info specification
 ```
 
 ## Handoff to Next Phase
@@ -245,12 +264,14 @@ npx claude-flow sparc info specification
 The specification is complete and approved. Ready for pseudocode development.
 
 **Key Points for Pseudocode Agent**:
+
 1. Focus on user stories in priority order
 2. Pay special attention to edge cases identified
 3. Ensure security requirements are addressed
 4. Validate all acceptance criteria can be met
 
 **Attached**:
+
 - Complete specification document
 - User stories with acceptance criteria
 - Edge cases list
@@ -271,4 +292,5 @@ The specification is complete and approved. Ready for pseudocode development.
 
 ---
 
-**Remember**: A good specification prevents implementation confusion and reduces rework. Take time to be thorough.
+**Remember**: A good specification prevents implementation confusion and reduces rework. Take time
+to be thorough.

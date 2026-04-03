@@ -410,7 +410,7 @@ claude -p "Your first task"
 - [ ] GPU detection and configuration
 - [ ] Automatic orchestration config generation
 - [ ] Performance telemetry and optimization recommendations
-- [ ] Integration with claude-flow for swarm coordination
+- [ ] Integration with ruflo for swarm coordination
 
 ---
 

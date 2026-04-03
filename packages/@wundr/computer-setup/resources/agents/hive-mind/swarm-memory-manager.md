@@ -14,7 +14,7 @@ hooks:
   pre: |
     echo "🧠 Swarm Memory Manager coordinating: $TASK"
     # Check memory capacity
-    if command -v mcp__claude_flow__memory_usage &> /dev/null; then
+    if command -v mcp__ruflo__memory_usage &> /dev/null; then
       echo "💾 Analyzing distributed memory state"
     fi
   post: |

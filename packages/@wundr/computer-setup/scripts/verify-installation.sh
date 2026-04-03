@@ -1,10 +1,10 @@
 #!/bin/bash
-# Verify Claude Code & Claude Flow Installation
+# Verify Claude Code & Ruflo Installation
 # This script validates that the computer-setup installed everything correctly
 
 set -e
 
-echo "🔍 Verifying Claude Code & Claude Flow Installation..."
+echo "🔍 Verifying Claude Code & Ruflo Installation..."
 echo ""
 
 ERRORS=0
@@ -83,23 +83,23 @@ if [ -f "$HOME/.claude/settings.json" ]; then
   check_pass "settings.json exists"
 
   # Check for MCP servers
-  if grep -q "claude-flow" "$HOME/.claude/settings.json"; then
-    check_pass "  Claude Flow MCP configured"
+  if grep -q "ruflo" "$HOME/.claude/settings.json"; then
+    check_pass "  Ruflo MCP configured"
   else
-    check_warn "  Claude Flow MCP not found in settings"
+    check_warn "  Ruflo MCP not found in settings"
   fi
 else
   check_fail "settings.json not found"
 fi
 
-# 6. Check Claude Flow
+# 6. Check Ruflo
 echo ""
-echo "🌊 Checking Claude Flow..."
-if npx claude-flow@alpha --version >/dev/null 2>&1; then
-  VERSION=$(npx claude-flow@alpha --version 2>&1 | head -1)
-  check_pass "Claude Flow available: $VERSION"
+echo "🌊 Checking Ruflo..."
+if npx ruflo@latest --version >/dev/null 2>&1; then
+  VERSION=$(npx ruflo@latest --version 2>&1 | head -1)
+  check_pass "Ruflo available: $VERSION"
 else
-  check_fail "Claude Flow not available"
+  check_fail "Ruflo not available"
 fi
 
 # 7. Check shell configuration
@@ -161,7 +161,7 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 if [ $ERRORS -eq 0 ] && [ $WARNINGS -eq 0 ]; then
   echo -e "${GREEN}✓ All checks passed!${NC}"
   echo ""
-  echo "🎉 Claude Code & Claude Flow are fully installed and configured."
+  echo "🎉 Claude Code & Ruflo are fully installed and configured."
   echo ""
   echo "Next steps:"
   echo "  1. Restart your terminal or run: source ~/.zshrc"

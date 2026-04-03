@@ -12,11 +12,11 @@ import type { BaseInstaller } from './index';
 const logger = new Logger({ name: 'ClaudeInstaller' });
 
 /**
- * Comprehensive Claude and Claude-Flow installer for complete AI integration
- * Includes: Claude CLI, Claude Flow, MCP tools, agents, and Chrome browser
+ * Comprehensive Claude and Ruflo installer for complete AI integration
+ * Includes: Claude CLI, Ruflo, MCP tools, agents, and Chrome browser
  */
 export class ClaudeInstaller implements BaseInstaller {
-  name = 'Claude Code & Claude Flow';
+  name = 'Claude Code & Ruflo';
 
   private readonly homeDir = homedir();
   private readonly claudeDir = path.join(this.homeDir, '.claude');
@@ -39,7 +39,7 @@ export class ClaudeInstaller implements BaseInstaller {
   );
   private readonly bundledScriptsDir = path.join(this.resourcesDir, 'scripts');
   private readonly mcpServers = [
-    'claude-flow',
+    'ruflo',
     'ruv-swarm',
     'firecrawl',
     'context7',
@@ -146,6 +146,20 @@ export class ClaudeInstaller implements BaseInstaller {
     });
 
     steps.push({
+      id: 'claude-plugins',
+      name: 'Install Plugins',
+      description:
+        'Install Claude Code plugins (superpowers, playwright, etc.)',
+      category: 'ai',
+      required: true,
+      dependencies: ['claude-cli'],
+      estimatedTime: 120,
+      installer: async () => {
+        await this.installPlugins();
+      },
+    });
+
+    steps.push({
       id: 'claude-agents',
       name: 'Setup Agents',
       description: 'Configure 54 specialized agents',
@@ -207,7 +221,7 @@ export class ClaudeInstaller implements BaseInstaller {
   }
 
   private async execute(): Promise<void> {
-    logger.info('Installing Claude Code & Claude Flow ecosystem...');
+    logger.info('Installing Claude Code & Ruflo ecosystem...');
 
     // Step 1: Install Claude CLI if not present
     await this.installClaudeCLI();
@@ -220,6 +234,9 @@ export class ClaudeInstaller implements BaseInstaller {
 
     // Step 4: Install and configure MCP servers
     await this.installMCPServers();
+
+    // Step 4.5: Install Claude Code plugins
+    await this.installPlugins();
 
     // Step 5: Configure Claude settings with hooks
     await this.configureClaudeSettings();
@@ -242,13 +259,13 @@ export class ClaudeInstaller implements BaseInstaller {
     // Step 10: Setup hardware-adaptive optimization scripts
     await this.setupOptimizationScripts();
 
-    logger.info('Claude Code & Claude Flow ecosystem installed successfully!');
+    logger.info('Claude Code & Ruflo ecosystem installed successfully!');
   }
 
   async check(): Promise<boolean> {
     try {
       let claudeCliInstalled = false;
-      let claudeFlowInstalled = false;
+      let rufloInstalled = false;
 
       // Check if Claude CLI is installed (it might not exist yet as a global CLI)
       try {
@@ -271,22 +288,22 @@ export class ClaudeInstaller implements BaseInstaller {
         logger.debug('Claude CLI not found - will use npx fallback');
       }
 
-      // Check if Claude Flow is available
+      // Check if Ruflo is available
       try {
-        // Just check if we can run claude-flow through npx
+        // Just check if we can run ruflo through npx
         // Increased timeout as npx might need to download the package
-        execSync('npx claude-flow@alpha --version', {
+        execSync('npx ruflo@latest --version', {
           encoding: 'utf8',
           stdio: 'pipe',
           timeout: 30000, // 30 seconds timeout
         });
-        claudeFlowInstalled = true;
+        rufloInstalled = true;
       } catch (error: unknown) {
         // Log the error for debugging
         const errorMessage =
           error instanceof Error ? error.message : String(error);
-        logger.debug('Claude Flow check failed:', errorMessage);
-        claudeFlowInstalled = false;
+        logger.debug('Ruflo check failed:', errorMessage);
+        rufloInstalled = false;
       }
 
       // Check if Chrome is installed (optional for Browser MCP)
@@ -302,9 +319,9 @@ export class ClaudeInstaller implements BaseInstaller {
       // Check if .claude directory exists with proper structure
       const claudeDirExists = fsSync.existsSync(this.claudeDir);
 
-      // More lenient validation - Claude Flow is the main requirement
+      // More lenient validation - Ruflo is the main requirement
       // Chrome is optional, Claude CLI might not exist as a global command
-      return claudeFlowInstalled && claudeDirExists;
+      return rufloInstalled && claudeDirExists;
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
@@ -313,8 +330,60 @@ export class ClaudeInstaller implements BaseInstaller {
     }
   }
 
+  private async removeOldShellAliases(): Promise<void> {
+    const shellConfigs = [
+      path.join(this.homeDir, '.zshrc'),
+      path.join(this.homeDir, '.bashrc'),
+      path.join(this.homeDir, '.bash_profile'),
+    ];
+
+    const oldBlockMarkers = [
+      'Claude Code - Resource Managed Configuration',
+      'Claude Code - Hardware-Adaptive Configuration',
+    ];
+
+    for (const configFile of shellConfigs) {
+      try {
+        const exists = await fs
+          .access(configFile)
+          .then(() => true)
+          .catch(() => false);
+        if (!exists) continue;
+
+        let content = await fs.readFile(configFile, 'utf8');
+        let modified = false;
+
+        for (const marker of oldBlockMarkers) {
+          if (!content.includes(marker)) continue;
+
+          // Remove the block delimited by the banner lines containing the marker
+          // Pattern: from the opening ═══ line through the closing ═══ line
+          const blockRegex =
+            /\n# ═[═]+\n# [^\n]*(?:Claude Code - Resource Managed Configuration|Claude Code - Hardware-Adaptive Configuration)[^\n]*\n(?:#[^\n]*\n)*# ═[═]+\n/g;
+          const newContent = content.replace(blockRegex, '\n');
+          if (newContent !== content) {
+            content = newContent;
+            modified = true;
+            logger.info(
+              `Removed old Claude alias block from ${path.basename(configFile)}`
+            );
+          }
+        }
+
+        if (modified) {
+          await fs.writeFile(configFile, content);
+        }
+      } catch {
+        // Shell config file doesn't exist or is not readable - skip silently
+      }
+    }
+  }
+
   private async installClaudeCLI(): Promise<void> {
     logger.info('Installing Claude Code CLI...');
+
+    // Remove any old alias blocks from shell configs before clean install
+    await this.removeOldShellAliases();
 
     // Install @anthropic-ai/claude-code globally via npm
     logger.info('Installing @anthropic-ai/claude-code globally...');
@@ -328,187 +397,6 @@ export class ClaudeInstaller implements BaseInstaller {
         error instanceof Error ? error.message : String(error);
       logger.error('Failed to install Claude Code CLI:', errorMessage);
       throw error;
-    }
-
-    // Create a global wrapper script that uses resource manager for session pooling
-    const wrapperScript = `#!/bin/bash
-# Claude Code CLI Wrapper - Resource Managed
-# Auto-generated by Wundr Computer Setup
-#
-# Features enabled:
-# - Session pooling (limits concurrent Claude instances)
-# - Stale session cleanup
-# - Hardware-adaptive V8 memory optimization
-#
-# To bypass resource manager: CLAUDE_SKIP_RESOURCE_MANAGER=1 claude [args]
-
-# Load NVM if available
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \\. "$NVM_DIR/nvm.sh"
-
-# Check for bypass flag
-if [ "\${CLAUDE_SKIP_RESOURCE_MANAGER:-}" = "1" ]; then
-  # Direct execution without resource manager
-  CLAUDE_BIN=$(command -v claude 2>/dev/null || find "$NVM_DIR/versions/node" -name claude -type f 2>/dev/null | head -n 1)
-  if [ -n "$CLAUDE_BIN" ] && [ "$CLAUDE_BIN" != "$0" ]; then
-    exec "$CLAUDE_BIN" "$@"
-  fi
-  exec npx @anthropic-ai/claude-code "$@"
-fi
-
-# Use resource manager if available (includes session pooling + hardware optimization)
-RESOURCE_MANAGER="$HOME/.claude/scripts/claude-resource-manager"
-if [ -f "$RESOURCE_MANAGER" ] && [ -x "$RESOURCE_MANAGER" ]; then
-  exec "$RESOURCE_MANAGER" "$@"
-fi
-
-# Fallback to hardware-optimized wrapper
-OPTIMIZED="$HOME/.claude/scripts/claude-optimized"
-if [ -f "$OPTIMIZED" ] && [ -x "$OPTIMIZED" ]; then
-  exec "$OPTIMIZED" "$@"
-fi
-
-# Final fallback: find claude binary directly
-CLAUDE_BIN=$(find "$NVM_DIR/versions/node" -name claude -type f 2>/dev/null | head -n 1)
-if [ -n "$CLAUDE_BIN" ]; then
-  exec "$CLAUDE_BIN" "$@"
-fi
-
-# Last resort: use npx
-exec npx @anthropic-ai/claude-code "$@"
-`;
-
-    // Write wrapper to /usr/local/bin/claude
-    const wrapperPath = '/usr/local/bin/claude';
-    const tempFile = '/tmp/claude-wrapper.sh';
-
-    try {
-      // First write to temp location
-      await fs.writeFile(tempFile, wrapperScript);
-      execSync(`chmod +x ${tempFile}`);
-
-      // Try to move to /usr/local/bin (may require sudo)
-      try {
-        execSync(`mv ${tempFile} ${wrapperPath}`, { stdio: 'pipe' });
-        logger.info('Created global claude wrapper at /usr/local/bin/claude');
-      } catch (mvError: unknown) {
-        // If regular mv fails, try with sudo
-        const mvErrorMessage =
-          mvError instanceof Error ? mvError.message : String(mvError);
-        logger.info(
-          `Regular move failed (${mvErrorMessage}), trying with sudo...`
-        );
-        try {
-          execSync(`sudo mv ${tempFile} ${wrapperPath}`, { stdio: 'inherit' });
-          logger.info('Created global claude wrapper at /usr/local/bin/claude');
-        } catch (sudoError: unknown) {
-          const sudoErrorMessage =
-            sudoError instanceof Error ? sudoError.message : String(sudoError);
-          logger.warn(
-            `Could not create /usr/local/bin/claude wrapper: ${sudoErrorMessage}`
-          );
-          logger.warn(
-            'Claude will use shell alias instead (requires terminal restart)'
-          );
-          logger.warn('To install wrapper manually, run:');
-          logger.warn(`sudo mv ${tempFile} ${wrapperPath}`);
-        }
-      }
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      logger.error('Failed to create wrapper script:', errorMessage);
-      logger.warn(
-        'Claude will use shell alias instead (requires terminal restart)'
-      );
-    }
-
-    // Also add to shell configs for redundancy
-    await this.addToShellConfig();
-  }
-
-  private async addToShellConfig(): Promise<void> {
-    const shellConfigs = [
-      path.join(this.homeDir, '.zshrc'),
-      path.join(this.homeDir, '.bashrc'),
-      path.join(this.homeDir, '.bash_profile'),
-    ];
-
-    const configBlock = `
-# ═══════════════════════════════════════════════════════════════════════════
-# Claude Code - Resource Managed Configuration (Auto-generated by Wundr)
-# ═══════════════════════════════════════════════════════════════════════════
-#
-# Features:
-# - Session pooling (limits concurrent Claude instances)
-# - Stale session cleanup
-# - Hardware-adaptive V8 memory optimization
-#
-# To bypass: CLAUDE_SKIP_RESOURCE_MANAGER=1 claude [args]
-
-# Ensure PATH includes usr/local/bin
-export PATH="/usr/local/bin:$PATH"
-
-# Hardware-adaptive V8 memory configuration
-if [ -f "$HOME/.claude/scripts/detect-hardware-limits.js" ]; then
-  eval "$(node $HOME/.claude/scripts/detect-hardware-limits.js export 2>/dev/null)"
-fi
-
-# Alias 'claude' to use resource-managed wrapper (includes session pooling)
-if [ -f "$HOME/.claude/scripts/claude-resource-manager" ]; then
-  alias claude="$HOME/.claude/scripts/claude-resource-manager"
-elif [ -f "$HOME/.claude/scripts/claude-optimized" ]; then
-  # Fallback to hardware-optimized if resource manager not available
-  alias claude="$HOME/.claude/scripts/claude-optimized"
-else
-  # Final fallback to standard claude
-  alias claude='npx @anthropic-ai/claude-code'
-fi
-
-# Convenience aliases for Claude tools
-alias claude-stats='node $HOME/.claude/scripts/detect-hardware-limits.js 2>/dev/null || echo "Optimization scripts not installed"'
-alias claude-cleanup='$HOME/.claude/scripts/claude-resource-manager --cleanup-stale 2>/dev/null || $HOME/.claude/scripts/cleanup-zombies.sh 2>/dev/null || echo "Cleanup script not installed"'
-alias claude-pool-status='$HOME/.claude/scripts/claude-resource-manager --pool-status 2>/dev/null || echo "Resource manager not installed"'
-alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
-
-# ═══════════════════════════════════════════════════════════════════════════
-`;
-
-    for (const configFile of shellConfigs) {
-      try {
-        const exists = await fs
-          .access(configFile)
-          .then(() => true)
-          .catch(() => false);
-        if (exists) {
-          const content = await fs.readFile(configFile, 'utf8');
-          // Check for both old and new config block headers (idempotency)
-          const hasOldConfig = content.includes(
-            'Claude Code - Hardware-Adaptive Configuration'
-          );
-          const hasNewConfig = content.includes(
-            'Claude Code - Resource Managed Configuration'
-          );
-          if (!hasOldConfig && !hasNewConfig) {
-            await fs.appendFile(configFile, configBlock);
-            logger.info(
-              `Added Claude hardware-adaptive and resource-managed config to ${path.basename(configFile)}`
-            );
-          } else if (hasOldConfig && !hasNewConfig) {
-            // Upgrade from old config to new config
-            logger.info(
-              `Existing Claude config found in ${path.basename(configFile)} - run 'source ~/${path.basename(configFile)}' after setup to get resource manager features`
-            );
-          } else {
-            logger.debug(
-              `Claude config already exists in ${path.basename(configFile)}, skipping`
-            );
-          }
-        }
-      } catch {
-        // Shell config file doesn't exist - this is expected behavior
-        // Many systems only have one shell config (e.g., .zshrc but not .bashrc)
-      }
     }
   }
 
@@ -546,7 +434,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
     await fs.mkdir(this.templatesDir, { recursive: true });
     await fs.mkdir(this.hooksDir, { recursive: true });
     await fs.mkdir(this.scriptsDir, { recursive: true });
-    await fs.mkdir(path.join(this.claudeDir, '.claude-flow'), {
+    await fs.mkdir(path.join(this.claudeDir, '.ruflo'), {
       recursive: true,
     });
     await fs.mkdir(path.join(this.claudeDir, '.roo'), { recursive: true });
@@ -600,11 +488,8 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
       }
     };
 
-    // Install Claude Flow
-    installMCP(
-      'claude-flow',
-      'claude mcp add claude-flow npx claude-flow@alpha mcp start'
-    );
+    // Install Ruflo
+    installMCP('ruflo', 'claude mcp add ruflo npx ruflo@latest mcp start');
 
     // Install Firecrawl MCP
     installMCP(
@@ -647,6 +532,57 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
     installMCP('netlify', 'claude mcp add netlify npx @netlify/mcp');
   }
 
+  private async installPlugins(): Promise<void> {
+    logger.info('Installing Claude Code plugins...');
+
+    const plugins = [
+      'agent-sdk-dev',
+      'claude-code-setup',
+      'claude-md-management',
+      'code-review',
+      'code-simplifier',
+      'commit-commands',
+      'context7',
+      'feature-dev',
+      'frontend-design',
+      'github',
+      'greptile',
+      'hookify',
+      'linear',
+      'playwright',
+      'pr-review-toolkit',
+      'ralph-loop',
+      'security-guidance',
+      'serena',
+      'skill-creator',
+      'superpowers',
+      'typescript-lsp',
+    ];
+
+    for (const plugin of plugins) {
+      try {
+        execSync(`claude plugin install ${plugin}@claude-plugins-official`, {
+          stdio: 'pipe',
+          timeout: 60000,
+        });
+        logger.info(`Installed plugin: ${plugin}`);
+      } catch (error: unknown) {
+        const errorObj = error as { stderr?: Buffer; message?: string };
+        const stderr = errorObj.stderr?.toString() || '';
+        if (
+          stderr.includes('already installed') ||
+          stderr.includes('already exists')
+        ) {
+          logger.debug(`Plugin ${plugin} already installed, skipping`);
+        } else {
+          logger.warn(
+            `Failed to install plugin ${plugin}: ${errorObj.message || ''}`
+          );
+        }
+      }
+    }
+  }
+
   private async configureClaudeSettings(): Promise<void> {
     logger.info('Configuring Claude settings with advanced hooks...');
 
@@ -654,8 +590,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
       claudeCodeOptions: {
         enabledMcpjsonServers: this.mcpServers,
         gitAutoCompact: true,
-        gitStatusIgnorePattern:
-          '\\.claude-flow/|\\.roo/|node_modules/|dist/|build/',
+        gitStatusIgnorePattern: '\\.ruflo/|\\.roo/|node_modules/|dist/|build/',
         contextCompactionThreshold: 100000,
         enableHooks: true,
         enableAgentCoordination: true,
@@ -666,14 +601,13 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
         preToolUse: [
           {
             pattern: '.*',
-            command:
-              'npx claude-flow@alpha hooks pre-task --description "${tool}"',
+            command: 'npx ruflo@latest hooks pre-task --description "${tool}"',
             description: 'Initialize task tracking',
           },
           {
             pattern: 'Write|Edit|MultiEdit',
             command:
-              'npx claude-flow@alpha hooks validate-write --file "${file_path}"',
+              'npx ruflo@latest hooks validate-write --file "${file_path}"',
             description: 'Validate file write safety',
           },
         ],
@@ -686,28 +620,27 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
           {
             pattern: '.*',
             command:
-              'npx claude-flow@alpha hooks post-edit --file "${file_path}" --memory-key "swarm/${agent}/${step}"',
+              'npx ruflo@latest hooks post-edit --file "${file_path}" --memory-key "swarm/${agent}/${step}"',
             description: 'Update memory and patterns',
           },
         ],
         sessionStart: [
           {
             command:
-              'npx claude-flow@alpha hooks session-start --profile "${profile}"',
+              'npx ruflo@latest hooks session-start --profile "${profile}"',
             description: 'Initialize session with profile',
           },
         ],
         sessionEnd: [
           {
-            command:
-              'npx claude-flow@alpha hooks session-end --export-metrics true',
+            command: 'npx ruflo@latest hooks session-end --export-metrics true',
             description: 'Export session metrics',
           },
         ],
         preCompactGuidance: [
           {
             command:
-              'npx claude-flow@alpha hooks compact-guidance --preserve-critical true',
+              'npx ruflo@latest hooks compact-guidance --preserve-critical true',
             description: 'Guide context compaction',
           },
         ],
@@ -718,7 +651,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
           'npm run test',
           'npm run lint',
           'npm run typecheck',
-          'npx claude-flow.*',
+          'npx ruflo.*',
           'git status',
           'git diff',
           'git add',
@@ -736,14 +669,14 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
         ],
       },
       mcpServers: {
-        'claude-flow': {
+        ruflo: {
           command: 'npx',
-          args: ['claude-flow@alpha', 'mcp', 'start'],
+          args: ['ruflo@latest', 'mcp', 'start'],
           env: {
-            CLAUDE_FLOW_MEMORY_BACKEND: 'sqlite',
-            CLAUDE_FLOW_MEMORY_PATH: '~/.claude/.claude-flow/memory.db',
-            CLAUDE_FLOW_ENABLE_NEURAL: 'true',
-            CLAUDE_FLOW_ENABLE_METRICS: 'true',
+            RUFLO_MEMORY_BACKEND: 'sqlite',
+            RUFLO_MEMORY_PATH: '~/.claude/.ruflo/memory.db',
+            RUFLO_ENABLE_NEURAL: 'true',
+            RUFLO_ENABLE_METRICS: 'true',
           },
         },
         firecrawl: {
@@ -979,7 +912,9 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
           { encoding: 'utf8' }
         ).trim();
         logger.info(`Installed ${commandCount} slash command files`);
-        logger.info('Available commands: /hive-swarm, /hive-strategic');
+        logger.info(
+          'Available commands: /hive-swarm, /hive-strategic, and 83 agent commands under /agents/'
+        );
       } catch {
         logger.warn('Could not copy bundled command files');
       }
@@ -1011,9 +946,9 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
         enableLearning: true,
       },
       hooks: {
-        preTask: `npx claude-flow@alpha agent init --type ${agentName}`,
-        postTask: `npx claude-flow@alpha agent complete --type ${agentName}`,
-        onError: `npx claude-flow@alpha agent error --type ${agentName}`,
+        preTask: `npx ruflo@latest agent init --type ${agentName}`,
+        postTask: `npx ruflo@latest agent complete --type ${agentName}`,
+        onError: `npx ruflo@latest agent error --type ${agentName}`,
       },
     };
 
@@ -1197,9 +1132,9 @@ if [ -f "package.json" ] && grep -q '"test"' package.json; then
   npm test || exit 1
 fi
 
-# Claude Flow validation
-echo "🤖 Validating with Claude Flow..."
-npx claude-flow@alpha validate --pre-commit || exit 1
+# Ruflo validation
+echo "🤖 Validating with Ruflo..."
+npx ruflo@latest validate --pre-commit || exit 1
 
 echo "✅ All quality checks passed!"`;
 
@@ -1312,7 +1247,7 @@ const claudeMd = \`# Claude Code Configuration - \${projectInfo.name}
 \${isMonorepo ? '- Use monorepo-manager agent for package coordination' : ''}
 
 ## MCP Tools
-- claude-flow: Orchestration and coordination
+- ruflo: Orchestration and coordination
 - firecrawl: Web scraping if needed
 - playwright: E2E testing
 \${hasReact ? '- browser: Real browser testing' : ''}
@@ -1324,9 +1259,9 @@ Generated on: \${new Date().toISOString()}
 fs.writeFileSync('CLAUDE.md', claudeMd);
 console.log('✅ CLAUDE.md generated successfully!');
 
-// Initialize Claude Flow
-console.log('🚀 Initializing Claude Flow...');
-execSync('npx claude-flow@alpha init', { stdio: 'inherit' });
+// Initialize Ruflo
+console.log('🚀 Initializing Ruflo...');
+execSync('npx ruflo@latest init', { stdio: 'inherit' });
 `;
 
     await fs.writeFile(

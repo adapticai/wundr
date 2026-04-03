@@ -148,7 +148,7 @@ Each agent MUST:
 cd .worktrees/agent-[name]
 git fetch origin
 git rebase origin/main
-npx claude-flow@alpha hooks pre-task --description "[task]" --worktree "agent-[name]"
+npx ruflo@latest hooks pre-task --description "[task]" --worktree "agent-[name]"
 ```
 
 **DURING work:**
@@ -157,7 +157,7 @@ npx claude-flow@alpha hooks pre-task --description "[task]" --worktree "agent-[n
 # Regular commits within worktree
 git add .
 git commit -m "[agent]: [description]"
-npx claude-flow@alpha hooks post-edit --file "[file]" --worktree "agent-[name]"
+npx ruflo@latest hooks post-edit --file "[file]" --worktree "agent-[name]"
 ```
 
 **AFTER completing work:**
@@ -171,7 +171,7 @@ gh pr create --title "[Agent] Feature implementation" \
   --body "Completed in worktree: agent-[name]"
 
 # Notify coordination system
-npx claude-flow@alpha hooks post-task --task-id "[task]" --worktree "agent-[name]"
+npx ruflo@latest hooks post-task --task-id "[task]" --worktree "agent-[name]"
 ```
 
 #### 4. Worktree Merge & Integration Strategy
@@ -234,13 +234,13 @@ git worktree add .worktrees/agent-[name] -b feature/[name]-[task] main
 cd .worktrees/agent-[name]
 
 # Register with coordination system
-npx claude-flow@alpha hooks pre-task \
+npx ruflo@latest hooks pre-task \
   --description "[task description]" \
   --agent "[agent-type]" \
   --worktree "agent-[name]"
 
 # Restore session context
-npx claude-flow@alpha hooks session-restore \
+npx ruflo@latest hooks session-restore \
   --session-id "swarm-[id]" \
   --agent "[agent-type]"
 ```
@@ -249,13 +249,13 @@ npx claude-flow@alpha hooks session-restore \
 
 ```bash
 # During implementation
-npx claude-flow@alpha hooks post-edit \
+npx ruflo@latest hooks post-edit \
   --file "[file-path]" \
   --memory-key "swarm/[agent]/[step]" \
   --worktree "agent-[name]"
 
 # Progress notifications
-npx claude-flow@alpha hooks notify \
+npx ruflo@latest hooks notify \
   --message "[what was done]" \
   --agent "[agent-type]" \
   --progress "[percentage]"
@@ -265,14 +265,14 @@ npx claude-flow@alpha hooks notify \
 
 ```bash
 # Complete task
-npx claude-flow@alpha hooks post-task \
+npx ruflo@latest hooks post-task \
   --task-id "[task]" \
   --agent "[agent-type]" \
   --worktree "agent-[name]" \
   --status "complete"
 
 # Export session metrics
-npx claude-flow@alpha hooks session-end \
+npx ruflo@latest hooks session-end \
   --export-metrics true \
   --agent "[agent-type]"
 
@@ -355,7 +355,7 @@ Task('Integration agent: Merge and verify all branches → .worktrees/integratio
 
 ```javascript
 // Coordinator spawns sub-agents
-mcp__claude-flow__agent_spawn({
+mcp__ruflo__agent_spawn({
   type: "hierarchical-coordinator",
   worktree: ".worktrees/coordinator"
 })
@@ -392,7 +392,7 @@ mcp__claude-flow__agent_spawn({
 // Initialize complete swarm environment
 [BatchOperations]:
   // 1. Initialize swarm
-  mcp__claude-flow__swarm_init({
+  mcp__ruflo__swarm_init({
     topology: "mesh",
     maxAgents: 6,
     worktreeEnabled: true
@@ -404,9 +404,9 @@ mcp__claude-flow__agent_spawn({
   Bash("git worktree add .worktrees/agent-reviewer -b feature/reviewer-$(date +%s) main")
 
   // 3. Spawn all agents
-  mcp__claude-flow__agent_spawn({ type: "researcher", worktree: ".worktrees/agent-researcher" })
-  mcp__claude-flow__agent_spawn({ type: "coder", worktree: ".worktrees/agent-coder" })
-  mcp__claude-flow__agent_spawn({ type: "tester", worktree: ".worktrees/agent-tester" })
+  mcp__ruflo__agent_spawn({ type: "researcher", worktree: ".worktrees/agent-researcher" })
+  mcp__ruflo__agent_spawn({ type: "coder", worktree: ".worktrees/agent-coder" })
+  mcp__ruflo__agent_spawn({ type: "tester", worktree: ".worktrees/agent-tester" })
 
   // 4. Create comprehensive todo list
   TodoWrite({
@@ -435,9 +435,9 @@ mcp__claude-flow__agent_spawn({
 
 ```javascript
 // DON'T DO THIS - Multiple sequential messages
-Message 1: mcp__claude-flow__swarm_init
+Message 1: mcp__ruflo__swarm_init
 Message 2: Bash("git worktree add...")
-Message 3: mcp__claude-flow__agent_spawn
+Message 3: mcp__ruflo__agent_spawn
 Message 4: TodoWrite
 Message 5: Write file
 // This breaks parallel coordination and slows everything down!
@@ -878,7 +878,7 @@ CONTRIBUTING.md;
 2. **agent_spawn** - Spawn new agent
 
    ```javascript
-   mcp__claude-flow__agent_spawn({
+   mcp__ruflo__agent_spawn({
      type: "coder" | "tester" | "reviewer" | ...,
      worktree: ".worktrees/agent-[name]",
      config: { ... }
@@ -887,7 +887,7 @@ CONTRIBUTING.md;
 
 3. **task_orchestrate** - Orchestrate tasks
    ```javascript
-   mcp__claude-flow__task_orchestrate({
+   mcp__ruflo__task_orchestrate({
      tasks: [...],
      mode: "parallel" | "sequential",
      worktrees: true
@@ -956,7 +956,7 @@ CONTRIBUTING.md;
 11. **neural_train** - Train neural patterns
 
     ```javascript
-    mcp__claude-flow__neural_train({
+    mcp__ruflo__neural_train({
       patterns: [...],
       mode: "incremental" | "batch"
     })
@@ -975,7 +975,7 @@ CONTRIBUTING.md;
 13. **github_swarm** - GitHub swarm operations
 
     ```javascript
-    mcp__claude-flow__github_swarm({
+    mcp__ruflo__github_swarm({
       operation: "pr" | "issue" | "review",
       config: { ... }
     })
@@ -1114,8 +1114,8 @@ CONTRIBUTING.md;
 ### MCP Setup
 
 ```bash
-# Install Claude Flow MCP
-claude mcp add claude-flow npx claude-flow@alpha mcp start
+# Install Ruflo MCP
+claude mcp add ruflo npx ruflo@latest mcp start
 
 # Install Wundr MCP tools
 cd mcp-tools && ./install.sh
@@ -1513,51 +1513,51 @@ function myFunction(param1: string, param2: number): Result {
 
 ```bash
 # List available modes
-npx claude-flow sparc modes
+npx ruflo sparc modes
 
 # Execute specific mode
-npx claude-flow sparc run <mode> "<task>"
+npx ruflo sparc run <mode> "<task>"
 
 # Run complete TDD workflow
-npx claude-flow sparc tdd "<feature>"
+npx ruflo sparc tdd "<feature>"
 
 # Get mode details
-npx claude-flow sparc info <mode>
+npx ruflo sparc info <mode>
 ```
 
 ### Batch Commands
 
 ```bash
 # Parallel execution
-npx claude-flow sparc batch <modes> "<task>"
+npx ruflo sparc batch <modes> "<task>"
 
 # Full pipeline processing
-npx claude-flow sparc pipeline "<task>"
+npx ruflo sparc pipeline "<task>"
 
 # Multi-task processing
-npx claude-flow sparc concurrent <mode> "<tasks-file>"
+npx ruflo sparc concurrent <mode> "<tasks-file>"
 ```
 
 ### Hooks Commands
 
 ```bash
 # Pre-task hook
-npx claude-flow@alpha hooks pre-task --description "[task]"
+npx ruflo@latest hooks pre-task --description "[task]"
 
 # Post-edit hook
-npx claude-flow@alpha hooks post-edit --file "[file]"
+npx ruflo@latest hooks post-edit --file "[file]"
 
 # Post-task hook
-npx claude-flow@alpha hooks post-task --task-id "[task]"
+npx ruflo@latest hooks post-task --task-id "[task]"
 
 # Session restore
-npx claude-flow@alpha hooks session-restore --session-id "[id]"
+npx ruflo@latest hooks session-restore --session-id "[id]"
 
 # Session end
-npx claude-flow@alpha hooks session-end --export-metrics true
+npx ruflo@latest hooks session-end --export-metrics true
 
 # Notify
-npx claude-flow@alpha hooks notify --message "[message]"
+npx ruflo@latest hooks notify --message "[message]"
 ```
 
 ---
@@ -1591,8 +1591,8 @@ With proper implementation of this configuration:
 
 ## 📚 ADDITIONAL RESOURCES
 
-- **Documentation**: https://github.com/ruvnet/claude-flow
-- **Issues**: https://github.com/ruvnet/claude-flow/issues
+- **Documentation**: https://github.com/ruvnet/ruflo
+- **Issues**: https://github.com/ruvnet/ruflo/issues
 - **Wundr MCP Guide**: docs/CLAUDE_CODE_MCP_INTEGRATION.md
 - **SPARC Methodology**: docs/SPARC_METHODOLOGY.md
 - **Agent Patterns**: docs/AGENT_PATTERNS.md
@@ -1615,8 +1615,8 @@ With proper implementation of this configuration:
 
 ---
 
-**Remember**: Claude Flow coordinates, Claude Code creates, Wundr ensures quality, Git worktrees
-enable parallel development!
+**Remember**: Ruflo coordinates, Claude Code creates, Wundr ensures quality, Git worktrees enable
+parallel development!
 
 ---
 

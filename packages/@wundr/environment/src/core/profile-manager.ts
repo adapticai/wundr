@@ -140,8 +140,8 @@ export class ProfileManager {
       },
       agentConfig: {
         claudeCode: true,
-        claudeFlow: true,
-        mcpTools: ['claude-flow'],
+        ruflo: true,
+        mcpTools: ['ruflo'],
         swarmCapabilities: true,
         neuralFeatures: true,
       },
@@ -189,7 +189,7 @@ export class ProfileManager {
           dependencies: ['node'],
         },
         {
-          name: 'claude-flow',
+          name: 'ruflo',
           required: true,
           installer: 'npm',
           dependencies: ['node', 'claude-code'],
@@ -209,8 +209,8 @@ export class ProfileManager {
       },
       agentConfig: {
         claudeCode: true,
-        claudeFlow: true,
-        mcpTools: ['claude-flow', 'wundr-toolkit'],
+        ruflo: true,
+        mcpTools: ['ruflo', 'wundr-toolkit'],
         swarmCapabilities: true,
         neuralFeatures: true,
       },
@@ -271,7 +271,7 @@ export class ProfileManager {
       },
       agentConfig: {
         claudeCode: false,
-        claudeFlow: false,
+        ruflo: false,
         mcpTools: [],
         swarmCapabilities: false,
         neuralFeatures: false,

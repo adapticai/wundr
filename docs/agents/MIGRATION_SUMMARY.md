@@ -1,4 +1,4 @@
-# Claude Flow Commands to Agent System Migration Summary
+# Ruflo Commands to Agent System Migration Summary
 
 ## Executive Summary
 

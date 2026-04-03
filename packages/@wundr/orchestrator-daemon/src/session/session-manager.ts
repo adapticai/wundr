@@ -104,7 +104,7 @@ export class SessionManager extends EventEmitter {
   async spawnSession(
     orchestratorId: string,
     task: Task,
-    sessionType: 'claude-code' | 'claude-flow' = 'claude-code',
+    sessionType: 'claude-code' | 'ruflo' = 'claude-code',
     spawnOptions?: SpawnSessionOptions
   ): Promise<Session> {
     // Check session limit

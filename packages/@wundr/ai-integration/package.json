@@ -1,7 +1,7 @@
 {
   "name": "@wundr.io/ai-integration",
   "version": "1.0.6",
-  "description": "AI Integration Hive Queen - Claude Code, Claude Flow, and MCP orchestration",
+  "description": "AI Integration Hive Queen - Claude Code, Ruflo, and MCP orchestration",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -59,7 +59,7 @@
   "keywords": [
     "ai-integration",
     "claude-code",
-    "claude-flow",
+    "ruflo",
     "mcp-tools",
     "neural-networks",
     "swarm-intelligence",

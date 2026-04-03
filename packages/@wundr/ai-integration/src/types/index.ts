@@ -3,7 +3,7 @@
  */
 
 export interface AIIntegrationConfig {
-  claudeFlow: ClaudeFlowConfig;
+  ruflo: RufloConfig;
   mcpTools: MCPToolsConfig;
   neural: NeuralConfig;
   swarm: SwarmConfig;
@@ -13,7 +13,7 @@ export interface AIIntegrationConfig {
   github: GitHubConfig;
 }
 
-export interface ClaudeFlowConfig {
+export interface RufloConfig {
   sessionPath?: string;
   maxConcurrentAgents: number;
   defaultTopology: TopologyType;

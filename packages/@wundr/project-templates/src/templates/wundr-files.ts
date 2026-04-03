@@ -346,7 +346,7 @@ wundr drift fix      # Auto-fix drift issues
 
 ## AI Integration
 
-### Claude Flow Configuration
+### Ruflo Configuration
 - Swarm topology: mesh
 - Max agents: 8
 - Available agents: coder, reviewer, tester, planner

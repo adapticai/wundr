@@ -5,7 +5,7 @@
 Wundr is a TypeScript/Node.js monorepo managed with pnpm and Turborepo. It contains 45+ packages
 under `packages/@wundr/` and `packages/@neolith/` covering AI orchestration, agent frameworks,
 security, governance, MCP servers, CLI tools, and a Next.js web client. The project uses SPARC
-methodology with Claude-Flow for development coordination.
+methodology with Ruflo for development coordination.
 
 ## What Was Completed This Session
 

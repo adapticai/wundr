@@ -18,9 +18,7 @@ import {
 
 import { registerRagTools, initializeRagTools as initRagTools } from './rag';
 
-import type {
-  ToolRegistry,
-  McpToolResult} from './registry';
+import type { ToolRegistry, McpToolResult } from './registry';
 import type {
   ComputerSetupInput,
   ClaudeConfigInput,
@@ -83,7 +81,7 @@ interface CommandResult {
 async function executeCommand(
   command: string,
   args: string[],
-  options: ExecuteCommandOptions = {},
+  options: ExecuteCommandOptions = {}
 ): Promise<CommandResult> {
   const {
     cwd = process.cwd(),
@@ -106,11 +104,11 @@ async function executeCommand(
     let stderr = '';
 
     if (captureOutput) {
-      childProcess.stdout?.on('data', (data) => {
+      childProcess.stdout?.on('data', data => {
         stdout += data.toString();
       });
 
-      childProcess.stderr?.on('data', (data) => {
+      childProcess.stderr?.on('data', data => {
         stderr += data.toString();
       });
     }
@@ -120,7 +118,7 @@ async function executeCommand(
       reject(new Error(`Command timed out after ${timeout}ms`));
     }, timeout);
 
-    childProcess.on('close', (code) => {
+    childProcess.on('close', code => {
       clearTimeout(timeoutId);
       resolve({
         exitCode: code ?? 1,
@@ -131,7 +129,7 @@ async function executeCommand(
       });
     });
 
-    childProcess.on('error', (error) => {
+    childProcess.on('error', error => {
       clearTimeout(timeoutId);
       reject(error);
     });
@@ -144,7 +142,7 @@ async function executeCommand(
 async function executeWundrCommand(
   subcommand: string,
   args: string[] = [],
-  options: ExecuteCommandOptions = {},
+  options: ExecuteCommandOptions = {}
 ): Promise<CommandResult> {
   // Try to find wundr CLI
   const wundrPaths = [
@@ -184,8 +182,10 @@ async function executeWundrCommand(
  * @returns McpToolResult with setup result
  */
 async function computerSetupHandler(
-  input: ComputerSetupInput,
-): Promise<McpToolResult<{ message: string; steps: string[]; warnings: string[] }>> {
+  input: ComputerSetupInput
+): Promise<
+  McpToolResult<{ message: string; steps: string[]; warnings: string[] }>
+> {
   const args: string[] = [];
 
   // Build command arguments based on input
@@ -234,13 +234,13 @@ async function computerSetupHandler(
       return errorResult(
         `Computer setup failed with exit code ${result.exitCode}`,
         'SETUP_FAILED',
-        { output: result.output },
+        { output: result.output }
       );
     }
   } catch (error) {
     return errorResult(
       error instanceof Error ? error.message : String(error),
-      'EXECUTION_ERROR',
+      'EXECUTION_ERROR'
     );
   }
 }
@@ -250,7 +250,7 @@ async function computerSetupHandler(
  * Installs Claude Code configuration files
  */
 async function claudeConfigHandler(
-  input: ClaudeConfigInput,
+  input: ClaudeConfigInput
 ): Promise<McpToolResult<{ installed: string[]; skipped: string[] }>> {
   const args: string[] = ['claude-config'];
 
@@ -275,20 +275,22 @@ async function claudeConfigHandler(
 
     if (result.exitCode === 0) {
       return successResult({
-        installed: result.stdout.split('\n').filter(line => line.includes('Installed')),
-        skipped: result.stdout.split('\n').filter(line => line.includes('Skipped')),
+        installed: result.stdout
+          .split('\n')
+          .filter(line => line.includes('Installed')),
+        skipped: result.stdout
+          .split('\n')
+          .filter(line => line.includes('Skipped')),
       });
     } else {
-      return errorResult(
-        'Claude config installation failed',
-        'CONFIG_FAILED',
-        { output: result.output },
-      );
+      return errorResult('Claude config installation failed', 'CONFIG_FAILED', {
+        output: result.output,
+      });
     }
   } catch (error) {
     return errorResult(
       error instanceof Error ? error.message : String(error),
-      'EXECUTION_ERROR',
+      'EXECUTION_ERROR'
     );
   }
 }
@@ -297,9 +299,12 @@ async function claudeConfigHandler(
  * Handler for backup MCP tool
  * Manages configuration backups
  */
-async function backupHandler(
-  input: BackupInput,
-): Promise<McpToolResult<{ backups?: Array<{ id: string; date: string }>; message: string }>> {
+async function backupHandler(input: BackupInput): Promise<
+  McpToolResult<{
+    backups?: Array<{ id: string; date: string }>;
+    message: string;
+  }>
+> {
   const args: string[] = ['backup'];
 
   switch (input.action) {
@@ -339,16 +344,14 @@ async function backupHandler(
         message: `Backup ${input.action} completed successfully`,
       });
     } else {
-      return errorResult(
-        `Backup ${input.action} failed`,
-        'BACKUP_FAILED',
-        { output: result.output },
-      );
+      return errorResult(`Backup ${input.action} failed`, 'BACKUP_FAILED', {
+        output: result.output,
+      });
     }
   } catch (error) {
     return errorResult(
       error instanceof Error ? error.message : String(error),
-      'EXECUTION_ERROR',
+      'EXECUTION_ERROR'
     );
   }
 }
@@ -358,7 +361,7 @@ async function backupHandler(
  * Rolls back to a previous configuration backup
  */
 async function rollbackHandler(
-  input: RollbackInput,
+  input: RollbackInput
 ): Promise<McpToolResult<{ restored: string[]; message: string }>> {
   const args: string[] = ['rollback', input.backupId];
 
@@ -375,20 +378,22 @@ async function rollbackHandler(
 
     if (result.exitCode === 0) {
       return successResult({
-        restored: result.stdout.split('\n').filter(line => line.includes('Restored')),
+        restored: result.stdout
+          .split('\n')
+          .filter(line => line.includes('Restored')),
         message: `Rollback to ${input.backupId} completed successfully`,
       });
     } else {
       return errorResult(
         `Rollback to ${input.backupId} failed`,
         'ROLLBACK_FAILED',
-        { output: result.output },
+        { output: result.output }
       );
     }
   } catch (error) {
     return errorResult(
       error instanceof Error ? error.message : String(error),
-      'EXECUTION_ERROR',
+      'EXECUTION_ERROR'
     );
   }
 }
@@ -402,8 +407,10 @@ async function rollbackHandler(
  * Initializes a new Wundr project with template selection
  */
 async function projectInitHandler(
-  input: ProjectInitInput,
-): Promise<McpToolResult<{ projectPath: string; template: string; message: string }>> {
+  input: ProjectInitInput
+): Promise<
+  McpToolResult<{ projectPath: string; template: string; message: string }>
+> {
   const args: string[] = ['project'];
 
   if (input.name) {
@@ -438,16 +445,14 @@ async function projectInitHandler(
         message: `Project initialized successfully at ${projectPath}`,
       });
     } else {
-      return errorResult(
-        'Project initialization failed',
-        'INIT_FAILED',
-        { output: result.output },
-      );
+      return errorResult('Project initialization failed', 'INIT_FAILED', {
+        output: result.output,
+      });
     }
   } catch (error) {
     return errorResult(
       error instanceof Error ? error.message : String(error),
-      'EXECUTION_ERROR',
+      'EXECUTION_ERROR'
     );
   }
 }
@@ -458,10 +463,10 @@ async function projectInitHandler(
 
 /**
  * Handler for claude-setup MCP tool
- * Sets up Claude Code, Claude Flow, and MCP tools
+ * Sets up Claude Code, Ruflo, and MCP tools
  */
 async function claudeSetupHandler(
-  input: ClaudeSetupInput,
+  input: ClaudeSetupInput
 ): Promise<McpToolResult<{ components: string[]; message: string }>> {
   const args: string[] = [];
 
@@ -506,20 +511,20 @@ async function claudeSetupHandler(
 
     if (result.exitCode === 0) {
       return successResult({
-        components: result.stdout.split('\n').filter(line => line.includes('[') || line.includes('Installed')),
+        components: result.stdout
+          .split('\n')
+          .filter(line => line.includes('[') || line.includes('Installed')),
         message: `Claude setup (${input.subcommand || 'install'}) completed successfully`,
       });
     } else {
-      return errorResult(
-        'Claude setup failed',
-        'CLAUDE_SETUP_FAILED',
-        { output: result.output },
-      );
+      return errorResult('Claude setup failed', 'CLAUDE_SETUP_FAILED', {
+        output: result.output,
+      });
     }
   } catch (error) {
     return errorResult(
       error instanceof Error ? error.message : String(error),
-      'EXECUTION_ERROR',
+      'EXECUTION_ERROR'
     );
   }
 }
@@ -532,9 +537,13 @@ async function claudeSetupHandler(
  * Handler for drift-detection MCP tool
  * Monitors code quality drift and creates baselines
  */
-async function driftDetectionHandler(
-  input: DriftDetectionInput,
-): Promise<McpToolResult<{ driftScore?: number; trends?: Array<{ category: string; change: number }>; message: string }>> {
+async function driftDetectionHandler(input: DriftDetectionInput): Promise<
+  McpToolResult<{
+    driftScore?: number;
+    trends?: Array<{ category: string; change: number }>;
+    message: string;
+  }>
+> {
   const args: string[] = ['check'];
 
   // Map action to governance command
@@ -575,7 +584,8 @@ async function driftDetectionHandler(
     if (result.exitCode === 0) {
       // Parse drift metrics from output
       const driftMatch = result.stdout.match(/drift.*?(\d+(\.\d+)?)/i);
-      const driftScore = driftMatch && driftMatch[1] ? parseFloat(driftMatch[1]) : undefined;
+      const driftScore =
+        driftMatch && driftMatch[1] ? parseFloat(driftMatch[1]) : undefined;
 
       return successResult({
         driftScore,
@@ -583,16 +593,14 @@ async function driftDetectionHandler(
         message: `Drift detection (${input.action}) completed`,
       });
     } else {
-      return errorResult(
-        'Drift detection failed',
-        'DRIFT_DETECTION_FAILED',
-        { output: result.output },
-      );
+      return errorResult('Drift detection failed', 'DRIFT_DETECTION_FAILED', {
+        output: result.output,
+      });
     }
   } catch (error) {
     return errorResult(
       error instanceof Error ? error.message : String(error),
-      'EXECUTION_ERROR',
+      'EXECUTION_ERROR'
     );
   }
 }
@@ -606,8 +614,13 @@ async function driftDetectionHandler(
  * Auto-fixes code patterns to meet standards
  */
 async function patternStandardizeHandler(
-  input: PatternStandardizeInput,
-): Promise<McpToolResult<{ fixed: number; issues: Array<{ file: string; pattern: string; message: string }> }>> {
+  input: PatternStandardizeInput
+): Promise<
+  McpToolResult<{
+    fixed: number;
+    issues: Array<{ file: string; pattern: string; message: string }>;
+  }>
+> {
   const args: string[] = ['check'];
 
   if (input.pattern && input.pattern !== 'all') {
@@ -630,26 +643,26 @@ async function patternStandardizeHandler(
     const cwd = input.path || process.cwd();
     const result = await executeWundrCommand('govern', args, { cwd });
 
-    if (result.exitCode === 0 || result.exitCode === 1) { // Exit 1 often means issues found
+    if (result.exitCode === 0 || result.exitCode === 1) {
+      // Exit 1 often means issues found
       // Parse fixed count and issues from output
       const fixedMatch = result.stdout.match(/Fixed\s+(\d+)/i);
-      const fixed = fixedMatch && fixedMatch[1] ? parseInt(fixedMatch[1], 10) : 0;
+      const fixed =
+        fixedMatch && fixedMatch[1] ? parseInt(fixedMatch[1], 10) : 0;
 
       return successResult({
         fixed,
         issues: [], // Would be parsed from actual output
       });
     } else {
-      return errorResult(
-        'Pattern standardization failed',
-        'PATTERN_FAILED',
-        { output: result.output },
-      );
+      return errorResult('Pattern standardization failed', 'PATTERN_FAILED', {
+        output: result.output,
+      });
     }
   } catch (error) {
     return errorResult(
       error instanceof Error ? error.message : String(error),
-      'EXECUTION_ERROR',
+      'EXECUTION_ERROR'
     );
   }
 }
@@ -662,9 +675,13 @@ async function patternStandardizeHandler(
  * Handler for monorepo-manage MCP tool
  * Manages monorepo packages and dependencies
  */
-async function monorepoManageHandler(
-  input: MonorepoManageInput,
-): Promise<McpToolResult<{ packages?: string[]; circularDeps?: string[][]; message: string }>> {
+async function monorepoManageHandler(input: MonorepoManageInput): Promise<
+  McpToolResult<{
+    packages?: string[];
+    circularDeps?: string[][];
+    message: string;
+  }>
+> {
   const args: string[] = [];
 
   switch (input.action) {
@@ -705,29 +722,33 @@ async function monorepoManageHandler(
   }
 
   try {
-    const command = input.action === 'check-circular' || input.action === 'list-packages' || input.action === 'graph' || input.action === 'sync-versions'
-      ? 'analyze'
-      : 'init';
+    const command =
+      input.action === 'check-circular' ||
+      input.action === 'list-packages' ||
+      input.action === 'graph' ||
+      input.action === 'sync-versions'
+        ? 'analyze'
+        : 'init';
 
     const result = await executeWundrCommand(command, args);
 
     if (result.exitCode === 0) {
       return successResult({
-        packages: result.stdout.split('\n').filter(line => line.match(/^\s*-?\s*@?[\w-]+/)),
+        packages: result.stdout
+          .split('\n')
+          .filter(line => line.match(/^\s*-?\s*@?[\w-]+/)),
         circularDeps: [], // Would be parsed from actual output
         message: `Monorepo ${input.action} completed successfully`,
       });
     } else {
-      return errorResult(
-        `Monorepo ${input.action} failed`,
-        'MONOREPO_FAILED',
-        { output: result.output },
-      );
+      return errorResult(`Monorepo ${input.action} failed`, 'MONOREPO_FAILED', {
+        output: result.output,
+      });
     }
   } catch (error) {
     return errorResult(
       error instanceof Error ? error.message : String(error),
-      'EXECUTION_ERROR',
+      'EXECUTION_ERROR'
     );
   }
 }
@@ -741,8 +762,10 @@ async function monorepoManageHandler(
  * Generates governance and compliance reports
  */
 async function governanceReportHandler(
-  input: GovernanceReportInput,
-): Promise<McpToolResult<{ reportPath?: string; summary: Record<string, unknown> }>> {
+  input: GovernanceReportInput
+): Promise<
+  McpToolResult<{ reportPath?: string; summary: Record<string, unknown> }>
+> {
   const args: string[] = ['report'];
 
   args.push('--type', input.reportType);
@@ -783,13 +806,13 @@ async function governanceReportHandler(
       return errorResult(
         'Governance report generation failed',
         'REPORT_FAILED',
-        { output: result.output },
+        { output: result.output }
       );
     }
   } catch (error) {
     return errorResult(
       error instanceof Error ? error.message : String(error),
-      'EXECUTION_ERROR',
+      'EXECUTION_ERROR'
     );
   }
 }
@@ -802,14 +825,14 @@ async function governanceReportHandler(
  * Handler for dependency-analyze MCP tool
  * Analyzes project dependencies for issues
  */
-async function dependencyAnalyzeHandler(
-  input: DependencyAnalyzeInput,
-): Promise<McpToolResult<{
-  circular?: string[][];
-  unused?: string[];
-  outdated?: Array<{ name: string; current: string; latest: string }>;
-  security?: Array<{ name: string; severity: string; description: string }>;
-}>> {
+async function dependencyAnalyzeHandler(input: DependencyAnalyzeInput): Promise<
+  McpToolResult<{
+    circular?: string[][];
+    unused?: string[];
+    outdated?: Array<{ name: string; current: string; latest: string }>;
+    security?: Array<{ name: string; severity: string; description: string }>;
+  }>
+> {
   const args: string[] = ['deps'];
 
   switch (input.action) {
@@ -862,16 +885,14 @@ async function dependencyAnalyzeHandler(
         // Would be parsed from actual output
       });
     } else {
-      return errorResult(
-        'Dependency analysis failed',
-        'DEPENDENCY_FAILED',
-        { output: result.output },
-      );
+      return errorResult('Dependency analysis failed', 'DEPENDENCY_FAILED', {
+        output: result.output,
+      });
     }
   } catch (error) {
     return errorResult(
       error instanceof Error ? error.message : String(error),
-      'EXECUTION_ERROR',
+      'EXECUTION_ERROR'
     );
   }
 }
@@ -884,14 +905,14 @@ async function dependencyAnalyzeHandler(
  * Handler for test-baseline MCP tool
  * Manages test coverage baselines
  */
-async function testBaselineHandler(
-  input: TestBaselineInput,
-): Promise<McpToolResult<{
-  baselineId?: string;
-  coverage?: number;
-  comparison?: { baseline: number; current: number; diff: number };
-  message: string;
-}>> {
+async function testBaselineHandler(input: TestBaselineInput): Promise<
+  McpToolResult<{
+    baselineId?: string;
+    coverage?: number;
+    comparison?: { baseline: number; current: number; diff: number };
+    message: string;
+  }>
+> {
   const args: string[] = [];
 
   switch (input.action) {
@@ -938,7 +959,10 @@ async function testBaselineHandler(
     if (result.exitCode === 0) {
       // Parse coverage from output
       const coverageMatch = result.stdout.match(/coverage.*?(\d+(\.\d+)?)/i);
-      const coverage = coverageMatch && coverageMatch[1] ? parseFloat(coverageMatch[1]) : undefined;
+      const coverage =
+        coverageMatch && coverageMatch[1]
+          ? parseFloat(coverageMatch[1])
+          : undefined;
 
       return successResult({
         baselineId: input.baselineId,
@@ -950,13 +974,13 @@ async function testBaselineHandler(
       return errorResult(
         `Test baseline ${input.action} failed`,
         'TEST_BASELINE_FAILED',
-        { output: result.output },
+        { output: result.output }
       );
     }
   } catch (error) {
     return errorResult(
       error instanceof Error ? error.message : String(error),
-      'EXECUTION_ERROR',
+      'EXECUTION_ERROR'
     );
   }
 }
@@ -974,68 +998,64 @@ export function registerCliCommandTools(registry: ToolRegistry): void {
   // Computer Setup Tools
   registry.register(
     createToolFromSchema('computer-setup', computerSetupHandler),
-    { version: '1.0.0' },
+    { version: '1.0.0' }
   );
 
   registry.register(
     createToolFromSchema('claude-config', claudeConfigHandler),
-    { version: '1.0.0' },
+    { version: '1.0.0' }
   );
 
-  registry.register(
-    createToolFromSchema('backup', backupHandler),
-    { version: '1.0.0' },
-  );
+  registry.register(createToolFromSchema('backup', backupHandler), {
+    version: '1.0.0',
+  });
 
-  registry.register(
-    createToolFromSchema('rollback', rollbackHandler),
-    { version: '1.0.0' },
-  );
+  registry.register(createToolFromSchema('rollback', rollbackHandler), {
+    version: '1.0.0',
+  });
 
   // Project Init Tool
-  registry.register(
-    createToolFromSchema('project-init', projectInitHandler),
-    { version: '1.0.0' },
-  );
+  registry.register(createToolFromSchema('project-init', projectInitHandler), {
+    version: '1.0.0',
+  });
 
   // Claude Setup Tool
-  registry.register(
-    createToolFromSchema('claude-setup', claudeSetupHandler),
-    { version: '1.0.0' },
-  );
+  registry.register(createToolFromSchema('claude-setup', claudeSetupHandler), {
+    version: '1.0.0',
+  });
 
   // Governance Tools
   registry.register(
     createToolFromSchema('drift-detection', driftDetectionHandler),
-    { version: '1.0.0' },
+    { version: '1.0.0' }
   );
 
   registry.register(
     createToolFromSchema('pattern-standardize', patternStandardizeHandler),
-    { version: '1.0.0' },
+    { version: '1.0.0' }
   );
 
   registry.register(
     createToolFromSchema('governance-report', governanceReportHandler),
-    { version: '1.0.0' },
+    { version: '1.0.0' }
   );
 
   // Monorepo Tools
   registry.register(
     createToolFromSchema('monorepo-manage', monorepoManageHandler),
-    { version: '1.0.0' },
+    { version: '1.0.0' }
   );
 
   // Analysis Tools
   registry.register(
     createToolFromSchema('dependency-analyze', dependencyAnalyzeHandler),
-    { version: '1.0.0' },
+    { version: '1.0.0' }
   );
 
   // Testing Tools
   registry.register(
     createToolFromSchema('test-baseline', testBaselineHandler),
-    { version: '1.0.0' },
+    { version: '1.0.0' }
   );
 }
 

@@ -80,7 +80,7 @@
   },
   "agentConfig": {
     "claudeCode": false,
-    "claudeFlow": false,
+    "ruflo": false,
     "mcpTools": [],
     "swarmCapabilities": false,
     "neuralFeatures": false

@@ -19,8 +19,8 @@ if [[ "$BRANCH" == "main" || "$BRANCH" == "master" ]]; then
   fi
 
   if [ -n "$PLATFORM" ]; then
-    # Notify Claude Flow to start monitoring
-    npx claude-flow@alpha hooks post-push \
+    # Notify Ruflo to start monitoring
+    npx ruflo@latest hooks post-push \
       --platform "$PLATFORM" \
       --branch "$BRANCH" \
       --auto-monitor true

@@ -58,7 +58,7 @@ integrated development experience. Built on Turborepo with TypeScript, Wundr com
 - **Opinionated project templates** with best practices pre-configured
 - **AI-powered code analysis** for continuous quality assurance
 - **Governance automation** to prevent technical debt
-- **Claude Flow integration** for agentic development workflows
+- **Ruflo integration** for agentic development workflows
 
 ---
 
@@ -104,7 +104,7 @@ productive.
 
 **Supporting Points**:
 
-- Claude Flow orchestration for complex refactoring
+- Ruflo orchestration for complex refactoring
 - Intelligent code analysis and pattern detection
 - Automated drift detection and remediation
 - SPARC methodology for systematic problem-solving
@@ -227,9 +227,9 @@ excellence at every stage.
 Wundr is an intelligent, AI-powered development platform that transforms how teams build software.
 Combining automated machine provisioning, opinionated project scaffolding, and comprehensive code
 governance, Wundr delivers systematic excellence across the entire development lifecycle. Built on a
-monorepo of 14 TypeScript packages with Turborepo optimization, Wundr integrates Claude Flow for
-agentic workflows, provides real-time code analysis, and enforces best practices automatically.
-Whether onboarding new developers, starting fresh projects, or maintaining existing codebases, Wundr
+monorepo of 14 TypeScript packages with Turborepo optimization, Wundr integrates Ruflo for agentic
+workflows, provides real-time code analysis, and enforces best practices automatically. Whether
+onboarding new developers, starting fresh projects, or maintaining existing codebases, Wundr
 eliminates decision fatigue and prevents technical debt—allowing teams to move fast without breaking
 things.
 
@@ -251,7 +251,7 @@ things.
 
 1. **Setup in seconds**: `wundr computer-setup` configures everything automatically
 2. **Best practices built-in**: Every project starts production-ready
-3. **AI pair programming**: Claude Flow handles repetitive refactoring
+3. **AI pair programming**: Ruflo handles repetitive refactoring
 4. **One unified CLI**: Stop context switching between tools
 5. **Learn by example**: Every template teaches modern patterns
 
@@ -459,8 +459,8 @@ patterns, complexity, and dependencies.
 **Drift Detection** Automated monitoring that identifies when code deviates from established
 baselines or standards over time.
 
-**Claude Flow** An orchestration system for AI agents that enables complex refactoring and
-development workflows using Claude AI.
+**Ruflo** An orchestration system for AI agents that enables complex refactoring and development
+workflows using Claude AI.
 
 **SPARC Methodology** Specification → Pseudocode → Architecture → Refinement → Completion—a
 systematic approach to problem-solving.
@@ -555,9 +555,9 @@ The result is a platform that makes excellence the path of least resistance.
 **Why AI Changes Everything**
 
 Traditional automation hit a ceiling: it could enforce rules but couldn't understand context. AI
-changes the equation. With Claude Flow integration, Wundr doesn't just analyze code—it understands
-intent. It doesn't just detect problems—it suggests fixes. It doesn't just scaffold templates—it
-generates custom architectures.
+changes the equation. With Ruflo integration, Wundr doesn't just analyze code—it understands intent.
+It doesn't just detect problems—it suggests fixes. It doesn't just scaffold templates—it generates
+custom architectures.
 
 This is AI-native development: where the machine handles the mechanical, freeing humans for the
 creative.

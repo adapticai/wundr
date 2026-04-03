@@ -5,7 +5,7 @@ Real-time swarm monitoring.
 ## Usage
 
 ```bash
-npx claude-flow swarm monitor [options]
+npx ruflo swarm monitor [options]
 ```
 
 ## Options
@@ -18,11 +18,11 @@ npx claude-flow swarm monitor [options]
 
 ```bash
 # Start monitoring
-npx claude-flow swarm monitor
+npx ruflo swarm monitor
 
 # Custom interval
-npx claude-flow swarm monitor --interval 5000
+npx ruflo swarm monitor --interval 5000
 
 # With metrics
-npx claude-flow swarm monitor --metrics
+npx ruflo swarm monitor --metrics
 ```

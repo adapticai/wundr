@@ -5,7 +5,7 @@ Spawn a new agent in the current swarm.
 ## Usage
 
 ```bash
-npx claude-flow agent spawn [options]
+npx ruflo agent spawn [options]
 ```
 
 ## Options
@@ -18,11 +18,11 @@ npx claude-flow agent spawn [options]
 
 ```bash
 # Spawn coder agent
-npx claude-flow agent spawn --type coder
+npx ruflo agent spawn --type coder
 
 # With custom name
-npx claude-flow agent spawn --type researcher --name "API Expert"
+npx ruflo agent spawn --type researcher --name "API Expert"
 
 # With specific skills
-npx claude-flow agent spawn --type coder --skills "python,fastapi,testing"
+npx ruflo agent spawn --type coder --skills "python,fastapi,testing"
 ```

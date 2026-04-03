@@ -1,6 +1,6 @@
-# Migration Guide: Updating to Enhanced Claude Code / Claude Flow
+# Migration Guide: Updating to Enhanced Claude Code / Ruflo
 
-Complete guide for migrating existing projects to use the enhanced Claude Code and Claude Flow
+Complete guide for migrating existing projects to use the enhanced Claude Code and Ruflo
 integration.
 
 ## Table of Contents
@@ -18,8 +18,8 @@ integration.
 
 This guide helps you migrate from:
 
-- **Standard Claude Code setup** → Enhanced Claude Flow integration
-- **Claude Flow v1.x** → Claude Flow v2.0+
+- **Standard Claude Code setup** → Enhanced Ruflo integration
+- **Ruflo v1.x** → Ruflo v2.0+
 - **Manual workflows** → Automated SPARC workflows
 - **Single agent setup** → Swarm coordination
 
@@ -37,7 +37,7 @@ Project
 
 ```
 Project
-├── .claude-flow/     # Enhanced config
+├── .ruflo/     # Enhanced config
 │   ├── agents/       # Agent configurations
 │   ├── hooks/        # Automation hooks
 │   ├── memory/       # Persistent memory
@@ -60,9 +60,9 @@ Project
 
 ```bash
 # Create backup
-git branch backup/pre-claude-flow-migration
+git branch backup/pre-ruflo-migration
 git add .
-git commit -m "Backup before Claude Flow migration"
+git commit -m "Backup before Ruflo migration"
 
 # Or create zip backup
 tar -czf ../project-backup-$(date +%Y%m%d).tar.gz .
@@ -101,44 +101,44 @@ fi
 
 ## Migration Paths
 
-### Path 1: New Claude Flow Installation (Recommended)
+### Path 1: New Ruflo Installation (Recommended)
 
-For projects not using Claude Flow:
+For projects not using Ruflo:
 
 ```bash
-# 1. Install Claude Flow
-npm install -g @ruvnet/claude-flow@alpha
+# 1. Install Ruflo
+npm install -g @ruvnet/ruflo@latest
 
-# 2. Initialize Claude Flow
-npx claude-flow@alpha init
+# 2. Initialize Ruflo
+npx ruflo@latest init
 
 # 3. Add MCP server
-claude mcp add claude-flow npx claude-flow@alpha mcp start
+claude mcp add ruflo npx ruflo@latest mcp start
 
 # 4. Configure for your project
-npx claude-flow@alpha config init --interactive
+npx ruflo@latest config init --interactive
 ```
 
-### Path 2: Upgrade from Claude Flow v1.x
+### Path 2: Upgrade from Ruflo v1.x
 
-For existing Claude Flow users:
+For existing Ruflo users:
 
 ```bash
 # 1. Check current version
-npx claude-flow --version
+npx ruflo --version
 
 # 2. Uninstall old version
-npm uninstall -g claude-flow
+npm uninstall -g ruflo
 
 # 3. Install new version
-npm install -g @ruvnet/claude-flow@alpha
+npm install -g @ruvnet/ruflo@latest
 
 # 4. Migrate configuration
-npx claude-flow@alpha migrate --from v1
+npx ruflo@latest migrate --from v1
 
 # 5. Update MCP server
-claude mcp remove claude-flow
-claude mcp add claude-flow npx claude-flow@alpha mcp start
+claude mcp remove ruflo
+claude mcp add ruflo npx ruflo@latest mcp start
 ```
 
 ### Path 3: Template-Based Migration
@@ -146,30 +146,30 @@ claude mcp add claude-flow npx claude-flow@alpha mcp start
 For specific project types:
 
 ```bash
-# 1. Install Claude Flow
-npm install -g @ruvnet/claude-flow@alpha
+# 1. Install Ruflo
+npm install -g @ruvnet/ruflo@latest
 
 # 2. Initialize with template
-npx claude-flow@alpha init --template react
+npx ruflo@latest init --template react
 # or: nextjs, nodejs-backend, python, etc.
 
 # 3. Merge with existing config
-npx claude-flow@alpha config merge .claude-flow.template
+npx ruflo@latest config merge .ruflo.template
 
 # 4. Review and adjust
-nano .claude-flow/config.json
+nano .ruflo/config.json
 ```
 
 ## Step-by-Step Migration
 
-### Step 1: Install Claude Flow
+### Step 1: Install Ruflo
 
 ```bash
 # Global installation
-npm install -g @ruvnet/claude-flow@alpha
+npm install -g @ruvnet/ruflo@latest
 
 # Verify installation
-npx claude-flow@alpha --version
+npx ruflo@latest --version
 # Should show: 2.0.0 or higher
 ```
 
@@ -179,8 +179,8 @@ npx claude-flow@alpha --version
 # Navigate to project
 cd /path/to/your/project
 
-# Initialize Claude Flow
-npx claude-flow@alpha init
+# Initialize Ruflo
+npx ruflo@latest init
 
 # Answer prompts:
 # - Project type: [react/nodejs/python/other]
@@ -192,7 +192,7 @@ npx claude-flow@alpha init
 **What this creates**:
 
 ```
-.claude-flow/
+.ruflo/
 ├── config.json           # Main configuration
 ├── agents.config.json    # Agent setup
 ├── hooks.config.json     # Hook automation
@@ -204,36 +204,36 @@ npx claude-flow@alpha init
 ```bash
 # Remove old MCP server (if exists)
 claude mcp list
-claude mcp remove claude-flow  # if exists
+claude mcp remove ruflo  # if exists
 
 # Add new MCP server
-claude mcp add claude-flow npx claude-flow@alpha mcp start
+claude mcp add ruflo npx ruflo@latest mcp start
 
 # Verify
 claude mcp list
-# Should show: claude-flow (running)
+# Should show: ruflo (running)
 ```
 
 ### Step 4: Configure Agents
 
 ```bash
 # List available agents
-npx claude-flow@alpha agent types
+npx ruflo@latest agent types
 
 # Configure agents for your project
-npx claude-flow@alpha agent configure coder \
+npx ruflo@latest agent configure coder \
   --languages "typescript,javascript" \
   --frameworks "react,express"
 
-npx claude-flow@alpha agent configure tester \
+npx ruflo@latest agent configure tester \
   --framework jest \
   --coverage-min 80
 
-npx claude-flow@alpha agent configure reviewer \
+npx ruflo@latest agent configure reviewer \
   --checks "security,performance,best-practices"
 ```
 
-**Edit `.claude-flow/agents.config.json`**:
+**Edit `.ruflo/agents.config.json`**:
 
 ```json
 {
@@ -264,19 +264,19 @@ npx claude-flow@alpha agent configure reviewer \
 
 ```bash
 # Install Git hooks
-npx claude-flow@alpha hooks install
+npx ruflo@latest hooks install
 
 # Configure hooks
-npx claude-flow@alpha hooks configure pre-commit \
+npx ruflo@latest hooks configure pre-commit \
   --enabled true \
   --hooks "format,lint,type-check"
 
-npx claude-flow@alpha hooks configure post-edit \
+npx ruflo@latest hooks configure post-edit \
   --enabled true \
   --hooks "format,update-docs"
 ```
 
-**Edit `.claude-flow/hooks.config.json`**:
+**Edit `.ruflo/hooks.config.json`**:
 
 ```json
 {
@@ -299,13 +299,13 @@ npx claude-flow@alpha hooks configure post-edit \
 
 ```bash
 # Initialize SPARC
-npx claude-flow@alpha sparc init
+npx ruflo@latest sparc init
 
 # Test SPARC workflow
-npx claude-flow@alpha sparc run spec-pseudocode "Test task"
+npx ruflo@latest sparc run spec-pseudocode "Test task"
 
 # List available modes
-npx claude-flow@alpha sparc modes
+npx ruflo@latest sparc modes
 ```
 
 ### Step 7: Migrate Existing Configuration
@@ -314,27 +314,27 @@ If you have existing `.claude/` configuration:
 
 ```bash
 # Merge existing configuration
-npx claude-flow@alpha config merge .claude/config.json
+npx ruflo@latest config merge .claude/config.json
 
 # Review merged configuration
-cat .claude-flow/config.json
+cat .ruflo/config.json
 
 # Edit as needed
-nano .claude-flow/config.json
+nano .ruflo/config.json
 ```
 
 ### Step 8: Update package.json
 
-Add Claude Flow scripts:
+Add Ruflo scripts:
 
 ```json
 {
   "scripts": {
-    "claude:sparc": "npx claude-flow@alpha sparc",
-    "claude:agent": "npx claude-flow@alpha agent",
-    "claude:tdd": "npx claude-flow@alpha sparc tdd",
-    "claude:review": "npx claude-flow@alpha github review-pr",
-    "claude:metrics": "npx claude-flow@alpha metrics show"
+    "claude:sparc": "npx ruflo@latest sparc",
+    "claude:agent": "npx ruflo@latest agent",
+    "claude:tdd": "npx ruflo@latest sparc tdd",
+    "claude:review": "npx ruflo@latest github review-pr",
+    "claude:metrics": "npx ruflo@latest metrics show"
   }
 }
 ```
@@ -364,27 +364,27 @@ npm test
 
 ```bash
 # 1. Verify MCP server
-claude mcp status claude-flow
+claude mcp status ruflo
 # Should show: Running
 
 # 2. Verify configuration
-npx claude-flow@alpha config validate
+npx ruflo@latest config validate
 # Should show: Configuration valid
 
 # 3. Verify agents
-npx claude-flow@alpha agent list
+npx ruflo@latest agent list
 # Should show all configured agents
 
 # 4. Verify hooks
-npx claude-flow@alpha hooks list
+npx ruflo@latest hooks list
 # Should show installed hooks
 
 # 5. Run health check
-npx claude-flow@alpha health-check
+npx ruflo@latest health-check
 # All checks should pass
 
 # 6. Test SPARC
-npx claude-flow@alpha sparc modes
+npx ruflo@latest sparc modes
 # Should list all modes
 
 # 7. Test build
@@ -402,15 +402,15 @@ npm test
 # Create test workflow
 echo '{
   "task": "Test migration",
-  "description": "Verify Claude Flow integration"
+  "description": "Verify Ruflo integration"
 }' > test-workflow.json
 
 # Run test workflow
-npx claude-flow@alpha sparc tdd "$(cat test-workflow.json)"
+npx ruflo@latest sparc tdd "$(cat test-workflow.json)"
 
 # Verify output
-ls .claude-flow/memory/
-ls .claude-flow/metrics/
+ls .ruflo/memory/
+ls .ruflo/metrics/
 ```
 
 ## Rollback Plan
@@ -421,15 +421,15 @@ If migration fails, rollback:
 
 ```bash
 # 1. Restore from backup branch
-git checkout backup/pre-claude-flow-migration
+git checkout backup/pre-ruflo-migration
 
-# 2. Remove Claude Flow
-npm uninstall -g @ruvnet/claude-flow
-rm -rf .claude-flow/
+# 2. Remove Ruflo
+npm uninstall -g @ruvnet/ruflo
+rm -rf .ruflo/
 rm -rf .sparc/
 
 # 3. Remove MCP server
-claude mcp remove claude-flow
+claude mcp remove ruflo
 
 # 4. Restore old config (if exists)
 if [ -d .claude.backup ]; then
@@ -447,17 +447,17 @@ npm test
 
 ### Gradual Rollback
 
-Keep Claude Flow but disable features:
+Keep Ruflo but disable features:
 
 ```bash
 # Disable hooks
-npx claude-flow@alpha hooks disable --all
+npx ruflo@latest hooks disable --all
 
 # Disable MCP server
-claude mcp stop claude-flow
+claude mcp stop ruflo
 
 # Use Claude Code normally
-# Claude Flow won't interfere
+# Ruflo won't interfere
 ```
 
 ## Common Migration Scenarios
@@ -466,11 +466,11 @@ claude mcp stop claude-flow
 
 ```bash
 # 1. Install and initialize
-npm install -g @ruvnet/claude-flow@alpha
-npx claude-flow@alpha init --template react
+npm install -g @ruvnet/ruflo@latest
+npx ruflo@latest init --template react
 
 # 2. Configure for React
-cat > .claude-flow/agents.config.json << 'EOF'
+cat > .ruflo/agents.config.json << 'EOF'
 {
   "agents": {
     "component-dev": {
@@ -488,40 +488,40 @@ cat > .claude-flow/agents.config.json << 'EOF'
 EOF
 
 # 3. Set up MCP
-claude mcp add claude-flow npx claude-flow@alpha mcp start
+claude mcp add ruflo npx ruflo@latest mcp start
 
 # 4. Test
-npx claude-flow@alpha sparc run spec-pseudocode "Create login component"
+npx ruflo@latest sparc run spec-pseudocode "Create login component"
 ```
 
 ### Scenario 2: Node.js Backend
 
 ```bash
 # 1. Initialize with backend template
-npx claude-flow@alpha init --template nodejs-backend
+npx ruflo@latest init --template nodejs-backend
 
 # 2. Configure agents
-npx claude-flow@alpha agent configure backend-dev \
+npx ruflo@latest agent configure backend-dev \
   --specialization rest-api \
   --frameworks express,nestjs
 
 # 3. Enable API documentation
-npx claude-flow@alpha agent configure api-docs \
+npx ruflo@latest agent configure api-docs \
   --format openapi-3.0 \
   --auto-generate true
 
 # 4. Test
-npx claude-flow@alpha sparc run api-docs "Document user endpoints"
+npx ruflo@latest sparc run api-docs "Document user endpoints"
 ```
 
 ### Scenario 3: Monorepo
 
 ```bash
 # 1. Initialize monorepo
-npx claude-flow@alpha init --template monorepo
+npx ruflo@latest init --template monorepo
 
 # 2. Configure packages
-cat > .claude-flow/config.json << 'EOF'
+cat > .ruflo/config.json << 'EOF'
 {
   "monorepo": {
     "enabled": true,
@@ -540,11 +540,11 @@ cat > .claude-flow/config.json << 'EOF'
 EOF
 
 # 3. Set up per-package agents
-npx claude-flow@alpha agent configure --package frontend
-npx claude-flow@alpha agent configure --package backend
+npx ruflo@latest agent configure --package frontend
+npx ruflo@latest agent configure --package backend
 
 # 4. Test
-npx claude-flow@alpha sparc tdd "Add user feature across packages"
+npx ruflo@latest sparc tdd "Add user feature across packages"
 ```
 
 ## Breaking Changes
@@ -579,7 +579,7 @@ npx claude-flow@alpha sparc tdd "Add user feature across packages"
 **Migration**:
 
 ```bash
-npx claude-flow@alpha migrate config --from v1 --to v2
+npx ruflo@latest migrate config --from v1 --to v2
 ```
 
 #### Hook System Redesigned
@@ -599,7 +599,7 @@ npx claude-flow@alpha migrate config --from v1 --to v2
 **Migration**:
 
 ```bash
-npx claude-flow@alpha migrate memory --from v1
+npx ruflo@latest migrate memory --from v1
 ```
 
 ### Standard Claude Code to Enhanced
@@ -616,14 +616,14 @@ npx claude-flow@alpha migrate memory --from v1
 **After**:
 
 ```
-.claude-flow/
+.ruflo/
 ├── config.json
 ├── agents.config.json
 ├── hooks.config.json
 └── [more...]
 ```
 
-**Migration**: Automatic via `npx claude-flow@alpha init`
+**Migration**: Automatic via `npx ruflo@latest init`
 
 #### Agent Configuration
 
@@ -638,7 +638,7 @@ npx claude-flow@alpha migrate memory --from v1
 Migration checklist:
 
 1. ✅ **Backup project**
-2. ✅ **Install Claude Flow**
+2. ✅ **Install Ruflo**
 3. ✅ **Initialize configuration**
 4. ✅ **Set up MCP server**
 5. ✅ **Configure agents**

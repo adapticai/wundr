@@ -1,13 +1,13 @@
-# Claude Flow Integration Documentation - Summary
+# Ruflo Integration Documentation - Summary
 
 ## Documentation Created
 
-Comprehensive documentation for the enhanced Claude Code / Claude Flow integration has been
-successfully created.
+Comprehensive documentation for the enhanced Claude Code / Ruflo integration has been successfully
+created.
 
 ### Main Documentation Index
 
-**[CLAUDE_FLOW_INTEGRATION.md](./CLAUDE_FLOW_INTEGRATION.md)** - Main entry point
+**[RUFLO_INTEGRATION.md](./RUFLO_INTEGRATION.md)** - Main entry point
 
 - Complete overview
 - Quick navigation
@@ -64,7 +64,7 @@ successfully created.
 - **File Size**: ~22 KB
 - **Reading Time**: 40 minutes
 
-#### 6. **[Troubleshooting Guide](./guides/CLAUDE_FLOW_TROUBLESHOOTING.md)**
+#### 6. **[Troubleshooting Guide](./guides/RUFLO_TROUBLESHOOTING.md)**
 
 - Quick diagnostics
 - Common issues and solutions
@@ -113,7 +113,7 @@ successfully created.
 
 ```
 docs/
-├── CLAUDE_FLOW_INTEGRATION.md          # Main index (15 KB)
+├── RUFLO_INTEGRATION.md          # Main index (15 KB)
 ├── DOCUMENTATION_SUMMARY.md            # This file
 ├── guides/
 │   ├── QUICK_START.md                  # Quick start (3 KB) ⭐
@@ -121,7 +121,7 @@ docs/
 │   ├── AGENT_CONFIGURATION.md          # Agent setup (25 KB)
 │   ├── HOOK_DEVELOPMENT.md             # Hook creation (28 KB)
 │   ├── TEMPLATE_CUSTOMIZATION.md       # Templates (22 KB)
-│   ├── CLAUDE_FLOW_TROUBLESHOOTING.md  # Troubleshooting (8 KB)
+│   ├── RUFLO_TROUBLESHOOTING.md  # Troubleshooting (8 KB)
 │   ├── MIGRATION.md                    # Migration guide (13 KB)
 │   ├── COMPLETE_STRATEGY.md            # Refactoring strategy
 │   ├── TROUBLESHOOTING.md              # General troubleshooting
@@ -181,16 +181,16 @@ documentation
 
 ### Most Important Documents
 
-1. **[Start Here](./CLAUDE_FLOW_INTEGRATION.md)** - Main documentation index
+1. **[Start Here](./RUFLO_INTEGRATION.md)** - Main documentation index
 2. **[Quick Start](./guides/QUICK_START.md)** - 5-minute setup
-3. **[Troubleshooting](./guides/CLAUDE_FLOW_TROUBLESHOOTING.md)** - Fix issues
+3. **[Troubleshooting](./guides/RUFLO_TROUBLESHOOTING.md)** - Fix issues
 4. **[API Reference](./reference/API.md)** - Command lookup
 
 ### Common Workflows
 
 **New User Journey**:
 
-1. [CLAUDE_FLOW_INTEGRATION.md](./CLAUDE_FLOW_INTEGRATION.md) - Overview
+1. [RUFLO_INTEGRATION.md](./RUFLO_INTEGRATION.md) - Overview
 2. [Quick Start Guide](./guides/QUICK_START.md) - Setup
 3. [Agent Configuration](./guides/AGENT_CONFIGURATION.md) - Customize
 4. Build your first feature!
@@ -199,7 +199,7 @@ documentation
 
 1. [Migration Guide](./guides/MIGRATION.md) - Upgrade steps
 2. [Agent Configuration](./guides/AGENT_CONFIGURATION.md) - Configure
-3. [Troubleshooting](./guides/CLAUDE_FLOW_TROUBLESHOOTING.md) - Fix issues
+3. [Troubleshooting](./guides/RUFLO_TROUBLESHOOTING.md) - Fix issues
 4. [API Reference](./reference/API.md) - Command reference
 
 **Advanced User Journey**:
@@ -213,7 +213,7 @@ documentation
 
 ### For Users
 
-1. Start with [CLAUDE_FLOW_INTEGRATION.md](./CLAUDE_FLOW_INTEGRATION.md)
+1. Start with [RUFLO_INTEGRATION.md](./RUFLO_INTEGRATION.md)
 2. Follow [Quick Start Guide](./guides/QUICK_START.md)
 3. Explore guides based on your needs
 4. Reference [API docs](./reference/API.md) as needed
@@ -252,9 +252,9 @@ documentation
 ### Getting Help
 
 1. Check documentation (you're here!)
-2. Search [Troubleshooting Guide](./guides/CLAUDE_FLOW_TROUBLESHOOTING.md)
+2. Search [Troubleshooting Guide](./guides/RUFLO_TROUBLESHOOTING.md)
 3. Review [API Reference](./reference/API.md)
-4. Visit GitHub Issues: https://github.com/ruvnet/claude-flow/issues
+4. Visit GitHub Issues: https://github.com/ruvnet/ruflo/issues
 
 ### Contributing
 
@@ -265,5 +265,5 @@ documentation
 
 ---
 
-**Documentation Version**: 1.0.0 **Last Updated**: 2025-01-21 **Covers**: Claude Flow 2.0.0+
-**Status**: Complete ✅
+**Documentation Version**: 1.0.0 **Last Updated**: 2025-01-21 **Covers**: Ruflo 2.0.0+ **Status**:
+Complete ✅

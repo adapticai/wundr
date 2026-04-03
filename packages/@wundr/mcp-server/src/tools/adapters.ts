@@ -18,7 +18,15 @@
 export interface ProjectInitOptions {
   projectPath: string;
   projectName: string;
-  projectType: 'node' | 'react' | 'vue' | 'python' | 'go' | 'rust' | 'java' | 'monorepo';
+  projectType:
+    | 'node'
+    | 'react'
+    | 'vue'
+    | 'python'
+    | 'go'
+    | 'rust'
+    | 'java'
+    | 'monorepo';
   profile?: DeveloperProfile;
   includeClaudeSetup: boolean;
   includeAgents: boolean;
@@ -129,7 +137,7 @@ export interface DeveloperProfile {
     };
     aiTools?: {
       claudeCode: boolean;
-      claudeFlow: boolean;
+      ruflo: boolean;
       mcpTools: string[];
       swarmAgents: string[];
       memoryAllocation: string;
@@ -200,7 +208,9 @@ async function loadComputerSetupModule(modulePath: string): Promise<unknown> {
   try {
     return await import(`@wundr/computer-setup/${modulePath}`);
   } catch (err) {
-    throw new Error(`Failed to load computer-setup module: ${modulePath}. Make sure @wundr/computer-setup is installed.`);
+    throw new Error(
+      `Failed to load computer-setup module: ${modulePath}. Make sure @wundr/computer-setup is installed.`
+    );
   }
 }
 
@@ -218,22 +228,32 @@ export class ProjectInitializerAdapter {
   /**
    * Get or create the ProjectInitializer instance
    */
-  private async getInitializer(): Promise<{ initialize: (options: ProjectInitOptions) => Promise<void> }> {
+  private async getInitializer(): Promise<{
+    initialize: (options: ProjectInitOptions) => Promise<void>;
+  }> {
     if (!this.initializerInstance) {
       try {
-        const module = await loadComputerSetupModule('src/project-init/index.js');
-        const ProjectInitializer = (module as { ProjectInitializer: new () => unknown }).ProjectInitializer;
+        const module = await loadComputerSetupModule(
+          'src/project-init/index.js'
+        );
+        const ProjectInitializer = (
+          module as { ProjectInitializer: new () => unknown }
+        ).ProjectInitializer;
         this.initializerInstance = new ProjectInitializer();
       } catch {
         // Fallback to a stub implementation
         this.initializerInstance = {
           initialize: async () => {
-            throw new Error('ProjectInitializer not available. Install @wundr/computer-setup package.');
+            throw new Error(
+              'ProjectInitializer not available. Install @wundr/computer-setup package.'
+            );
           },
         };
       }
     }
-    return this.initializerInstance as { initialize: (options: ProjectInitOptions) => Promise<void> };
+    return this.initializerInstance as {
+      initialize: (options: ProjectInitOptions) => Promise<void>;
+    };
   }
 
   /**
@@ -288,23 +308,35 @@ export class TemplateSelectorAdapter {
   private selectorInstance: unknown = null;
 
   private async getSelector(): Promise<{
-    selectTemplates: (criteria: TemplateSelectionCriteria) => Promise<TemplateMetadata[]>;
+    selectTemplates: (
+      criteria: TemplateSelectionCriteria
+    ) => Promise<TemplateMetadata[]>;
     getTemplate: (id: string) => TemplateMetadata | undefined;
     listTemplates: () => TemplateMetadata[];
     getTemplatesForType: (type: string) => TemplateMetadata[];
-    validateTemplateRequirements: (template: TemplateMetadata) => Promise<boolean>;
+    validateTemplateRequirements: (
+      template: TemplateMetadata
+    ) => Promise<boolean>;
   }> {
     if (!this.selectorInstance) {
       try {
-        const module = await loadComputerSetupModule('src/project-init/index.js');
-        const TemplateSelector = (module as { TemplateSelector: new () => unknown }).TemplateSelector;
+        const module = await loadComputerSetupModule(
+          'src/project-init/index.js'
+        );
+        const TemplateSelector = (
+          module as { TemplateSelector: new () => unknown }
+        ).TemplateSelector;
         this.selectorInstance = new TemplateSelector();
       } catch {
         // Return stub implementation with built-in templates
         this.selectorInstance = this.createStubSelector();
       }
     }
-    return this.selectorInstance as ReturnType<typeof this.getSelector> extends Promise<infer T> ? T : never;
+    return this.selectorInstance as ReturnType<
+      typeof this.getSelector
+    > extends Promise<infer T>
+      ? T
+      : never;
   }
 
   private createStubSelector() {
@@ -320,7 +352,10 @@ export class TemplateSelectorAdapter {
         workflows: ['tdd', 'review'],
         conventions: ['code-style', 'git-workflow', 'testing-standards'],
         complexity: 'basic',
-        requirements: { nodeVersion: '>=18.0.0', packageManager: ['npm', 'pnpm', 'yarn'] },
+        requirements: {
+          nodeVersion: '>=18.0.0',
+          packageManager: ['npm', 'pnpm', 'yarn'],
+        },
       },
       {
         id: 'react-frontend',
@@ -329,11 +364,25 @@ export class TemplateSelectorAdapter {
         projectTypes: ['react'],
         frameworks: ['react', 'vite'],
         features: ['typescript', 'testing', 'cicd', 'docker'],
-        agents: ['coder', 'reviewer', 'tester', 'mobile-dev', 'frontend-architect'],
+        agents: [
+          'coder',
+          'reviewer',
+          'tester',
+          'mobile-dev',
+          'frontend-architect',
+        ],
         workflows: ['tdd', 'review', 'deployment'],
-        conventions: ['code-style', 'component-structure', 'git-workflow', 'testing-standards'],
+        conventions: [
+          'code-style',
+          'component-structure',
+          'git-workflow',
+          'testing-standards',
+        ],
         complexity: 'intermediate',
-        requirements: { nodeVersion: '>=18.0.0', packageManager: ['pnpm', 'yarn'] },
+        requirements: {
+          nodeVersion: '>=18.0.0',
+          packageManager: ['pnpm', 'yarn'],
+        },
       },
       {
         id: 'monorepo-workspace',
@@ -341,27 +390,55 @@ export class TemplateSelectorAdapter {
         description: 'Multi-package monorepo with shared tooling',
         projectTypes: ['monorepo'],
         frameworks: ['turborepo', 'nx'],
-        features: ['typescript', 'testing', 'cicd', 'docker', 'monitoring', 'api-docs'],
-        agents: ['coder', 'reviewer', 'tester', 'planner', 'researcher', 'repo-architect'],
+        features: [
+          'typescript',
+          'testing',
+          'cicd',
+          'docker',
+          'monitoring',
+          'api-docs',
+        ],
+        agents: [
+          'coder',
+          'reviewer',
+          'tester',
+          'planner',
+          'researcher',
+          'repo-architect',
+        ],
         workflows: ['sparc', 'tdd', 'review', 'deployment', 'release'],
-        conventions: ['code-style', 'monorepo-structure', 'package-naming', 'git-workflow'],
+        conventions: [
+          'code-style',
+          'monorepo-structure',
+          'package-naming',
+          'git-workflow',
+        ],
         complexity: 'enterprise',
-        requirements: { nodeVersion: '>=18.0.0', packageManager: ['pnpm'], tools: ['turborepo'] },
+        requirements: {
+          nodeVersion: '>=18.0.0',
+          packageManager: ['pnpm'],
+          tools: ['turborepo'],
+        },
       },
     ];
 
     return {
       selectTemplates: async (criteria: TemplateSelectionCriteria) => {
-        return templates.filter(t => t.projectTypes.includes(criteria.projectType));
+        return templates.filter(t =>
+          t.projectTypes.includes(criteria.projectType)
+        );
       },
       getTemplate: (id: string) => templates.find(t => t.id === id),
       listTemplates: () => templates,
-      getTemplatesForType: (type: string) => templates.filter(t => t.projectTypes.includes(type)),
+      getTemplatesForType: (type: string) =>
+        templates.filter(t => t.projectTypes.includes(type)),
       validateTemplateRequirements: async () => true,
     };
   }
 
-  async selectTemplates(criteria: TemplateSelectionCriteria): Promise<AdapterResult<TemplateMetadata[]>> {
+  async selectTemplates(
+    criteria: TemplateSelectionCriteria
+  ): Promise<AdapterResult<TemplateMetadata[]>> {
     try {
       if (!criteria.projectType) {
         return error('projectType is required in criteria');
@@ -375,7 +452,9 @@ export class TemplateSelectorAdapter {
     }
   }
 
-  async getTemplate(templateId: string): Promise<AdapterResult<TemplateMetadata | null>> {
+  async getTemplate(
+    templateId: string
+  ): Promise<AdapterResult<TemplateMetadata | null>> {
     try {
       if (!templateId) {
         return error('templateId is required');
@@ -400,7 +479,9 @@ export class TemplateSelectorAdapter {
     }
   }
 
-  async getTemplatesForType(projectType: string): Promise<AdapterResult<TemplateMetadata[]>> {
+  async getTemplatesForType(
+    projectType: string
+  ): Promise<AdapterResult<TemplateMetadata[]>> {
     try {
       if (!projectType) {
         return error('projectType is required');
@@ -414,7 +495,9 @@ export class TemplateSelectorAdapter {
     }
   }
 
-  async validateRequirements(template: TemplateMetadata): Promise<AdapterResult<boolean>> {
+  async validateRequirements(
+    template: TemplateMetadata
+  ): Promise<AdapterResult<boolean>> {
     try {
       if (!template) {
         return error('template is required');
@@ -437,13 +520,24 @@ export class CustomizationEngineAdapter {
   private engineInstance: unknown = null;
 
   private async getEngine(): Promise<{
-    customize: (content: string, context: TemplateContext, filePath?: string) => Promise<string>;
-    customizeProject: (projectPath: string, context: TemplateContext) => Promise<void>;
+    customize: (
+      content: string,
+      context: TemplateContext,
+      filePath?: string
+    ) => Promise<string>;
+    customizeProject: (
+      projectPath: string,
+      context: TemplateContext
+    ) => Promise<void>;
   }> {
     if (!this.engineInstance) {
       try {
-        const module = await loadComputerSetupModule('src/project-init/index.js');
-        const CustomizationEngine = (module as { CustomizationEngine: new () => unknown }).CustomizationEngine;
+        const module = await loadComputerSetupModule(
+          'src/project-init/index.js'
+        );
+        const CustomizationEngine = (
+          module as { CustomizationEngine: new () => unknown }
+        ).CustomizationEngine;
         this.engineInstance = new CustomizationEngine();
       } catch {
         // Stub implementation with basic variable replacement
@@ -451,20 +545,33 @@ export class CustomizationEngineAdapter {
           customize: async (content: string, context: TemplateContext) => {
             return content
               .replace(/\{\{PROJECT_NAME\}\}/g, context.project.name)
-              .replace(/\{\{PROJECT_DESCRIPTION\}\}/g, context.project.description)
+              .replace(
+                /\{\{PROJECT_DESCRIPTION\}\}/g,
+                context.project.description
+              )
               .replace(/\{\{PROJECT_TYPE\}\}/g, context.project.type)
               .replace(/\{\{AUTHOR\}\}/g, context.project.author);
           },
           customizeProject: async () => {
-            throw new Error('CustomizationEngine not available. Install @wundr/computer-setup package.');
+            throw new Error(
+              'CustomizationEngine not available. Install @wundr/computer-setup package.'
+            );
           },
         };
       }
     }
-    return this.engineInstance as ReturnType<typeof this.getEngine> extends Promise<infer T> ? T : never;
+    return this.engineInstance as ReturnType<
+      typeof this.getEngine
+    > extends Promise<infer T>
+      ? T
+      : never;
   }
 
-  async customize(content: string, context: TemplateContext, filePath?: string): Promise<AdapterResult<string>> {
+  async customize(
+    content: string,
+    context: TemplateContext,
+    filePath?: string
+  ): Promise<AdapterResult<string>> {
     try {
       if (!content) {
         return error('content is required');
@@ -481,7 +588,10 @@ export class CustomizationEngineAdapter {
     }
   }
 
-  async customizeProject(projectPath: string, context: TemplateContext): Promise<AdapterResult<void>> {
+  async customizeProject(
+    projectPath: string,
+    context: TemplateContext
+  ): Promise<AdapterResult<void>> {
     try {
       if (!projectPath) {
         return error('projectPath is required');
@@ -512,8 +622,12 @@ export class ValidationCheckerAdapter {
   }> {
     if (!this.checkerInstance) {
       try {
-        const module = await loadComputerSetupModule('src/project-init/index.js');
-        const ValidationChecker = (module as { ValidationChecker: new () => unknown }).ValidationChecker;
+        const module = await loadComputerSetupModule(
+          'src/project-init/index.js'
+        );
+        const ValidationChecker = (
+          module as { ValidationChecker: new () => unknown }
+        ).ValidationChecker;
         this.checkerInstance = new ValidationChecker();
       } catch {
         // Stub implementation
@@ -546,7 +660,9 @@ export class ValidationCheckerAdapter {
             });
 
             const passed = results.filter(r => r.passed).length;
-            const failed = results.filter(r => !r.passed && r.severity === 'error').length;
+            const failed = results.filter(
+              r => !r.passed && r.severity === 'error'
+            ).length;
 
             return {
               timestamp: new Date(),
@@ -554,21 +670,31 @@ export class ValidationCheckerAdapter {
               totalChecks: results.length,
               passed,
               failed,
-              warnings: results.filter(r => !r.passed && r.severity === 'warning').length,
+              warnings: results.filter(
+                r => !r.passed && r.severity === 'warning'
+              ).length,
               results,
               score: (passed / results.length) * 100,
             };
           },
           autoFix: async () => {
-            throw new Error('ValidationChecker auto-fix not available. Install @wundr/computer-setup package.');
+            throw new Error(
+              'ValidationChecker auto-fix not available. Install @wundr/computer-setup package.'
+            );
           },
         };
       }
     }
-    return this.checkerInstance as ReturnType<typeof this.getChecker> extends Promise<infer T> ? T : never;
+    return this.checkerInstance as ReturnType<
+      typeof this.getChecker
+    > extends Promise<infer T>
+      ? T
+      : never;
   }
 
-  async validate(projectPath: string): Promise<AdapterResult<ValidationReport>> {
+  async validate(
+    projectPath: string
+  ): Promise<AdapterResult<ValidationReport>> {
     try {
       if (!projectPath) {
         return error('projectPath is required');
@@ -609,13 +735,24 @@ export class ClaudeConfigInstallerAdapter {
     getVersion: () => Promise<string | null>;
     validate: () => Promise<boolean>;
     isSupported: (platform: SetupPlatform) => boolean;
-    install: (profile: DeveloperProfile, platform: SetupPlatform) => Promise<void>;
-    configure: (profile: DeveloperProfile, platform: SetupPlatform) => Promise<void>;
-    getSteps: (profile: DeveloperProfile, platform: SetupPlatform) => { id: string; name: string; description: string }[];
+    install: (
+      profile: DeveloperProfile,
+      platform: SetupPlatform
+    ) => Promise<void>;
+    configure: (
+      profile: DeveloperProfile,
+      platform: SetupPlatform
+    ) => Promise<void>;
+    getSteps: (
+      profile: DeveloperProfile,
+      platform: SetupPlatform
+    ) => { id: string; name: string; description: string }[];
   }> {
     if (!this.installerInstance) {
       try {
-        const module = await loadComputerSetupModule('src/installers/claude-installer.js');
+        const module = await loadComputerSetupModule(
+          'src/installers/claude-installer.js'
+        );
         this.installerInstance = (module as { default: unknown }).default;
       } catch {
         // Stub implementation using execSync to check Claude installation
@@ -649,21 +786,45 @@ export class ClaudeConfigInstallerAdapter {
             return platform.os === 'darwin' || platform.os === 'linux';
           },
           install: async () => {
-            throw new Error('Claude installation requires @wundr/computer-setup package.');
+            throw new Error(
+              'Claude installation requires @wundr/computer-setup package.'
+            );
           },
           configure: async () => {
-            throw new Error('Claude configuration requires @wundr/computer-setup package.');
+            throw new Error(
+              'Claude configuration requires @wundr/computer-setup package.'
+            );
           },
           getSteps: () => [
-            { id: 'claude-cli', name: 'Install Claude CLI', description: 'Install Claude command-line interface' },
-            { id: 'claude-config', name: 'Configure Claude', description: 'Setup Claude directory and configurations' },
-            { id: 'mcp-servers', name: 'Install MCP Servers', description: 'Install and configure MCP servers' },
-            { id: 'claude-agents', name: 'Setup Agents', description: 'Configure specialized agents' },
+            {
+              id: 'claude-cli',
+              name: 'Install Claude CLI',
+              description: 'Install Claude command-line interface',
+            },
+            {
+              id: 'claude-config',
+              name: 'Configure Claude',
+              description: 'Setup Claude directory and configurations',
+            },
+            {
+              id: 'mcp-servers',
+              name: 'Install MCP Servers',
+              description: 'Install and configure MCP servers',
+            },
+            {
+              id: 'claude-agents',
+              name: 'Setup Agents',
+              description: 'Configure specialized agents',
+            },
           ],
         };
       }
     }
-    return this.installerInstance as ReturnType<typeof this.getInstaller> extends Promise<infer T> ? T : never;
+    return this.installerInstance as ReturnType<
+      typeof this.getInstaller
+    > extends Promise<infer T>
+      ? T
+      : never;
   }
 
   async isInstalled(): Promise<AdapterResult<boolean>> {
@@ -710,7 +871,10 @@ export class ClaudeConfigInstallerAdapter {
     }
   }
 
-  async install(profile: DeveloperProfile, platform: SetupPlatform): Promise<AdapterResult<void>> {
+  async install(
+    profile: DeveloperProfile,
+    platform: SetupPlatform
+  ): Promise<AdapterResult<void>> {
     try {
       const installer = await this.getInstaller();
       await installer.install(profile, platform);
@@ -721,7 +885,10 @@ export class ClaudeConfigInstallerAdapter {
     }
   }
 
-  async configure(profile: DeveloperProfile, platform: SetupPlatform): Promise<AdapterResult<void>> {
+  async configure(
+    profile: DeveloperProfile,
+    platform: SetupPlatform
+  ): Promise<AdapterResult<void>> {
     try {
       const installer = await this.getInstaller();
       await installer.configure(profile, platform);
@@ -732,27 +899,48 @@ export class ClaudeConfigInstallerAdapter {
     }
   }
 
-  getSteps(profile: DeveloperProfile, platform: SetupPlatform): AdapterResult<{ id: string; name: string; description: string }[]> {
+  getSteps(
+    profile: DeveloperProfile,
+    platform: SetupPlatform
+  ): AdapterResult<{ id: string; name: string; description: string }[]> {
     try {
       // Build steps dynamically based on profile and platform
       const steps: { id: string; name: string; description: string }[] = [
-        { id: 'claude-cli', name: 'Install Claude CLI', description: 'Install Claude command-line interface' },
-        { id: 'claude-config', name: 'Configure Claude', description: 'Setup Claude directory and configurations' },
+        {
+          id: 'claude-cli',
+          name: 'Install Claude CLI',
+          description: 'Install Claude command-line interface',
+        },
+        {
+          id: 'claude-config',
+          name: 'Configure Claude',
+          description: 'Setup Claude directory and configurations',
+        },
       ];
 
       // Add MCP servers step - customize description based on profile preferences
       const mcpToolsList = profile.preferences?.aiTools?.mcpTools;
-      const mcpDescription = mcpToolsList && mcpToolsList.length > 0
-        ? `Install and configure MCP servers: ${mcpToolsList.slice(0, 3).join(', ')}${mcpToolsList.length > 3 ? '...' : ''}`
-        : 'Install and configure MCP servers';
-      steps.push({ id: 'mcp-servers', name: 'Install MCP Servers', description: mcpDescription });
+      const mcpDescription =
+        mcpToolsList && mcpToolsList.length > 0
+          ? `Install and configure MCP servers: ${mcpToolsList.slice(0, 3).join(', ')}${mcpToolsList.length > 3 ? '...' : ''}`
+          : 'Install and configure MCP servers';
+      steps.push({
+        id: 'mcp-servers',
+        name: 'Install MCP Servers',
+        description: mcpDescription,
+      });
 
       // Add agents step - customize based on profile's swarm agents
       const swarmAgentsList = profile.preferences?.aiTools?.swarmAgents;
-      const agentsDescription = swarmAgentsList && swarmAgentsList.length > 0
-        ? `Configure specialized agents: ${swarmAgentsList.slice(0, 3).join(', ')}${swarmAgentsList.length > 3 ? '...' : ''}`
-        : 'Configure specialized agents';
-      steps.push({ id: 'claude-agents', name: 'Setup Agents', description: agentsDescription });
+      const agentsDescription =
+        swarmAgentsList && swarmAgentsList.length > 0
+          ? `Configure specialized agents: ${swarmAgentsList.slice(0, 3).join(', ')}${swarmAgentsList.length > 3 ? '...' : ''}`
+          : 'Configure specialized agents';
+      steps.push({
+        id: 'claude-agents',
+        name: 'Setup Agents',
+        description: agentsDescription,
+      });
 
       // Add platform-specific notes to CLI step description
       const cliStep = steps[0];
@@ -783,7 +971,10 @@ export class BackupRollbackManagerAdapter {
     this.backupDir = backupDir || `${process.env['HOME']}/.wundr-backups`;
   }
 
-  async createBackup(sourcePath: string, backupName?: string): Promise<AdapterResult<{ backupId: string; path: string }>> {
+  async createBackup(
+    sourcePath: string,
+    backupName?: string
+  ): Promise<AdapterResult<{ backupId: string; path: string }>> {
     try {
       if (!sourcePath) {
         return error('sourcePath is required');
@@ -803,7 +994,10 @@ export class BackupRollbackManagerAdapter {
         sourcePath,
         createdAt: new Date().toISOString(),
       };
-      await fs.writeJson(path.join(backupPath, '.backup-metadata.json'), metadata);
+      await fs.writeJson(
+        path.join(backupPath, '.backup-metadata.json'),
+        metadata
+      );
 
       return success({ backupId, path: backupPath });
     } catch (err) {
@@ -812,7 +1006,10 @@ export class BackupRollbackManagerAdapter {
     }
   }
 
-  async restore(backupId: string, targetPath: string): Promise<AdapterResult<void>> {
+  async restore(
+    backupId: string,
+    targetPath: string
+  ): Promise<AdapterResult<void>> {
     try {
       if (!backupId) {
         return error('backupId is required');
@@ -838,7 +1035,9 @@ export class BackupRollbackManagerAdapter {
     }
   }
 
-  async listBackups(): Promise<AdapterResult<{ id: string; sourcePath: string; createdAt: string }[]>> {
+  async listBackups(): Promise<
+    AdapterResult<{ id: string; sourcePath: string; createdAt: string }[]>
+  > {
     try {
       const fs = await import('fs-extra');
       const path = await import('path');
@@ -848,11 +1047,16 @@ export class BackupRollbackManagerAdapter {
       }
 
       const entries = await fs.readdir(this.backupDir, { withFileTypes: true });
-      const backups: { id: string; sourcePath: string; createdAt: string }[] = [];
+      const backups: { id: string; sourcePath: string; createdAt: string }[] =
+        [];
 
       for (const entry of entries) {
         if (entry.isDirectory()) {
-          const metadataPath = path.join(this.backupDir, entry.name, '.backup-metadata.json');
+          const metadataPath = path.join(
+            this.backupDir,
+            entry.name,
+            '.backup-metadata.json'
+          );
           if (await fs.pathExists(metadataPath)) {
             const metadata = await fs.readJson(metadataPath);
             backups.push({
@@ -903,38 +1107,64 @@ export class ProjectInitOrchestratorAdapter {
   private orchestratorInstance: unknown = null;
 
   private async getOrchestrator(): Promise<{
-    initializeProject: (options: { projectPath: string; projectName: string; interactive?: boolean; autoFix?: boolean }) => Promise<void>;
+    initializeProject: (options: {
+      projectPath: string;
+      projectName: string;
+      interactive?: boolean;
+      autoFix?: boolean;
+    }) => Promise<void>;
     setupExistingProject: (projectPath: string) => Promise<void>;
     validateProject: (projectPath: string, autoFix?: boolean) => Promise<void>;
     updateTemplates: (projectPath: string) => Promise<void>;
   }> {
     if (!this.orchestratorInstance) {
       try {
-        const module = await loadComputerSetupModule('src/project-init/index.js');
-        const ProjectInitOrchestrator = (module as { ProjectInitOrchestrator: new () => unknown }).ProjectInitOrchestrator;
+        const module = await loadComputerSetupModule(
+          'src/project-init/index.js'
+        );
+        const ProjectInitOrchestrator = (
+          module as { ProjectInitOrchestrator: new () => unknown }
+        ).ProjectInitOrchestrator;
         this.orchestratorInstance = new ProjectInitOrchestrator();
       } catch {
         // Stub implementation
         this.orchestratorInstance = {
           initializeProject: async () => {
-            throw new Error('ProjectInitOrchestrator not available. Install @wundr/computer-setup package.');
+            throw new Error(
+              'ProjectInitOrchestrator not available. Install @wundr/computer-setup package.'
+            );
           },
           setupExistingProject: async () => {
-            throw new Error('ProjectInitOrchestrator not available. Install @wundr/computer-setup package.');
+            throw new Error(
+              'ProjectInitOrchestrator not available. Install @wundr/computer-setup package.'
+            );
           },
           validateProject: async () => {
-            throw new Error('ProjectInitOrchestrator not available. Install @wundr/computer-setup package.');
+            throw new Error(
+              'ProjectInitOrchestrator not available. Install @wundr/computer-setup package.'
+            );
           },
           updateTemplates: async () => {
-            throw new Error('ProjectInitOrchestrator not available. Install @wundr/computer-setup package.');
+            throw new Error(
+              'ProjectInitOrchestrator not available. Install @wundr/computer-setup package.'
+            );
           },
         };
       }
     }
-    return this.orchestratorInstance as ReturnType<typeof this.getOrchestrator> extends Promise<infer T> ? T : never;
+    return this.orchestratorInstance as ReturnType<
+      typeof this.getOrchestrator
+    > extends Promise<infer T>
+      ? T
+      : never;
   }
 
-  async initializeProject(options: { projectPath: string; projectName: string; interactive?: boolean; autoFix?: boolean }): Promise<AdapterResult<void>> {
+  async initializeProject(options: {
+    projectPath: string;
+    projectName: string;
+    interactive?: boolean;
+    autoFix?: boolean;
+  }): Promise<AdapterResult<void>> {
     try {
       if (!options.projectPath) {
         return error('projectPath is required');
@@ -951,7 +1181,9 @@ export class ProjectInitOrchestratorAdapter {
     }
   }
 
-  async setupExistingProject(projectPath: string): Promise<AdapterResult<void>> {
+  async setupExistingProject(
+    projectPath: string
+  ): Promise<AdapterResult<void>> {
     try {
       if (!projectPath) {
         return error('projectPath is required');
@@ -965,7 +1197,10 @@ export class ProjectInitOrchestratorAdapter {
     }
   }
 
-  async validateProject(projectPath: string, autoFix?: boolean): Promise<AdapterResult<void>> {
+  async validateProject(
+    projectPath: string,
+    autoFix?: boolean
+  ): Promise<AdapterResult<void>> {
     try {
       if (!projectPath) {
         return error('projectPath is required');

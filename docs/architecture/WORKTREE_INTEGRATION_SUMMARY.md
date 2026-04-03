@@ -223,7 +223,7 @@ Bash('./cleanup-all-merged.sh false');
 
 ```bash
 # Full SPARC TDD pipeline with worktree isolation
-npx claude-flow sparc tdd "feature-name" --use-worktrees
+npx ruflo sparc tdd "feature-name" --use-worktrees
 
 # Each phase gets isolated worktree:
 # - specification-feature-name

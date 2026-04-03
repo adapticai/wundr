@@ -2,7 +2,9 @@
 
 ## Executive Summary
 
-This document provides a comprehensive implementation plan for integrating Railway MCP Server (`@railway/mcp-server`) and Netlify MCP Server (`@netlify/mcp`) into the Wundr ecosystem. The integration will enable Claude Code to:
+This document provides a comprehensive implementation plan for integrating Railway MCP Server
+(`@railway/mcp-server`) and Netlify MCP Server (`@netlify/mcp`) into the Wundr ecosystem. The
+integration will enable Claude Code to:
 
 1. **Monitor deployment status** after pushing to git main/master
 2. **Fetch and analyze logs** from production environments
@@ -33,39 +35,38 @@ This document provides a comprehensive implementation plan for integrating Railw
 
 ### 1.1 Railway MCP Server
 
-**Package**: `@railway/mcp-server`
-**Repository**: https://github.com/railwayapp/railway-mcp-server
+**Package**: `@railway/mcp-server` **Repository**: https://github.com/railwayapp/railway-mcp-server
 **NPM**: https://www.npmjs.com/package/@railway/mcp-server
 
 #### Available Tools (Expected)
 
-| Tool | Description | Primary Use Case |
-|------|-------------|------------------|
-| `mcp__railway__deploy_status` | Get current deployment status | Monitor after git push |
-| `mcp__railway__get_logs` | Fetch application logs | Debug production issues |
-| `mcp__railway__list_services` | List all services in project | Service discovery |
-| `mcp__railway__get_deployments` | Get deployment history | Track deployment timeline |
-| `mcp__railway__get_variables` | Get environment variables | Configuration management |
-| `mcp__railway__restart_service` | Restart a service | Recovery actions |
-| `mcp__railway__get_metrics` | Get service metrics | Performance monitoring |
+| Tool                            | Description                   | Primary Use Case          |
+| ------------------------------- | ----------------------------- | ------------------------- |
+| `mcp__railway__deploy_status`   | Get current deployment status | Monitor after git push    |
+| `mcp__railway__get_logs`        | Fetch application logs        | Debug production issues   |
+| `mcp__railway__list_services`   | List all services in project  | Service discovery         |
+| `mcp__railway__get_deployments` | Get deployment history        | Track deployment timeline |
+| `mcp__railway__get_variables`   | Get environment variables     | Configuration management  |
+| `mcp__railway__restart_service` | Restart a service             | Recovery actions          |
+| `mcp__railway__get_metrics`     | Get service metrics           | Performance monitoring    |
 
 ### 1.2 Netlify MCP Server
 
-**Package**: `@netlify/mcp`
-**Documentation**: https://docs.netlify.com/build/build-with-ai/netlify-mcp-server/
-**NPM**: https://www.npmjs.com/package/@netlify/mcp
+**Package**: `@netlify/mcp` **Documentation**:
+https://docs.netlify.com/build/build-with-ai/netlify-mcp-server/ **NPM**:
+https://www.npmjs.com/package/@netlify/mcp
 
 #### Available Tools (Expected)
 
-| Tool | Description | Primary Use Case |
-|------|-------------|------------------|
-| `mcp__netlify__deploy_status` | Get deployment status | Monitor deployments |
-| `mcp__netlify__get_build_logs` | Fetch build logs | Debug build failures |
-| `mcp__netlify__list_sites` | List all sites | Site discovery |
-| `mcp__netlify__get_deploys` | Get deployment history | Track deploy timeline |
-| `mcp__netlify__get_functions` | List serverless functions | Function management |
-| `mcp__netlify__trigger_deploy` | Trigger a new deploy | Force redeploy |
-| `mcp__netlify__get_analytics` | Get site analytics | Performance insights |
+| Tool                           | Description               | Primary Use Case      |
+| ------------------------------ | ------------------------- | --------------------- |
+| `mcp__netlify__deploy_status`  | Get deployment status     | Monitor deployments   |
+| `mcp__netlify__get_build_logs` | Fetch build logs          | Debug build failures  |
+| `mcp__netlify__list_sites`     | List all sites            | Site discovery        |
+| `mcp__netlify__get_deploys`    | Get deployment history    | Track deploy timeline |
+| `mcp__netlify__get_functions`  | List serverless functions | Function management   |
+| `mcp__netlify__trigger_deploy` | Trigger a new deploy      | Force redeploy        |
+| `mcp__netlify__get_analytics`  | Get site analytics        | Performance insights  |
 
 ---
 
@@ -172,7 +173,7 @@ Add Railway and Netlify MCP servers to the `mcpServers` array:
 
 ```typescript
 private readonly mcpServers = [
-  'claude-flow',
+  'ruflo',
   'ruv-swarm',
   'firecrawl',
   'context7',
@@ -249,10 +250,10 @@ mcpServers: {
 
 **File**: `packages/@wundr/computer-setup/resources/agents/devops/deployment-monitor.md`
 
-```markdown
+````markdown
 ---
 name: deployment-monitor
-color: "blue"
+color: 'blue'
 type: devops
 description: Monitors deployment status and health across Railway and Netlify platforms
 capabilities:
@@ -276,32 +277,40 @@ hooks:
     fi
   post: |
     echo "✅ Deployment monitoring session complete"
-    npx claude-flow@alpha hooks post-task --task-id "deployment-monitor"
+    npx ruflo@latest hooks post-task --task-id "deployment-monitor"
 ---
 
 # Deployment Monitor Agent
 
 ## Purpose
-This agent monitors deployments across Railway and Netlify platforms, providing real-time status updates, log analysis, and automated issue detection after git pushes to main/master branches.
+
+This agent monitors deployments across Railway and Netlify platforms, providing real-time status
+updates, log analysis, and automated issue detection after git pushes to main/master branches.
 
 ## Core Responsibilities
 
 ### 1. Platform Detection
+
 Automatically detect which deployment platform(s) are configured:
+
 - Railway: Check for `railway.json`, `RAILWAY_PROJECT_ID`, or Railway API connectivity
 - Netlify: Check for `netlify.toml`, `NETLIFY_SITE_ID`, or Netlify CLI configuration
 
 ### 2. Deployment Status Monitoring
+
 After detecting a git push to main/master:
 
 **For Railway:**
+
 ```bash
 # Using Railway MCP tools
 mcp__railway__deploy_status { projectId: "${RAILWAY_PROJECT_ID}" }
 mcp__railway__get_deployments { limit: 5 }
 ```
+````
 
 **For Netlify:**
+
 ```bash
 # Using Netlify MCP tools
 mcp__netlify__deploy_status { siteId: "${NETLIFY_SITE_ID}" }
@@ -309,9 +318,11 @@ mcp__netlify__get_deploys { limit: 5 }
 ```
 
 ### 3. Log Streaming and Analysis
+
 Continuously fetch and analyze logs until deployment succeeds or fails:
 
 **Railway Log Monitoring:**
+
 ```bash
 mcp__railway__get_logs {
   serviceId: "${SERVICE_ID}",
@@ -321,6 +332,7 @@ mcp__railway__get_logs {
 ```
 
 **Netlify Build Log Monitoring:**
+
 ```bash
 mcp__netlify__get_build_logs {
   deployId: "${DEPLOY_ID}",
@@ -329,7 +341,9 @@ mcp__netlify__get_build_logs {
 ```
 
 ### 4. Error Pattern Detection
+
 Analyze logs for common error patterns:
+
 - Runtime exceptions
 - Build failures
 - Memory issues
@@ -338,7 +352,9 @@ Analyze logs for common error patterns:
 - Missing environment variables
 
 ### 5. Health Check Verification
+
 After deployment completes:
+
 - Verify service is responding
 - Check health endpoints
 - Validate critical functionality
@@ -346,16 +362,19 @@ After deployment completes:
 ## Usage Patterns
 
 ### Automatic Post-Push Monitoring
+
 ```
 "I just pushed to main, monitor the deployment and let me know if there are any issues"
 ```
 
 ### Manual Status Check
+
 ```
 "Check the current deployment status on Railway/Netlify"
 ```
 
 ### Log Investigation
+
 ```
 "Get the last 100 lines of logs from production and analyze for errors"
 ```
@@ -370,43 +389,52 @@ After deployment completes:
 ## MCP Tool Reference
 
 ### Railway Tools
-| Tool | Usage |
-|------|-------|
-| `mcp__railway__deploy_status` | Get current deployment state |
-| `mcp__railway__get_logs` | Fetch service logs |
-| `mcp__railway__get_deployments` | List recent deployments |
-| `mcp__railway__restart_service` | Restart a service |
-| `mcp__railway__get_variables` | Get environment variables |
+
+| Tool                            | Usage                        |
+| ------------------------------- | ---------------------------- |
+| `mcp__railway__deploy_status`   | Get current deployment state |
+| `mcp__railway__get_logs`        | Fetch service logs           |
+| `mcp__railway__get_deployments` | List recent deployments      |
+| `mcp__railway__restart_service` | Restart a service            |
+| `mcp__railway__get_variables`   | Get environment variables    |
 
 ### Netlify Tools
-| Tool | Usage |
-|------|-------|
-| `mcp__netlify__deploy_status` | Get deployment state |
-| `mcp__netlify__get_build_logs` | Fetch build logs |
-| `mcp__netlify__get_deploys` | List recent deploys |
-| `mcp__netlify__trigger_deploy` | Force a new deploy |
-| `mcp__netlify__get_functions` | List serverless functions |
+
+| Tool                           | Usage                     |
+| ------------------------------ | ------------------------- |
+| `mcp__netlify__deploy_status`  | Get deployment state      |
+| `mcp__netlify__get_build_logs` | Fetch build logs          |
+| `mcp__netlify__get_deploys`    | List recent deploys       |
+| `mcp__netlify__trigger_deploy` | Force a new deploy        |
+| `mcp__netlify__get_functions`  | List serverless functions |
 
 ## Error Handling
 
 ### Platform Unavailable
+
 If MCP tools fail to connect:
+
 1. Verify API tokens are configured
 2. Check network connectivity
 3. Fall back to CLI commands if available
 
 ### Deployment Timeout
+
 If deployment takes longer than expected:
+
 1. Continue monitoring for configured timeout
 2. Alert user of extended deployment
 3. Provide option to cancel and investigate
 
 ### Continuous Errors
+
 If errors persist after multiple deploy cycles:
+
 1. Compile comprehensive error report
 2. Suggest reverting to last known good deployment
 3. Create incident tracking issue
-```
+
+````
 
 #### 3.2.2 Create Log Analyzer Agent
 
@@ -431,7 +459,7 @@ hooks:
     echo "📊 Preparing log analysis patterns..."
   post: |
     echo "✅ Log analysis complete"
-    npx claude-flow@alpha hooks post-edit --memory-key "logs/analysis/$(date +%s)"
+    npx ruflo@latest hooks post-edit --memory-key "logs/analysis/$(date +%s)"
 ---
 
 # Log Analyzer Agent
@@ -452,9 +480,10 @@ mcp__railway__get_logs {
   filter: "error|warning|critical|exception",
   since: "1h"
 }
-```
+````
 
 **Netlify:**
+
 ```javascript
 mcp__netlify__get_build_logs {
   deployId: "${DEPLOY_ID}",
@@ -470,23 +499,25 @@ mcp__netlify__get_function_logs {
 ### 2. Error Pattern Database
 
 #### Runtime Errors
-| Pattern | Classification | Common Cause |
-|---------|---------------|--------------|
-| `ECONNREFUSED` | Connection Error | Database/service unreachable |
-| `ENOMEM` | Memory Error | Memory limit exceeded |
-| `ETIMEDOUT` | Timeout Error | Slow external service |
-| `ERR_MODULE_NOT_FOUND` | Module Error | Missing dependency |
-| `SyntaxError` | Parse Error | Invalid code syntax |
-| `TypeError` | Type Error | Null/undefined access |
+
+| Pattern                | Classification   | Common Cause                 |
+| ---------------------- | ---------------- | ---------------------------- |
+| `ECONNREFUSED`         | Connection Error | Database/service unreachable |
+| `ENOMEM`               | Memory Error     | Memory limit exceeded        |
+| `ETIMEDOUT`            | Timeout Error    | Slow external service        |
+| `ERR_MODULE_NOT_FOUND` | Module Error     | Missing dependency           |
+| `SyntaxError`          | Parse Error      | Invalid code syntax          |
+| `TypeError`            | Type Error       | Null/undefined access        |
 
 #### Build Errors
-| Pattern | Classification | Common Cause |
-|---------|---------------|--------------|
-| `npm ERR!` | Dependency Error | Package resolution failure |
-| `tsc error` | TypeScript Error | Type checking failure |
-| `ENOENT` | File Not Found | Missing file reference |
-| `Cannot find module` | Import Error | Bad import path |
-| `Build exceeded memory` | Resource Error | Build too large |
+
+| Pattern                 | Classification   | Common Cause               |
+| ----------------------- | ---------------- | -------------------------- |
+| `npm ERR!`              | Dependency Error | Package resolution failure |
+| `tsc error`             | TypeScript Error | Type checking failure      |
+| `ENOENT`                | File Not Found   | Missing file reference     |
+| `Cannot find module`    | Import Error     | Bad import path            |
+| `Build exceeded memory` | Resource Error   | Build too large            |
 
 ### 3. Root Cause Analysis Process
 
@@ -511,6 +542,7 @@ mcp__netlify__get_function_logs {
 ### 4. Fix Suggestion Generation
 
 Based on identified root cause, generate:
+
 1. **Specific file and line references** where fix should be applied
 2. **Code diff suggestions** showing exact changes
 3. **Related files** that may need updates
@@ -519,10 +551,12 @@ Based on identified root cause, generate:
 ## Output Format
 
 ### Error Report Structure
+
 ```markdown
 ## Log Analysis Report
 
 ### Summary
+
 - **Platform**: Railway/Netlify
 - **Time Range**: [start] - [end]
 - **Errors Found**: [count]
@@ -531,45 +565,57 @@ Based on identified root cause, generate:
 ### Issues Identified
 
 #### Issue #1: [Classification]
+
 - **Severity**: Critical/High/Medium/Low
 - **First Occurrence**: [timestamp]
 - **Frequency**: [count] occurrences
 - **Error Message**:
-  ```
-  [full error message]
-  ```
+```
+
+[full error message]
+
+````
 - **Root Cause**: [explanation]
 - **Affected Files**:
-  - `src/services/api.ts:145`
-  - `src/utils/database.ts:78`
+- `src/services/api.ts:145`
+- `src/utils/database.ts:78`
 - **Suggested Fix**:
-  ```diff
-  - const result = await db.query(sql);
-  + const result = await db.query(sql).catch(handleDbError);
-  ```
+```diff
+- const result = await db.query(sql);
++ const result = await db.query(sql).catch(handleDbError);
+````
+
 - **Related Issues**: #2, #5
 
 ### Recommended Actions
+
 1. [Immediate action required]
 2. [Secondary fix]
 3. [Preventive measure]
+
 ```
 
 ## Usage Examples
 
 ### Analyze Recent Errors
 ```
+
 "Analyze the last hour of production logs and identify any errors"
+
 ```
 
 ### Investigate Specific Error
 ```
+
 "I'm seeing 'Cannot connect to database' errors - analyze logs and find the cause"
+
 ```
 
 ### Build Failure Analysis
 ```
+
 "The Netlify build failed, analyze the build logs and tell me what went wrong"
+
 ```
 
 ## Integration Points
@@ -587,7 +633,7 @@ Based on identified root cause, generate:
 ```markdown
 ---
 name: debug-refactor
-color: "red"
+color: 'red'
 type: devops
 description: Implements fixes for deployment issues identified through log analysis
 capabilities:
@@ -610,60 +656,28 @@ hooks:
 # Debug Refactor Agent
 
 ## Purpose
-Implements code fixes for issues identified through deployment log analysis, executes the continuous deploy → monitor → refactor cycle until production issues are resolved.
+
+Implements code fixes for issues identified through deployment log analysis, executes the continuous
+deploy → monitor → refactor cycle until production issues are resolved.
 
 ## Core Workflow
 
 ### The Debug Cycle
+```
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                    DEBUG REFACTOR CYCLE                                      │
-│                                                                              │
-│   ┌───────────────┐                                                         │
-│   │ RECEIVE FIX   │ ← From log-analyzer agent                               │
-│   │ SUGGESTIONS   │                                                         │
-│   └───────┬───────┘                                                         │
-│           │                                                                  │
-│           ▼                                                                  │
-│   ┌───────────────┐                                                         │
-│   │ IMPLEMENT     │ → Edit files, add error handling, fix types             │
-│   │ CHANGES       │                                                         │
-│   └───────┬───────┘                                                         │
-│           │                                                                  │
-│           ▼                                                                  │
-│   ┌───────────────┐                                                         │
-│   │ LOCAL TEST    │ → npm test, npm run build, npm run typecheck            │
-│   │ VALIDATION    │                                                         │
-│   └───────┬───────┘                                                         │
-│           │                                                                  │
-│           ▼                                                                  │
-│   ┌───────────────┐                                                         │
-│   │ COMMIT &      │ → git add, git commit, git push origin main             │
-│   │ DEPLOY        │                                                         │
-│   └───────┬───────┘                                                         │
-│           │                                                                  │
-│           ▼                                                                  │
-│   ┌───────────────┐                                                         │
-│   │ MONITOR       │ ← Hand off to deployment-monitor agent                  │
-│   │ DEPLOYMENT    │                                                         │
-│   └───────┬───────┘                                                         │
-│           │                                                                  │
-│           ▼                                                                  │
-│   ┌───────────────┐                                                         │
-│   │ CHECK LOGS    │ ← Verify errors no longer appearing                     │
-│   │ FOR ERRORS    │                                                         │
-│   └───────┬───────┘                                                         │
-│           │                                                                  │
-│      ┌────┴────┐                                                            │
-│      │         │                                                            │
-│   [Errors]  [No Errors]                                                     │
-│      │         │                                                            │
-│      ▼         ▼                                                            │
-│   REPEAT    SUCCESS!                                                        │
-│   CYCLE     ✅ DONE                                                         │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+┌─────────────────────────────────────────────────────────────────────────────┐ │ DEBUG REFACTOR
+CYCLE │ │ │ │ ┌───────────────┐ │ │ │ RECEIVE FIX │ ← From log-analyzer agent │ │ │ SUGGESTIONS │ │
+│ └───────┬───────┘ │ │ │ │ │ ▼ │ │ ┌───────────────┐ │ │ │ IMPLEMENT │ → Edit files, add error
+handling, fix types │ │ │ CHANGES │ │ │ └───────┬───────┘ │ │ │ │ │ ▼ │ │ ┌───────────────┐ │ │ │
+LOCAL TEST │ → npm test, npm run build, npm run typecheck │ │ │ VALIDATION │ │ │ └───────┬───────┘ │
+│ │ │ │ ▼ │ │ ┌───────────────┐ │ │ │ COMMIT & │ → git add, git commit, git push origin main │ │ │
+DEPLOY │ │ │ └───────┬───────┘ │ │ │ │ │ ▼ │ │ ┌───────────────┐ │ │ │ MONITOR │ ← Hand off to
+deployment-monitor agent │ │ │ DEPLOYMENT │ │ │ └───────┬───────┘ │ │ │ │ │ ▼ │ │ ┌───────────────┐
+│ │ │ CHECK LOGS │ ← Verify errors no longer appearing │ │ │ FOR ERRORS │ │ │ └───────┬───────┘ │ │
+│ │ │ ┌────┴────┐ │ │ │ │ │ │ [Errors] [No Errors] │ │ │ │ │ │ ▼ ▼ │ │ REPEAT SUCCESS! │ │ CYCLE ✅
+DONE │ └─────────────────────────────────────────────────────────────────────────────┘
+
+````
 
 ## Implementation Patterns
 
@@ -689,11 +703,12 @@ From log-analyzer agent:
     }
   ]
 }
-```
+````
 
 ### 2. Apply Changes
 
 Using Claude Code tools:
+
 ```typescript
 // Read the file first
 Read { file_path: "src/services/database.ts" }
@@ -730,6 +745,7 @@ Write {
 ### 3. Local Validation
 
 Before deploying:
+
 ```bash
 # Type checking
 npm run typecheck
@@ -766,6 +782,7 @@ git push origin main
 ### 5. Monitor Deployment
 
 Hand off to deployment-monitor agent:
+
 ```javascript
 // Railway monitoring
 mcp__railway__deploy_status {
@@ -785,6 +802,7 @@ mcp__railway__get_logs {
 ### 6. Verify Fix
 
 Check if the specific error pattern has been eliminated:
+
 ```javascript
 // If original error was "ECONNREFUSED" at database connection
 // Search new logs for same pattern
@@ -803,6 +821,7 @@ if (errorStillPresent) {
 ## Fix Templates
 
 ### Database Connection Errors
+
 ```typescript
 // Before
 const connection = await db.connect();
@@ -810,14 +829,13 @@ const connection = await db.connect();
 // After
 import { retryWithBackoff } from '../utils/retry';
 
-const connection = await retryWithBackoff(
-  () => db.connect(),
-  3,
-  { onRetry: (err, attempt) => logger.warn(`DB connect retry ${attempt}`, err) }
-);
+const connection = await retryWithBackoff(() => db.connect(), 3, {
+  onRetry: (err, attempt) => logger.warn(`DB connect retry ${attempt}`, err),
+});
 ```
 
 ### Memory Limit Errors
+
 ```typescript
 // Before
 const allRecords = await Model.find({});
@@ -836,6 +854,7 @@ while (true) {
 ```
 
 ### Missing Environment Variables
+
 ```typescript
 // Before
 const apiKey = process.env.API_KEY;
@@ -862,12 +881,13 @@ The debug cycle terminates when:
 ## Integration with Deployment Platforms
 
 ### Railway Integration
+
 ```javascript
 // After fix is pushed
 const deploymentComplete = await pollRailwayDeployment({
   projectId: RAILWAY_PROJECT_ID,
   timeout: 300000, // 5 minutes
-  pollInterval: 5000
+  pollInterval: 5000,
 });
 
 if (deploymentComplete.status === 'success') {
@@ -877,7 +897,7 @@ if (deploymentComplete.status === 'success') {
   // Check logs for original error
   const postDeployLogs = await mcp__railway__get_logs({
     serviceId: SERVICE_ID,
-    since: '2m'
+    since: '2m',
   });
 
   return analyzeLogsForOriginalError(postDeployLogs, originalError);
@@ -885,19 +905,20 @@ if (deploymentComplete.status === 'success') {
 ```
 
 ### Netlify Integration
+
 ```javascript
 // After fix is pushed
 const buildComplete = await pollNetlifyBuild({
   siteId: NETLIFY_SITE_ID,
   timeout: 600000, // 10 minutes for build
-  pollInterval: 10000
+  pollInterval: 10000,
 });
 
 if (buildComplete.status === 'ready') {
   // For SSR/functions, check function logs
   const functionLogs = await mcp__netlify__get_function_logs({
     siteId: NETLIFY_SITE_ID,
-    since: '2m'
+    since: '2m',
   });
 
   return analyzeLogsForOriginalError(functionLogs, originalError);
@@ -912,7 +933,8 @@ if (buildComplete.status === 'ready') {
 4. **Rollback Ready**: Keep rollback command ready
 5. **Max Iterations**: Hard limit on cycle repetitions
 6. **Human Escalation**: Auto-escalate after repeated failures
-```
+
+````
 
 ### Phase 3: Workflow Templates (Week 3)
 
@@ -956,7 +978,7 @@ This workflow provides end-to-end monitoring of deployments to Railway and Netli
 # Via Claude prompt
 "Monitor my deployment to Railway/Netlify"
 "Check deployment status and fix any issues"
-```
+````
 
 ## Workflow Phases
 
@@ -976,6 +998,7 @@ graph LR
 ```
 
 **Actions:**
+
 1. Check for platform configuration files
 2. Verify environment variables
 3. Test API connectivity
@@ -984,12 +1007,13 @@ graph LR
 ### Phase 2: Monitor Deployment
 
 **For Railway:**
+
 ```javascript
 // Poll deployment status
 let status = 'building';
 while (['building', 'deploying'].includes(status)) {
   const deployment = await mcp__railway__deploy_status({
-    projectId: process.env.RAILWAY_PROJECT_ID
+    projectId: process.env.RAILWAY_PROJECT_ID,
   });
   status = deployment.status;
 
@@ -999,7 +1023,7 @@ while (['building', 'deploying'].includes(status)) {
     // Fetch build logs for analysis
     const logs = await mcp__railway__get_logs({
       deploymentId: deployment.id,
-      type: 'build'
+      type: 'build',
     });
     return { status: 'failed', logs };
   }
@@ -1009,19 +1033,20 @@ while (['building', 'deploying'].includes(status)) {
 ```
 
 **For Netlify:**
+
 ```javascript
 // Poll build status
 let deploy = await mcp__netlify__get_deploys({ limit: 1 })[0];
 while (['building', 'processing'].includes(deploy.state)) {
   deploy = await mcp__netlify__deploy_status({
-    deployId: deploy.id
+    deployId: deploy.id,
   });
 
   console.log(`Build status: ${deploy.state}`);
 
   if (deploy.state === 'error') {
     const logs = await mcp__netlify__get_build_logs({
-      deployId: deploy.id
+      deployId: deploy.id,
     });
     return { status: 'failed', logs };
   }
@@ -1092,6 +1117,7 @@ After applying fixes:
 ## Cycle Continuation
 
 The workflow continues in a loop until:
+
 - All identified errors are resolved
 - Maximum iteration count reached (default: 5)
 - User intervention requested
@@ -1142,9 +1168,11 @@ deployment_monitor:
 Monitor deployment to Railway/Netlify after pushing to main/master.
 
 ## Usage
+
 /deploy-monitor [--platform railway|netlify] [--timeout <seconds>]
 
 ## Actions
+
 1. Detect deployment platform
 2. Monitor deployment progress
 3. Analyze logs for errors
@@ -1153,11 +1181,13 @@ Monitor deployment to Railway/Netlify after pushing to main/master.
 6. Report final status
 
 ## Examples
+
 - `/deploy-monitor` - Auto-detect platform and monitor
 - `/deploy-monitor --platform railway` - Monitor Railway only
 - `/deploy-monitor --timeout 600` - Set 10-minute timeout
 ```
-```
+
+````
 
 ### Phase 4: CLAUDE.md Updates (Week 4)
 
@@ -1182,17 +1212,16 @@ claude mcp add railway npx @railway/mcp-server
 # Required environment variables
 export RAILWAY_API_TOKEN="your-token"
 export RAILWAY_PROJECT_ID="your-project-id"
-```
+````
 
-**Available Tools:**
-| Tool | Description | Example |
-|------|-------------|---------|
-| `mcp__railway__deploy_status` | Get deployment status | `{ projectId: "..." }` |
-| `mcp__railway__get_logs` | Fetch service logs | `{ serviceId: "...", lines: 100 }` |
-| `mcp__railway__get_deployments` | List deployments | `{ limit: 5 }` |
-| `mcp__railway__restart_service` | Restart service | `{ serviceId: "..." }` |
+**Available Tools:** | Tool | Description | Example | |------|-------------|---------| |
+`mcp__railway__deploy_status` | Get deployment status | `{ projectId: "..." }` | |
+`mcp__railway__get_logs` | Fetch service logs | `{ serviceId: "...", lines: 100 }` | |
+`mcp__railway__get_deployments` | List deployments | `{ limit: 5 }` | |
+`mcp__railway__restart_service` | Restart service | `{ serviceId: "..." }` |
 
 #### Netlify MCP Server
+
 **Package**: `@netlify/mcp`
 
 ```bash
@@ -1204,13 +1233,11 @@ export NETLIFY_ACCESS_TOKEN="your-token"
 export NETLIFY_SITE_ID="your-site-id"
 ```
 
-**Available Tools:**
-| Tool | Description | Example |
-|------|-------------|---------|
-| `mcp__netlify__deploy_status` | Get deployment status | `{ siteId: "..." }` |
-| `mcp__netlify__get_build_logs` | Fetch build logs | `{ deployId: "..." }` |
-| `mcp__netlify__get_deploys` | List deployments | `{ limit: 5 }` |
-| `mcp__netlify__trigger_deploy` | Trigger new deploy | `{ siteId: "..." }` |
+**Available Tools:** | Tool | Description | Example | |------|-------------|---------| |
+`mcp__netlify__deploy_status` | Get deployment status | `{ siteId: "..." }` | |
+`mcp__netlify__get_build_logs` | Fetch build logs | `{ deployId: "..." }` | |
+`mcp__netlify__get_deploys` | List deployments | `{ limit: 5 }` | | `mcp__netlify__trigger_deploy` |
+Trigger new deploy | `{ siteId: "..." }` |
 
 ### Continuous Deployment Workflow
 
@@ -1239,15 +1266,16 @@ After pushing to `main` or `master`, Claude Code can automatically:
 
 ### Deployment Debugging Agents
 
-| Agent | Purpose |
-|-------|---------|
-| `deployment-monitor` | Monitors deployment status and health |
-| `log-analyzer` | Deep analysis of logs to identify root causes |
-| `debug-refactor` | Implements fixes and manages the debug cycle |
+| Agent                | Purpose                                       |
+| -------------------- | --------------------------------------------- |
+| `deployment-monitor` | Monitors deployment status and health         |
+| `log-analyzer`       | Deep analysis of logs to identify root causes |
+| `debug-refactor`     | Implements fixes and manages the debug cycle  |
 
 ### Example Workflows
 
 #### Post-Push Monitoring
+
 ```
 User: "I just pushed to main, check if the deployment succeeds"
 
@@ -1261,6 +1289,7 @@ Claude: [Invokes deployment-monitor agent]
 ```
 
 #### Automatic Error Resolution
+
 ```
 User: "Deploy failed, analyze and fix"
 
@@ -1286,11 +1315,11 @@ deployment:
     railway:
       enabled: true
       auto_monitor: true
-      log_retention: "1h"
+      log_retention: '1h'
     netlify:
       enabled: true
       auto_monitor: true
-      log_retention: "1h"
+      log_retention: '1h'
 
   auto_fix:
     enabled: true
@@ -1301,7 +1330,8 @@ deployment:
       - import_errors
       - connection_retries
 ```
-```
+
+````
 
 #### 3.4.2 Update Template CLAUDE.md
 
@@ -1321,7 +1351,7 @@ Add deployment platform section to the template.
 
 ```typescript
 private readonly mcpServers = [
-  'claude-flow',
+  'ruflo',
   'ruv-swarm',
   'firecrawl',
   'context7',
@@ -1332,7 +1362,7 @@ private readonly mcpServers = [
   'railway',
   'netlify',
 ];
-```
+````
 
 #### 4.1.2 Add Installation Methods
 
@@ -1438,14 +1468,14 @@ hooks: {
   postGitPush: [
     {
       pattern: 'main|master',
-      command: 'npx claude-flow@alpha hooks post-push --detect-platform',
+      command: 'npx ruflo@latest hooks post-push --detect-platform',
       description: 'Detect deployment platform and initiate monitoring',
     },
   ],
 
   deploymentComplete: [
     {
-      command: 'npx claude-flow@alpha hooks deployment-complete --analyze-logs',
+      command: 'npx ruflo@latest hooks deployment-complete --analyze-logs',
       description: 'Analyze logs after deployment completes',
     },
   ],
@@ -1632,7 +1662,7 @@ private async copyDeploymentWorkflow(claudeDir: string): Promise<void> {
 
 **File**: `packages/@wundr/computer-setup/resources/commands/devops/deploy-monitor.md`
 
-```markdown
+````markdown
 Monitor deployment to Railway/Netlify after pushing to main/master.
 
 ## Workflow
@@ -1647,11 +1677,13 @@ Monitor deployment to Railway/Netlify after pushing to main/master.
 ## MCP Tools Used
 
 ### Railway
+
 - `mcp__railway__deploy_status`
 - `mcp__railway__get_logs`
 - `mcp__railway__get_deployments`
 
 ### Netlify
+
 - `mcp__netlify__deploy_status`
 - `mcp__netlify__get_build_logs`
 - `mcp__netlify__get_deploys`
@@ -1670,7 +1702,9 @@ Monitor deployment to Railway/Netlify after pushing to main/master.
 /deploy-monitor --platform railway
 /deploy-monitor --timeout 600 --max-cycles 3
 ```
-```
+````
+
+````
 
 ---
 
@@ -1719,8 +1753,9 @@ mcp__netlify__deploy_status { siteId: "${NETLIFY_SITE_ID}" }
 
 # Update PR with deployment result
 gh pr comment $PR_NUMBER --body "✅ Deployment successful!"
-```
-```
+````
+
+````
 
 #### 6.2.2 Update Release Manager Agent
 
@@ -1735,7 +1770,7 @@ When releasing:
 3. Monitor deployment via MCP
 4. Verify production health
 5. Update release notes with deployment status
-```
+````
 
 ### 6.3 Agent Directory Structure
 
@@ -1826,8 +1861,8 @@ if [[ "$BRANCH" == "main" || "$BRANCH" == "master" ]]; then
   fi
 
   if [ -n "$PLATFORM" ]; then
-    # Notify Claude Flow to start monitoring
-    npx claude-flow@alpha hooks post-push \
+    # Notify Ruflo to start monitoring
+    npx ruflo@latest hooks post-push \
       --platform "$PLATFORM" \
       --branch "$BRANCH" \
       --auto-monitor true
@@ -1965,7 +2000,7 @@ class DeploymentCycle {
     return {
       success: false,
       reason: 'max_cycles_reached',
-      cycles: this.currentCycle
+      cycles: this.currentCycle,
     };
   }
 
@@ -2284,40 +2319,47 @@ describe('E2E Deployment Monitoring', () => {
 ## 12. Rollout Plan
 
 ### Phase 1: Infrastructure (Days 1-3)
+
 - [ ] Add MCP server installation to claude-installer.ts
 - [ ] Add MCP server configurations to settings
 - [ ] Create deployment config schema
 - [ ] Update environment variable handling
 
 ### Phase 2: Agent Templates (Days 4-7)
+
 - [ ] Create deployment-monitor.md agent
 - [ ] Create log-analyzer.md agent
 - [ ] Create debug-refactor.md agent
 - [ ] Update existing agents (pr-manager, release-manager)
 
 ### Phase 3: Workflow Integration (Days 8-10)
+
 - [ ] Create deployment-monitor-workflow.md
 - [ ] Create deploy-monitor slash command
 - [ ] Add post-push git hooks
 - [ ] Implement cycle controller script
 
 ### Phase 4: CLAUDE.md Updates (Days 11-12)
+
 - [ ] Update root CLAUDE.md
 - [ ] Update template CLAUDE.md
 - [ ] Update CLAUDE.md generator
 
 ### Phase 5: Project Init Integration (Days 13-14)
+
 - [ ] Add platform detection to project-init
 - [ ] Add deployment config generation
 - [ ] Copy deployment agents during init
 - [ ] Copy deployment workflows during init
 
 ### Phase 6: Testing (Days 15-17)
+
 - [ ] Write unit tests
 - [ ] Write integration tests
 - [ ] Manual E2E testing with real projects
 
 ### Phase 7: Documentation & Release (Days 18-20)
+
 - [ ] Update README
 - [ ] Update documentation
 - [ ] Create migration guide for existing users
@@ -2329,25 +2371,25 @@ describe('E2E Deployment Monitoring', () => {
 
 ### Railway MCP Tools (Expected)
 
-| Tool Name | Parameters | Return Value |
-|-----------|------------|--------------|
-| `mcp__railway__deploy_status` | `projectId: string` | `{ status, deploymentId, createdAt }` |
-| `mcp__railway__get_logs` | `serviceId: string, lines?: number, since?: string` | `{ logs: string[] }` |
-| `mcp__railway__get_deployments` | `projectId: string, limit?: number` | `{ deployments: Deployment[] }` |
-| `mcp__railway__list_services` | `projectId: string` | `{ services: Service[] }` |
-| `mcp__railway__restart_service` | `serviceId: string` | `{ success: boolean }` |
-| `mcp__railway__get_variables` | `projectId: string` | `{ variables: Variable[] }` |
+| Tool Name                       | Parameters                                          | Return Value                          |
+| ------------------------------- | --------------------------------------------------- | ------------------------------------- |
+| `mcp__railway__deploy_status`   | `projectId: string`                                 | `{ status, deploymentId, createdAt }` |
+| `mcp__railway__get_logs`        | `serviceId: string, lines?: number, since?: string` | `{ logs: string[] }`                  |
+| `mcp__railway__get_deployments` | `projectId: string, limit?: number`                 | `{ deployments: Deployment[] }`       |
+| `mcp__railway__list_services`   | `projectId: string`                                 | `{ services: Service[] }`             |
+| `mcp__railway__restart_service` | `serviceId: string`                                 | `{ success: boolean }`                |
+| `mcp__railway__get_variables`   | `projectId: string`                                 | `{ variables: Variable[] }`           |
 
 ### Netlify MCP Tools (Expected)
 
-| Tool Name | Parameters | Return Value |
-|-----------|------------|--------------|
-| `mcp__netlify__deploy_status` | `siteId?: string, deployId?: string` | `{ state, deployId, url }` |
-| `mcp__netlify__get_build_logs` | `deployId: string` | `{ logs: string }` |
-| `mcp__netlify__get_deploys` | `siteId: string, limit?: number` | `{ deploys: Deploy[] }` |
-| `mcp__netlify__list_sites` | none | `{ sites: Site[] }` |
-| `mcp__netlify__trigger_deploy` | `siteId: string` | `{ deployId, state }` |
-| `mcp__netlify__get_functions` | `siteId: string` | `{ functions: Function[] }` |
+| Tool Name                      | Parameters                           | Return Value                |
+| ------------------------------ | ------------------------------------ | --------------------------- |
+| `mcp__netlify__deploy_status`  | `siteId?: string, deployId?: string` | `{ state, deployId, url }`  |
+| `mcp__netlify__get_build_logs` | `deployId: string`                   | `{ logs: string }`          |
+| `mcp__netlify__get_deploys`    | `siteId: string, limit?: number`     | `{ deploys: Deploy[] }`     |
+| `mcp__netlify__list_sites`     | none                                 | `{ sites: Site[] }`         |
+| `mcp__netlify__trigger_deploy` | `siteId: string`                     | `{ deployId, state }`       |
+| `mcp__netlify__get_functions`  | `siteId: string`                     | `{ functions: Function[] }` |
 
 ---
 
@@ -2355,23 +2397,23 @@ describe('E2E Deployment Monitoring', () => {
 
 ### Build Errors
 
-| Pattern | Category | Auto-Fixable | Fix Strategy |
-|---------|----------|--------------|--------------|
-| `npm ERR! peer dep` | Dependency | Yes | Update package.json, npm install |
-| `Cannot find module` | Import | Yes | Fix import path |
-| `TS2322: Type` | TypeScript | Sometimes | Add type assertion or fix types |
-| `ESLint error` | Lint | Yes | Run eslint --fix |
-| `Out of memory` | Resource | No | Increase build memory |
+| Pattern              | Category   | Auto-Fixable | Fix Strategy                     |
+| -------------------- | ---------- | ------------ | -------------------------------- |
+| `npm ERR! peer dep`  | Dependency | Yes          | Update package.json, npm install |
+| `Cannot find module` | Import     | Yes          | Fix import path                  |
+| `TS2322: Type`       | TypeScript | Sometimes    | Add type assertion or fix types  |
+| `ESLint error`       | Lint       | Yes          | Run eslint --fix                 |
+| `Out of memory`      | Resource   | No           | Increase build memory            |
 
 ### Runtime Errors
 
-| Pattern | Category | Auto-Fixable | Fix Strategy |
-|---------|----------|--------------|--------------|
-| `TypeError: Cannot read property` | Null Reference | Yes | Add null check |
-| `ECONNREFUSED` | Connection | Yes | Add retry logic |
-| `ETIMEDOUT` | Timeout | Yes | Add timeout handling |
-| `ReferenceError` | Undefined | Sometimes | Check variable scope |
-| `SyntaxError` | Parse | No | Manual fix required |
+| Pattern                           | Category       | Auto-Fixable | Fix Strategy         |
+| --------------------------------- | -------------- | ------------ | -------------------- |
+| `TypeError: Cannot read property` | Null Reference | Yes          | Add null check       |
+| `ECONNREFUSED`                    | Connection     | Yes          | Add retry logic      |
+| `ETIMEDOUT`                       | Timeout        | Yes          | Add timeout handling |
+| `ReferenceError`                  | Undefined      | Sometimes    | Check variable scope |
+| `SyntaxError`                     | Parse          | No           | Manual fix required  |
 
 ---
 
@@ -2428,7 +2470,8 @@ packages/@wundr/computer-setup/src/
 
 ## Conclusion
 
-This implementation plan provides a comprehensive roadmap for integrating Railway and Netlify MCP servers into the Wundr ecosystem. The key innovations include:
+This implementation plan provides a comprehensive roadmap for integrating Railway and Netlify MCP
+servers into the Wundr ecosystem. The key innovations include:
 
 1. **Automatic platform detection** from config files and environment variables
 2. **Continuous deployment monitoring** after git push to main/master
@@ -2437,4 +2480,5 @@ This implementation plan provides a comprehensive roadmap for integrating Railwa
 5. **Deep integration** with existing Claude agents and workflows
 6. **Comprehensive configuration** for customization per project
 
-Upon completion, developers using Wundr will have seamless deployment monitoring and automatic issue resolution capabilities built directly into their Claude Code workflow.
+Upon completion, developers using Wundr will have seamless deployment monitoring and automatic issue
+resolution capabilities built directly into their Claude Code workflow.

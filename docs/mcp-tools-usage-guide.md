@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide demonstrates how to use the five integrated MCP tools with Claude Flow to create powerful
+This guide demonstrates how to use the five integrated MCP tools with Ruflo to create powerful
 automated workflows.
 
 ## Quick Start
@@ -451,10 +451,10 @@ engine.on('workflow-completed', ({ executionId, execution }) => {
 
 ```bash
 # Check MCP tool health
-npx claude-flow mcp health
+npx ruflo mcp health
 
 # Monitor active workflows
-npx claude-flow workflow status
+npx ruflo workflow status
 
 # View logs
 tail -f ~/.claude/logs/mcp/workflow-engine.log

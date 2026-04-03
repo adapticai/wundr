@@ -1,6 +1,6 @@
 # Claude Code Hooks Templates
 
-Complete set of production-ready hook templates for Claude Code with claude-flow integration.
+Complete set of production-ready hook templates for Claude Code with ruflo integration.
 
 ## Quick Start
 
@@ -185,12 +185,12 @@ All hooks are configured via `hooks.config.json`:
 }
 ```
 
-## Integration with Claude Flow
+## Integration with Ruflo
 
 ### Initialize Swarm
 
 ```bash
-npx claude-flow@alpha hooks swarm-init \
+npx ruflo@latest hooks swarm-init \
     --topology mesh \
     --max-agents 6 \
     --session-id "swarm-123"
@@ -199,7 +199,7 @@ npx claude-flow@alpha hooks swarm-init \
 ### Spawn Agents
 
 ```bash
-npx claude-flow@alpha hooks agent-spawn \
+npx ruflo@latest hooks agent-spawn \
     --type "coder" \
     --session-id "swarm-123"
 ```
@@ -207,7 +207,7 @@ npx claude-flow@alpha hooks agent-spawn \
 ### Store Memory
 
 ```bash
-npx claude-flow@alpha hooks memory-store \
+npx ruflo@latest hooks memory-store \
     --key "swarm/123/custom" \
     --value '{"data": "value"}'
 ```
@@ -215,7 +215,7 @@ npx claude-flow@alpha hooks memory-store \
 ### Train Patterns
 
 ```bash
-npx claude-flow@alpha hooks neural-train \
+npx ruflo@latest hooks neural-train \
     --pattern-type "task-completion" \
     --input "./results.json"
 ```
@@ -334,14 +334,14 @@ executable ✅ Error handling implemented ✅ Logging configured ✅ Git worktre
 - Node.js 16+
 - Git 2.25+ (for worktree features)
 - jq (JSON processing)
-- Claude Flow (optional but recommended)
+- Ruflo (optional but recommended)
 
 ## Support
 
 For issues or questions:
 
 - Documentation: [HOOKS_GUIDE.md](/Users/iroselli/wundr/docs/HOOKS_GUIDE.md)
-- Claude Flow: https://github.com/ruvnet/claude-flow
+- Ruflo: https://github.com/ruvnet/ruflo
 - Project Issues: https://github.com/adapticai/wundr/issues
 
 ---

@@ -1,11 +1,11 @@
 # Computer Setup - Changes Summary
 
-## Version: 1.0.0 (Claude & Claude Flow Integration)
+## Version: 1.0.0 (Claude & Ruflo Integration)
 
 ### 🎯 Objective
 
 Ensure that the `@wundr.io/computer-setup` package can be used by **any developer** to set up Claude
-Code and Claude Flow on a fresh machine, with all agents and configurations bundled.
+Code and Ruflo on a fresh machine, with all agents and configurations bundled.
 
 ---
 
@@ -106,7 +106,7 @@ exec npx @anthropic-ai/claude-code "$@"
 - ✅ `.claude` directory structure
 - ✅ 60+ agent `.md` files
 - ✅ `settings.json` with MCP configs
-- ✅ Claude Flow availability
+- ✅ Ruflo availability
 - ✅ Shell configuration
 - ✅ npm global packages
 - ✅ CLAUDE.md template
@@ -188,7 +188,7 @@ graph TD
     I --> J[Copy bundled agents]
     J --> K[Copy CLAUDE.md template]
     K --> L[Configure MCP servers]
-    L --> M[Install Claude Flow]
+    L --> M[Install Ruflo]
     M --> N[Verify installation]
     N --> O[Done!]
 ```
@@ -222,7 +222,7 @@ claude --version  # Should show: 2.0.1 (Claude Code)
 - ✅ 65 agent files copied to `~/.claude/agents/`
 - ✅ CLAUDE.md template available
 - ✅ MCP servers configured
-- ✅ Claude Flow available via npx
+- ✅ Ruflo available via npx
 - ✅ `claude --version` works from any directory
 
 ---
@@ -349,7 +349,7 @@ npm run build
 ## 🎉 Summary
 
 The `@wundr.io/computer-setup` package now provides a **fully automated, reproducible setup** for
-Claude Code and Claude Flow that works on **any developer machine**, with:
+Claude Code and Ruflo that works on **any developer machine**, with:
 
 - ✅ No manual configuration required
 - ✅ All resources bundled with package

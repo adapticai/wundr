@@ -63,8 +63,8 @@ All universal sub-agents inherit IPRE governance from their parent Session Manag
 Session Managers can spawn universal sub-agents via:
 
 ```bash
-# Via claude-flow
-npx claude-flow agent spawn --type researcher --session $SESSION_ID
+# Via ruflo
+npx ruflo agent spawn --type researcher --session $SESSION_ID
 
 # Direct invocation in Task tool
 Task("researcher: Investigate authentication patterns in the codebase")

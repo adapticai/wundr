@@ -1,7 +1,7 @@
-# Template Customization Guide: Adapting Claude Flow for Your Projects
+# Template Customization Guide: Adapting Ruflo for Your Projects
 
 Complete guide to customizing templates, workflows, and configurations for different project types
-with Claude Flow.
+with Ruflo.
 
 ## Table of Contents
 
@@ -16,13 +16,13 @@ with Claude Flow.
 
 ## Template System Overview
 
-Claude Flow templates provide pre-configured setups for different project types, frameworks, and
+Ruflo templates provide pre-configured setups for different project types, frameworks, and
 workflows.
 
 ### Template Structure
 
 ```
-.claude-flow/
+.ruflo/
 ├── templates/
 │   ├── base/                  # Base template
 │   ├── react/                 # React projects
@@ -53,7 +53,7 @@ The foundation for all other templates.
 
 ```bash
 # Initialize with base template
-npx claude-flow@alpha init --template base
+npx ruflo@latest init --template base
 ```
 
 **Includes**:
@@ -69,7 +69,7 @@ Optimized for React applications.
 
 ```bash
 # Initialize React project
-npx claude-flow@alpha init --template react
+npx ruflo@latest init --template react
 ```
 
 **Features**:
@@ -112,7 +112,7 @@ npx claude-flow@alpha init --template react
 For Express, NestJS, and other Node.js backends.
 
 ```bash
-npx claude-flow@alpha init --template nodejs-backend
+npx ruflo@latest init --template nodejs-backend
 ```
 
 **Features**:
@@ -149,7 +149,7 @@ npx claude-flow@alpha init --template nodejs-backend
 For Python projects (Django, FastAPI, Flask).
 
 ```bash
-npx claude-flow@alpha init --template python
+npx ruflo@latest init --template python
 ```
 
 **Features**:
@@ -182,7 +182,7 @@ npx claude-flow@alpha init --template python
 For multi-package repositories.
 
 ```bash
-npx claude-flow@alpha init --template monorepo
+npx ruflo@latest init --template monorepo
 ```
 
 **Features**:
@@ -214,7 +214,7 @@ npx claude-flow@alpha init --template monorepo
 For microservices architectures.
 
 ```bash
-npx claude-flow@alpha init --template microservices
+npx ruflo@latest init --template microservices
 ```
 
 **Features**:
@@ -231,15 +231,15 @@ npx claude-flow@alpha init --template microservices
 
 ```bash
 # Copy template to customize
-npx claude-flow@alpha template copy react my-react-template
+npx ruflo@latest template copy react my-react-template
 
 # Edit configuration
-nano .claude-flow/templates/my-react-template/config.json
+nano .ruflo/templates/my-react-template/config.json
 ```
 
 ### Template Configuration
 
-Edit `.claude-flow/templates/my-react-template/config.json`:
+Edit `.ruflo/templates/my-react-template/config.json`:
 
 ```json
 {
@@ -332,11 +332,11 @@ Add custom hooks:
       "hooks": [
         {
           "name": "generate-storybook",
-          "script": ".claude-flow/hooks/generate-storybook.js"
+          "script": ".ruflo/hooks/generate-storybook.js"
         },
         {
           "name": "generate-tests",
-          "script": ".claude-flow/hooks/generate-tests.js"
+          "script": ".ruflo/hooks/generate-tests.js"
         }
       ]
     },
@@ -354,18 +354,18 @@ Add custom hooks:
 
 ```bash
 # Create template directory
-mkdir -p .claude-flow/templates/my-template
+mkdir -p .ruflo/templates/my-template
 
 # Create necessary files
-touch .claude-flow/templates/my-template/config.json
-touch .claude-flow/templates/my-template/agents.json
-touch .claude-flow/templates/my-template/hooks.json
-touch .claude-flow/templates/my-template/workflows.json
+touch .ruflo/templates/my-template/config.json
+touch .ruflo/templates/my-template/agents.json
+touch .ruflo/templates/my-template/hooks.json
+touch .ruflo/templates/my-template/workflows.json
 ```
 
 ### Step 2: Define Template Configuration
 
-`.claude-flow/templates/my-template/config.json`:
+`.ruflo/templates/my-template/config.json`:
 
 ```json
 {
@@ -404,7 +404,7 @@ touch .claude-flow/templates/my-template/workflows.json
 
 ### Step 3: Define Agent Configuration
 
-`.claude-flow/templates/my-template/agents.json`:
+`.ruflo/templates/my-template/agents.json`:
 
 ```json
 {
@@ -455,26 +455,22 @@ touch .claude-flow/templates/my-template/workflows.json
 
 ### Step 4: Define Hooks
 
-`.claude-flow/templates/my-template/hooks.json`:
+`.ruflo/templates/my-template/hooks.json`:
 
 ```json
 {
   "hooks": {
     "pre-task": {
       "enabled": true,
-      "scripts": [".claude-flow/hooks/validate-env.js", ".claude-flow/hooks/load-context.js"]
+      "scripts": [".ruflo/hooks/validate-env.js", ".ruflo/hooks/load-context.js"]
     },
     "post-edit": {
       "enabled": true,
-      "scripts": [
-        ".claude-flow/hooks/format.js",
-        ".claude-flow/hooks/lint.js",
-        ".claude-flow/hooks/type-check.js"
-      ]
+      "scripts": [".ruflo/hooks/format.js", ".ruflo/hooks/lint.js", ".ruflo/hooks/type-check.js"]
     },
     "pre-commit": {
       "enabled": true,
-      "scripts": [".claude-flow/hooks/run-tests.js", ".claude-flow/hooks/check-coverage.js"]
+      "scripts": [".ruflo/hooks/run-tests.js", ".ruflo/hooks/check-coverage.js"]
     }
   }
 }
@@ -482,7 +478,7 @@ touch .claude-flow/templates/my-template/workflows.json
 
 ### Step 5: Define Workflows
 
-`.claude-flow/templates/my-template/workflows.json`:
+`.ruflo/templates/my-template/workflows.json`:
 
 ```json
 {
@@ -538,7 +534,7 @@ touch .claude-flow/templates/my-template/workflows.json
 
 ### Step 6: Create File Templates
 
-`.claude-flow/templates/my-template/templates/index.ts.hbs`:
+`.ruflo/templates/my-template/templates/index.ts.hbs`:
 
 ```typescript
 /**
@@ -563,14 +559,14 @@ export default new {{className}}();
 
 ```bash
 # Register custom template
-npx claude-flow@alpha template register \
-  --path .claude-flow/templates/my-template
+npx ruflo@latest template register \
+  --path .ruflo/templates/my-template
 
 # Verify registration
-npx claude-flow@alpha template list --custom
+npx ruflo@latest template list --custom
 
 # Use template
-npx claude-flow@alpha init --template my-template
+npx ruflo@latest init --template my-template
 ```
 
 ## Project-Specific Configurations
@@ -888,7 +884,7 @@ npx claude-flow@alpha init --template my-template
 ### 1. Template Organization
 
 ```
-.claude-flow/templates/
+.ruflo/templates/
 ├── base/                    # Base template
 ├── frameworks/
 │   ├── react/
@@ -926,11 +922,11 @@ npx claude-flow@alpha init --template my-template
   "template": "my-template",
   "version": "2.0.0",
   "compatibility": {
-    "claudeFlow": ">=2.0.0",
+    "ruflo": ">=2.0.0",
     "node": ">=18.0.0"
   },
   "migrations": {
-    "1.x": ".claude-flow/migrations/v1-to-v2.js"
+    "1.x": ".ruflo/migrations/v1-to-v2.js"
   }
 }
 ```
@@ -954,7 +950,7 @@ Template for React applications with TypeScript and Tailwind.
 
 ## Usage
 
-\`\`\`bash npx claude-flow@alpha init --template my-react-template \`\`\`
+\`\`\`bash npx ruflo@latest init --template my-react-template \`\`\`
 
 ## Configuration
 
@@ -965,11 +961,11 @@ See [CONFIG.md](./CONFIG.md) for details.
 
 ```bash
 # Create test project
-npx claude-flow@alpha template test my-template \
+npx ruflo@latest template test my-template \
   --output /tmp/test-project
 
 # Verify template
-npx claude-flow@alpha template verify my-template
+npx ruflo@latest template verify my-template
 ```
 
 ## Summary

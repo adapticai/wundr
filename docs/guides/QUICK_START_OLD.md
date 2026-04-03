@@ -1,8 +1,8 @@
-# Quick Start Guide: Claude Code + Claude Flow Integration
+# Quick Start Guide: Claude Code + Ruflo Integration
 
 ## 🚀 Start Here
 
-Get up and running with enhanced Claude Code and Claude Flow integration in just 5 minutes.
+Get up and running with enhanced Claude Code and Ruflo integration in just 5 minutes.
 
 ## Prerequisites
 

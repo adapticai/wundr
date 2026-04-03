@@ -161,26 +161,20 @@ This is the **most important file** - Claude Code reads this automatically.
 ## Project Overview
 
 <!-- REPLACE with your project info -->
-**Project Type**: Web Application
-**Tech Stack**: React, Node.js, PostgreSQL, Redis
-**Development Methodology**: SPARC + TDD
+
+**Project Type**: Web Application **Tech Stack**: React, Node.js, PostgreSQL, Redis **Development
+Methodology**: SPARC + TDD
 
 ## Directory Structure
 
 <!-- REPLACE with your actual structure -->
 ```
-project-root/
-├── src/
-│   ├── components/      # React components
-│   ├── pages/           # Page components
-│   ├── services/        # API services
-│   └── utils/           # Utilities
-├── server/              # Backend code
-│   ├── api/            # API routes
-│   ├── services/       # Business logic
-│   └── models/         # Database models
-└── tests/              # All tests
-```
+
+project-root/ ├── src/ │ ├── components/ # React components │ ├── pages/ # Page components │ ├──
+services/ # API services │ └── utils/ # Utilities ├── server/ # Backend code │ ├── api/ # API routes
+│ ├── services/ # Business logic │ └── models/ # Database models └── tests/ # All tests
+
+````
 
 <!-- Update build commands -->
 ## Build Commands
@@ -191,8 +185,9 @@ npm run build          # Build for production
 npm test               # Run tests
 npm run lint           # Run linter
 npm run typecheck      # Type checking
-```
-```
+````
+
+````
 
 **Key sections to review**:
 - Project Overview
@@ -238,7 +233,7 @@ Example customizations:
 4. Relative imports
 5. Types
 6. Styles
-```
+````
 
 ### Optional Configuration
 
@@ -289,7 +284,7 @@ Custom commands are slash commands you can invoke in Claude Code.
 
 Example:
 
-```markdown
+````markdown
 # .claude/commands/deploy.md
 
 # Deploy Command
@@ -302,6 +297,7 @@ Deploy the application to staging or production.
 /deploy --env staging
 /deploy --env production
 ```
+````
 
 ## What This Command Does
 
@@ -330,7 +326,8 @@ npm run build || exit 1
 
 echo "✅ Deployed to $ENV"
 ```
-```
+
+````
 
 ## Customization
 
@@ -343,16 +340,13 @@ echo "✅ Deployed to $ENV"
 
 ## Directory Structure
 
-```
-src/
-├── components/          # Reusable components
-├── pages/               # Page components
-├── hooks/               # Custom hooks
-├── contexts/            # React contexts
-├── services/            # API services
-├── utils/               # Utilities
-└── types/               # TypeScript types
-```
+````
+
+src/ ├── components/ # Reusable components ├── pages/ # Page components ├── hooks/ # Custom hooks
+├── contexts/ # React contexts ├── services/ # API services ├── utils/ # Utilities └── types/ #
+TypeScript types
+
+````
 
 ## Build Commands
 
@@ -362,8 +356,9 @@ npm run build            # Production build
 npm run test             # Run tests
 npm run lint             # ESLint
 npm run type-check       # TypeScript
-```
-```
+````
+
+````
 
 #### Node.js/Backend Project
 
@@ -372,15 +367,12 @@ npm run type-check       # TypeScript
 
 ## Directory Structure
 
-```
-src/
-├── api/                 # API routes
-├── services/            # Business logic
-├── repositories/        # Database access
-├── middleware/          # Express middleware
-├── utils/               # Utilities
-└── types/               # TypeScript types
-```
+````
+
+src/ ├── api/ # API routes ├── services/ # Business logic ├── repositories/ # Database access ├──
+middleware/ # Express middleware ├── utils/ # Utilities └── types/ # TypeScript types
+
+````
 
 ## Build Commands
 
@@ -390,8 +382,9 @@ npm run build            # TypeScript build
 npm run test             # Run tests
 npm run lint             # ESLint
 npm run migrate          # Run migrations
-```
-```
+````
+
+````
 
 #### Monorepo Project
 
@@ -400,13 +393,12 @@ npm run migrate          # Run migrations
 
 ## Directory Structure
 
-```
-packages/
-├── web/                 # Web application
-├── api/                 # API server
-├── shared/              # Shared code
-└── mobile/              # Mobile app
-```
+````
+
+packages/ ├── web/ # Web application ├── api/ # API server ├── shared/ # Shared code └── mobile/ #
+Mobile app
+
+````
 
 ## Build Commands
 
@@ -415,8 +407,9 @@ npm run dev              # Start all services
 npm run build            # Build all packages
 npm run test             # Test all packages
 npm run lint             # Lint all packages
-```
-```
+````
+
+````
 
 ### For Different Team Sizes
 
@@ -456,7 +449,7 @@ claude
 
 # Claude automatically reads .claude/CLAUDE.md
 # Now ask Claude to help with development tasks
-```
+````
 
 ### Using Agents
 
@@ -464,6 +457,7 @@ claude
 You: "Act as the Coder agent and implement user authentication"
 
 Claude will:
+
 1. Read .claude/agents/core/coder.md
 2. Follow the coder agent responsibilities
 3. Apply project conventions from CLAUDE.md
@@ -473,11 +467,10 @@ Claude will:
 ### Using Custom Commands
 
 ```markdown
-You: "Run the test suite"
-or
-You: "/test-suite"
+You: "Run the test suite" or You: "/test-suite"
 
 Claude will:
+
 1. Read .claude/commands/test-suite.md
 2. Execute the test suite workflow
 3. Report results
@@ -486,10 +479,10 @@ Claude will:
 ### Using SPARC Methodology
 
 ```bash
-# If using claude-flow
+# If using ruflo
 
 # Run SPARC TDD workflow
-npx claude-flow sparc tdd "Implement user authentication"
+npx ruflo sparc tdd "Implement user authentication"
 
 # This will:
 # 1. Read specifications from .claude/agents/sparc/specification.md
@@ -573,16 +566,19 @@ git init
 ## Environment Configuration
 
 ### Development
+
 - Database: PostgreSQL (local)
 - Redis: Local instance
 - API: http://localhost:3000
 
 ### Staging
+
 - Database: PostgreSQL (staging)
 - Redis: Redis Cloud
 - API: https://staging-api.example.com
 
 ### Production
+
 - Database: PostgreSQL (production)
 - Redis: Redis Cloud
 - API: https://api.example.com
@@ -595,6 +591,7 @@ git init
 **Problem**: Claude doesn't seem to follow the conventions in CLAUDE.md
 
 **Solutions**:
+
 1. Verify file location: Must be at `.claude/CLAUDE.md` (relative to project root)
 2. Check file encoding: Must be UTF-8
 3. Verify permissions: File must be readable
@@ -605,6 +602,7 @@ git init
 **Problem**: Automation scripts don't run
 
 **Solutions**:
+
 ```bash
 # Make executable
 chmod +x .claude/hooks/*.sh
@@ -625,6 +623,7 @@ head -1 .claude/hooks/pre-task.sh
 **Problem**: Custom slash commands don't work
 
 **Solutions**:
+
 1. Verify file extension: Must be `.md`
 2. Check file location: Must be in `.claude/commands/`
 3. Verify file is readable
@@ -635,6 +634,7 @@ head -1 .claude/hooks/pre-task.sh
 **Problem**: Conflicts when multiple people update .claude/
 
 **Solutions**:
+
 ```bash
 # Communicate changes with team
 # Consider making one person "config owner"
@@ -697,26 +697,25 @@ git push --tags
 
 ### Resources
 
-- **Claude Code Documentation**: [https://docs.anthropic.com/claude-code](https://docs.anthropic.com/claude-code)
+- **Claude Code Documentation**:
+  [https://docs.anthropic.com/claude-code](https://docs.anthropic.com/claude-code)
 - **This Template**: Check README.md in templates/.claude/
 - **Examples**: See agent files for examples
 
 ### Common Questions
 
-**Q: Do I need all the agent files?**
-A: No, use only what you need. Core agents (coder, reviewer, tester) are most useful.
+**Q: Do I need all the agent files?** A: No, use only what you need. Core agents (coder, reviewer,
+tester) are most useful.
 
-**Q: Can I modify the templates?**
-A: Yes! They're meant to be customized for your project.
+**Q: Can I modify the templates?** A: Yes! They're meant to be customized for your project.
 
-**Q: Should I commit .claude/ to git?**
-A: Yes, share configuration with your team.
+**Q: Should I commit .claude/ to git?** A: Yes, share configuration with your team.
 
-**Q: How often should I update CLAUDE.md?**
-A: Review monthly or when project patterns change significantly.
+**Q: How often should I update CLAUDE.md?** A: Review monthly or when project patterns change
+significantly.
 
-**Q: Can I have project-specific agents?**
-A: Yes! Create new agent .md files in .claude/agents/specialized/
+**Q: Can I have project-specific agents?** A: Yes! Create new agent .md files in
+.claude/agents/specialized/
 
 ---
 

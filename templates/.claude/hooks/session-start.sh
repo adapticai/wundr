@@ -273,18 +273,18 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# CLAUDE-FLOW INTEGRATION
+# RUFLO INTEGRATION
 # -----------------------------------------------------------------------------
 
 echo ""
-echo "--- Claude-Flow Integration ---"
+echo "--- Ruflo Integration ---"
 
 if command -v npx &> /dev/null; then
-    if npx claude-flow@alpha --version &> /dev/null 2>&1; then
-        echo "Initializing Claude-Flow session..."
-        npx claude-flow@alpha hooks session-restore --session-id "$SESSION_ID" 2>/dev/null || echo "  Session restore skipped (no previous state)"
+    if npx ruflo@latest --version &> /dev/null 2>&1; then
+        echo "Initializing Ruflo session..."
+        npx ruflo@latest hooks session-restore --session-id "$SESSION_ID" 2>/dev/null || echo "  Session restore skipped (no previous state)"
     else
-        echo "Claude-Flow not available"
+        echo "Ruflo not available"
     fi
 fi
 

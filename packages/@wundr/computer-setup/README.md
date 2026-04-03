@@ -52,7 +52,7 @@ transforms a fresh machine into a fully-configured development powerhouse in min
 - **Editors**: VS Code with extensions, Vim, Neovim
 - **Databases**: PostgreSQL, MySQL, MongoDB, Redis clients
 - **Cloud CLIs**: AWS, GCloud, Azure
-- **AI Tools**: Claude Code, Claude Flow, 80+ MCP agents
+- **AI Tools**: Claude Code, Ruflo, 80+ MCP agents
 - **Orchestrator Daemon**: Machine-level agent supervisor with tiered memory and external
   integrations
 
@@ -822,7 +822,7 @@ wundr computer-setup --remove-profile fullstack
 ### AI Development Tools
 
 - ✅ Claude Code CLI
-- ✅ Claude Flow (claude-flow@alpha)
+- ✅ Ruflo (ruflo@latest)
 - ✅ MCP Servers:
   - firecrawl
   - context7
@@ -875,7 +875,7 @@ Phase 3: Development Tools (30-70%)
 
 Phase 4: AI Tools & Optimization (70-90%)
 ├── Install Claude Code CLI
-├── Install Claude Flow
+├── Install Ruflo
 ├── Configure MCP servers
 ├── Setup 80+ agents
 ├── Apply hardware optimization
@@ -912,14 +912,14 @@ If installation fails, run `--resume` to continue from where it left off.
 
 The **Orchestrator Daemon** (Virtual Persona Daemon) is a machine-level supervisor that provides
 persistent agent orchestration, external integrations, and intelligent memory management across all
-Claude Code/Claude Flow sessions.
+Claude Code/Ruflo sessions.
 
 ### Overview
 
 Orchestrator Daemon runs as a background service on your machine, acting as a central coordinator
 for:
 
-- **Session Management**: Spawning and managing Claude Code/Claude Flow sessions
+- **Session Management**: Spawning and managing Claude Code/Ruflo sessions
 - **External Integrations**: Interfacing with Slack, Gmail, Google Drive, Twilio, and more
 - **Session Archetypes**: Pre-configured personas for different work contexts
 - **Tiered Memory**: MemGPT-inspired memory architecture for persistent context
@@ -1339,7 +1339,7 @@ MIT © [AdapticAI](https://github.com/adapticai)
 ## 🙏 Acknowledgments
 
 - Claude Code team at Anthropic for the amazing CLI
-- Claude Flow community for agent architectures
+- Ruflo community for agent architectures
 - Homebrew team for macOS package management
 - All open-source contributors
 

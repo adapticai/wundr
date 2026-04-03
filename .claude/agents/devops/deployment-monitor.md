@@ -254,7 +254,7 @@ fi
 ```bash
 echo "Monitoring session complete"
 # Store monitoring results in memory
-npx claude-flow@alpha hooks post-task --task-id "deployment-monitor-${TIMESTAMP}"
+npx ruflo@latest hooks post-task --task-id "deployment-monitor-${TIMESTAMP}"
 ```
 
 ## Quality Metrics

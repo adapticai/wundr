@@ -33,7 +33,7 @@ enable fleet-scale autonomous engineering through a **four-tier** organizational
 
 - **computer-setup command**: `packages/@wundr/cli/src/commands/computer-setup.ts`
   - Profile management (frontend, backend, fullstack, devops, ml, mobile)
-  - Claude Code & Claude Flow installation
+  - Claude Code & Ruflo installation
   - MCP tools configuration
   - Interactive setup wizard
 
@@ -1775,7 +1775,7 @@ export interface ProjectInitOptions {
 
 ### Phase 3: Runtime Orchestration
 
-**Target**: Claude Flow integration and MCP tools
+**Target**: Ruflo integration and MCP tools
 
 | Task                     | Priority | Impact                          |
 | ------------------------ | -------- | ------------------------------- |
@@ -1969,7 +1969,7 @@ Agentic Clusters" document are addressed:
 - [x] **File descriptor limits** (ulimit 65000) → Section 2.3.3
 - [x] **Disk space requirements** (4TB+ SSD) → Section 2.3.4
 - [x] **Git Index Lock mitigation** (sub-agents rarely fetch) → Section 2.3.4
-- [x] **claude-flow / swarm integration** → Existing wundr capability
+- [x] **ruflo / swarm integration** → Existing wundr capability
 - [x] **Queen/Router decomposition pattern** → Existing hierarchical-coordinator
 - [x] **Universal Sub-Agents**:
   - [x] Researcher (universal-researcher) → Section 2.3.6

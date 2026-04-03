@@ -106,8 +106,7 @@ the same terminal window.
 ### **4.1 Sub-Agent Concurrency & Isolation**
 
 - **The Limit:** A single claude CLI process can conceptually handle sub-agents, but for _true_
-  parallelism (running 5 tests at once), the architecture uses **claude-flow** or a custom
-  dispatcher.
+  parallelism (running 5 tests at once), the architecture uses **ruflo** or a custom dispatcher.
 - **Worktree Explosion:** Running 20 sub-agents implies 20 active file system operations. The VP
   manages a pool of **Ephemeral Worktrees** linked to the session's branch.
   - _Read-Only Agents:_ Share the main worktree.

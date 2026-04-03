@@ -134,7 +134,7 @@ cd ../wundr-spec-<feature>
 git checkout -b spec/<feature>
 
 # Work in this worktree
-npx claude-flow sparc run spec-pseudocode "<feature description>"
+npx ruflo sparc run spec-pseudocode "<feature description>"
 npm run lint
 npm run test
 ````
@@ -148,7 +148,7 @@ cd ../wundr-design-<feature>
 git checkout -b design/<feature>
 
 # Work in this worktree
-npx claude-flow sparc run architect
+npx ruflo sparc run architect
 ```
 
 ### Phase 3: Implementation (impl/)
@@ -160,7 +160,7 @@ cd ../wundr-impl-<feature>
 git checkout -b impl/<feature>
 
 # Work in this worktree
-npx claude-flow sparc tdd "<feature>"
+npx ruflo sparc tdd "<feature>"
 ```
 
 ### Phase 4: Refinement (refine/)
@@ -353,13 +353,13 @@ When checking out a phase branch, the hook provides guidance:
 ```bash
 if [[ $BRANCH =~ ^spec/ ]]; then
     echo "🔍 Specification phase"
-    echo "   Run: npx claude-flow sparc run spec-pseudocode"
+    echo "   Run: npx ruflo sparc run spec-pseudocode"
 elif [[ $BRANCH =~ ^design/ ]]; then
     echo "📐 Architecture phase"
-    echo "   Run: npx claude-flow sparc run architect"
+    echo "   Run: npx ruflo sparc run architect"
 elif [[ $BRANCH =~ ^impl/ ]]; then
     echo "💻 Implementation phase"
-    echo "   Run: npx claude-flow sparc tdd"
+    echo "   Run: npx ruflo sparc tdd"
 ```
 
 ## Troubleshooting
@@ -1552,13 +1552,13 @@ BRANCH=$(git rev-parse --abbrev-ref HEAD)
 # Detect SPARC phase and provide guidance
 if [[ $BRANCH =~ ^spec/ ]]; then
     echo "🔍 Specification phase detected: $BRANCH"
-    echo "   Run: npx claude-flow sparc run spec-pseudocode"
+    echo "   Run: npx ruflo sparc run spec-pseudocode"
 elif [[ $BRANCH =~ ^design/ ]]; then
     echo "📐 Architecture phase detected: $BRANCH"
-    echo "   Run: npx claude-flow sparc run architect"
+    echo "   Run: npx ruflo sparc run architect"
 elif [[ $BRANCH =~ ^impl/ ]]; then
     echo "💻 Implementation phase detected: $BRANCH"
-    echo "   Run: npx claude-flow sparc tdd"
+    echo "   Run: npx ruflo sparc tdd"
 elif [[ $BRANCH =~ ^refine/ ]]; then
     echo "✨ Refinement phase detected: $BRANCH"
     echo "   Run: npm run test && npm run lint && npm run build"
@@ -1661,20 +1661,20 @@ Each feature follows separate worktrees for each SPARC phase:
 git worktree add ../wundr-spec-<feature> --track origin/master
 cd ../wundr-spec-<feature>
 git checkout -b spec/<feature>
-npx claude-flow sparc run spec-pseudocode "<feature description>"
+npx ruflo sparc run spec-pseudocode "<feature description>"
 
 # Phase 2: Architecture
 # Go back to main repo
 git worktree add ../wundr-design-<feature> --track origin/master
 cd ../wundr-design-<feature>
 git checkout -b design/<feature>
-npx claude-flow sparc run architect
+npx ruflo sparc run architect
 
 # Phase 3: Implementation
 git worktree add ../wundr-impl-<feature> --track origin/master
 cd ../wundr-impl-<feature>
 git checkout -b impl/<feature>
-npx claude-flow sparc tdd "<feature>"
+npx ruflo sparc tdd "<feature>"
 
 # Phase 4: Refinement
 git worktree add ../wundr-refine-<feature> --track origin/master

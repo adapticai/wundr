@@ -1,14 +1,14 @@
-"use strict";
+'use strict';
 /**
  * Wundr-specific files included in all templates
  * Governance, AI integration, and best practices
  */
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, '__esModule', { value: true });
 exports.wundrFiles = void 0;
 exports.wundrFiles = [
-    {
-        path: '.wundr/baseline.json',
-        content: `{
+  {
+    path: '.wundr/baseline.json',
+    content: `{
   "version": "1.0.0",
   "timestamp": "${new Date().toISOString()}",
   "metrics": {
@@ -76,10 +76,10 @@ exports.wundrFiles = [
     }
   }
 }`,
-    },
-    {
-        path: '.wundr/config.yaml',
-        content: `# Wundr Configuration
+  },
+  {
+    path: '.wundr/config.yaml',
+    content: `# Wundr Configuration
 version: 1.0.0
 
 governance:
@@ -140,10 +140,10 @@ monitoring:
       metric: coverage
       value: 70
       severity: warning`,
-    },
-    {
-        path: '.wundr/patterns.yaml',
-        content: `# Wundr Pattern Definitions
+  },
+  {
+    path: '.wundr/patterns.yaml',
+    content: `# Wundr Pattern Definitions
 version: 1.0.0
 
 patterns:
@@ -214,10 +214,10 @@ patterns:
         - types/
         - services/
       severity: info`,
-    },
-    {
-        path: '.wundr/drift-check.yaml',
-        content: `# Drift Detection Configuration
+  },
+  {
+    path: '.wundr/drift-check.yaml',
+    content: `# Drift Detection Configuration
 version: 1.0.0
 
 checks:
@@ -278,10 +278,10 @@ remediation:
     enabled: true
     format: markdown
     output: .wundr/drift-report.md`,
-    },
-    {
-        path: 'CLAUDE.md',
-        content: `# Claude Code Configuration - {{projectName}}
+  },
+  {
+    path: 'CLAUDE.md',
+    content: `# Claude Code Configuration - {{projectName}}
 
 ## Project Overview
 {{description}}
@@ -346,7 +346,7 @@ wundr drift fix      # Auto-fix drift issues
 
 ## AI Integration
 
-### Claude Flow Configuration
+### Ruflo Configuration
 - Swarm topology: mesh
 - Max agents: 8
 - Available agents: coder, reviewer, tester, planner
@@ -396,11 +396,11 @@ wundr drift fix      # Auto-fix drift issues
 - Team Lead: {{author}}
 - Documentation: /docs
 - Issues: /issues`,
-        template: true,
-    },
-    {
-        path: '.github/workflows/wundr-check.yml',
-        content: `name: Wundr Governance Check
+    template: true,
+  },
+  {
+    path: '.github/workflows/wundr-check.yml',
+    content: `name: Wundr Governance Check
 
 on:
   push:
@@ -488,26 +488,26 @@ jobs:
               repo: context.repo.repo,
               body: comment
             });`,
-    },
-    {
-        path: '.husky/pre-commit',
-        content: `#!/usr/bin/env sh
+  },
+  {
+    path: '.husky/pre-commit',
+    content: `#!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
 npm run lint
 npm run typecheck
 wundr drift check --quiet || (echo "❌ Drift detected! Run 'wundr drift fix' to resolve." && exit 1)`,
-    },
-    {
-        path: '.husky/commit-msg',
-        content: `#!/usr/bin/env sh
+  },
+  {
+    path: '.husky/commit-msg',
+    content: `#!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
 npx --no -- commitlint --edit $1`,
-    },
-    {
-        path: 'commitlint.config.js',
-        content: `module.exports = {
+  },
+  {
+    path: 'commitlint.config.js',
+    content: `module.exports = {
   extends: ['@commitlint/config-conventional'],
   rules: {
     'type-enum': [
@@ -532,10 +532,10 @@ npx --no -- commitlint --edit $1`,
     'header-max-length': [2, 'always', 100]
   }
 }`,
-    },
-    {
-        path: '.eslintrc.json',
-        content: `{
+  },
+  {
+    path: '.eslintrc.json',
+    content: `{
   "root": true,
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint"],
@@ -561,10 +561,10 @@ npx --no -- commitlint --edit $1`,
   },
   "ignorePatterns": ["dist", "build", ".next", "node_modules", "coverage"]
 }`,
-    },
-    {
-        path: '.prettierrc',
-        content: `{
+  },
+  {
+    path: '.prettierrc',
+    content: `{
   "semi": true,
   "trailingComma": "es5",
   "singleQuote": true,
@@ -575,10 +575,10 @@ npx --no -- commitlint --edit $1`,
   "arrowParens": "always",
   "endOfLine": "lf"
 }`,
-    },
-    {
-        path: '.gitignore',
-        content: `# Dependencies
+  },
+  {
+    path: '.gitignore',
+    content: `# Dependencies
 node_modules/
 .pnp
 .pnp.js
@@ -627,6 +627,6 @@ lerna-debug.log*
 
 # OS
 Thumbs.db`,
-    },
+  },
 ];
 //# sourceMappingURL=wundr-files.js.map

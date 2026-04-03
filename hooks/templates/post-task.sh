@@ -98,7 +98,7 @@ collect_results() {
     fi
 
     # Collect metrics
-    local memory_usage=$(npx claude-flow@alpha hooks memory-usage 2>/dev/null || echo "{}")
+    local memory_usage=$(npx ruflo@latest hooks memory-usage 2>/dev/null || echo "{}")
 
     # Create results summary
     cat > "$results_path" <<EOF
@@ -127,7 +127,7 @@ update_memory() {
     local task_dir="$PROJECT_ROOT/.claude/tasks/$TASK_ID"
 
     # Store task completion
-    npx claude-flow@alpha hooks memory-store \
+    npx ruflo@latest hooks memory-store \
         --key "$memory_key/completion" \
         --value "{\"status\":\"$STATUS\",\"completedAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" \
         2>&1 | tee -a "$LOG_FILE" || {
@@ -136,7 +136,7 @@ update_memory() {
 
     # Store results if available
     if [[ -f "$task_dir/results.json" ]]; then
-        npx claude-flow@alpha hooks memory-store \
+        npx ruflo@latest hooks memory-store \
             --key "$memory_key/results" \
             --file "$task_dir/results.json" \
             2>&1 | tee -a "$LOG_FILE" || {
@@ -161,7 +161,7 @@ train_patterns() {
 
     # Extract patterns from successful task
     if [[ -f "$task_dir/results.json" ]]; then
-        npx claude-flow@alpha hooks neural-train \
+        npx ruflo@latest hooks neural-train \
             --pattern-type "task-completion" \
             --input "$task_dir/results.json" \
             --auto-learn true \
@@ -256,7 +256,7 @@ EOF
     fi
 
     # Get swarm metrics
-    npx claude-flow@alpha hooks agent-metrics \
+    npx ruflo@latest hooks agent-metrics \
         --session-id "$SESSION_ID" \
         --output "$task_dir/swarm-metrics.json" \
         2>&1 | tee -a "$LOG_FILE" || {
@@ -353,7 +353,7 @@ finalize_task() {
 send_notification() {
     log "Sending completion notification..."
 
-    npx claude-flow@alpha hooks notify \
+    npx ruflo@latest hooks notify \
         --message "Task $TASK_ID completed with status: $STATUS" \
         --level "info" \
         --session-id "$SESSION_ID" \

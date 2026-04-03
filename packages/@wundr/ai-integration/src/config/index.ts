@@ -5,7 +5,7 @@
 import { AIIntegrationConfig } from '../types';
 
 export const defaultConfig: AIIntegrationConfig = {
-  claudeFlow: {
+  ruflo: {
     maxConcurrentAgents: 10,
     defaultTopology: 'mesh',
     hooks: {

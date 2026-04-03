@@ -684,7 +684,7 @@ cd "${WORKTREE_PATH}"
 echo "🤖 Running agent: ${AGENT_TYPE} on task: ${TASK_ID}"
 
 # Execute agent command
-npx claude-flow sparc run "${AGENT_TYPE}" "${TASK_ID}"
+npx ruflo sparc run "${AGENT_TYPE}" "${TASK_ID}"
 
 # cleanup() will be called automatically on exit
 ```
@@ -863,7 +863,7 @@ merge_with_consensus() {
     done
 
     # Use LLM to determine consensus (Claude Code integration)
-    consensus_resolution=$(npx claude-flow resolve-conflict \
+    consensus_resolution=$(npx ruflo resolve-conflict \
         --files "$conflict_dir"/* \
         --strategy "consensus")
 
@@ -1089,8 +1089,8 @@ git branch -d feature-branch
 ```bash
 # All agents read from main workspace
 cd /Users/iroselli/wundr
-npx claude-flow sparc run researcher "analyze codebase"
-npx claude-flow sparc run reviewer "review architecture"
+npx ruflo sparc run researcher "analyze codebase"
+npx ruflo sparc run reviewer "review architecture"
 # No worktrees needed
 ```
 
@@ -1364,7 +1364,7 @@ jobs:
       - name: Run agent task
         working-directory: ${{ env.WORKTREE_PATH }}
         run: |
-          npx claude-flow sparc run ${{ matrix.agent }} "${{ github.event.pull_request.title }}"
+          npx ruflo sparc run ${{ matrix.agent }} "${{ github.event.pull_request.title }}"
 
       - name: Commit agent changes
         working-directory: ${{ env.WORKTREE_PATH }}
@@ -1463,7 +1463,7 @@ agent-coder:
 
       cd "${WORKTREE_PATH}"
       npm ci
-      npx claude-flow sparc run coder "${CI_COMMIT_MESSAGE}"
+      npx ruflo sparc run coder "${CI_COMMIT_MESSAGE}"
 
       git add .
       git commit -m "Coder agent results" || true
@@ -1584,7 +1584,7 @@ def runAgent(agentType) {
         git worktree add -b "${branchName}" "${worktreePath}" HEAD
         cd "${worktreePath}"
         npm ci
-        npx claude-flow sparc run ${agentType} "${env.GIT_COMMIT_MSG}"
+        npx ruflo sparc run ${agentType} "${env.GIT_COMMIT_MSG}"
         git add .
         git commit -m "Agent ${agentType} results" || true
     """
@@ -2096,7 +2096,7 @@ for agent in "${AGENTS[@]}"; do
     # Spawn agent in background
     (
         cd "${WORKTREE_PATH}"
-        npx claude-flow sparc run "$agent" "$TASK"
+        npx ruflo sparc run "$agent" "$TASK"
         git add .
         git commit -m "Agent $agent results" || true
     ) &
@@ -2161,7 +2161,7 @@ ARCH_BRANCH="worktree/architect/${TIMESTAMP}"
 git worktree add -b "${ARCH_BRANCH}" "${ARCH_WORKTREE}" master
 
 cd "${ARCH_WORKTREE}"
-npx claude-flow sparc run architect "$TASK"
+npx ruflo sparc run architect "$TASK"
 git add .
 git commit -m "Architecture design"
 
@@ -2179,7 +2179,7 @@ CODER_BRANCH="worktree/coder/${TIMESTAMP}"
 git worktree add -b "${CODER_BRANCH}" "${CODER_WORKTREE}" master
 
 cd "${CODER_WORKTREE}"
-npx claude-flow sparc run coder "$TASK"
+npx ruflo sparc run coder "$TASK"
 git add .
 git commit -m "Implementation complete"
 
@@ -2197,7 +2197,7 @@ TESTER_BRANCH="worktree/tester/${TIMESTAMP}"
 git worktree add -b "${TESTER_BRANCH}" "${TESTER_WORKTREE}" master
 
 cd "${TESTER_WORKTREE}"
-npx claude-flow sparc run tester "$TASK"
+npx ruflo sparc run tester "$TASK"
 git add .
 git commit -m "Tests complete"
 
@@ -2231,7 +2231,7 @@ git worktree add -b "${COORD_BRANCH}" "${COORD_WORKTREE}" master
 cd "${COORD_WORKTREE}"
 
 # Coordinator analyzes task and creates work plan
-WORK_PLAN=$(npx claude-flow sparc run planner "$TASK" --output json)
+WORK_PLAN=$(npx ruflo sparc run planner "$TASK" --output json)
 
 # Extract subtasks (example: 4 modules to refactor)
 SUBTASKS=$(echo "$WORK_PLAN" | jq -r '.subtasks[]')
@@ -2254,7 +2254,7 @@ for subtask in $SUBTASKS; do
     # Run worker in background
     (
         cd "${WORKER_WORKTREE}"
-        npx claude-flow sparc run coder "$subtask"
+        npx ruflo sparc run coder "$subtask"
         git add .
         git commit -m "Worker: $subtask complete" || true
     ) &
@@ -2328,7 +2328,7 @@ for approach in "${APPROACHES[@]}"; do
     # Run agent in background
     (
         cd "${WORKTREE_PATH}"
-        npx claude-flow sparc run coder "$TASK --approach $approach"
+        npx ruflo sparc run coder "$TASK --approach $approach"
 
         # Run performance benchmark
         npm run benchmark > "/tmp/benchmark-${approach}.txt"

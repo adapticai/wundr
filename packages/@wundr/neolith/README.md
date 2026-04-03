@@ -122,7 +122,7 @@ Genesis-App is a dual-purpose platform designed to:
 |                                    v                                         |
 |  +------------------------------------------------------------------------+  |
 |  |              Orchestrator Daemon Core (Session Manager)                           |  |
-|  |  - Session Spawning (Claude Code / Claude Flow)                        |  |
+|  |  - Session Spawning (Claude Code / Ruflo)                        |  |
 |  |  - Memory Architecture (Scratchpad -> Episodic -> Semantic)            |  |
 |  |  - Integration Orchestration                                           |  |
 |  +------------------------------------------------------------------------+  |

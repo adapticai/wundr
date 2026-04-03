@@ -41,7 +41,7 @@ export interface NodeLoad {
 export interface SpawnSessionRequest {
   orchestratorId: string;
   task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>;
-  sessionType: 'claude-code' | 'claude-flow';
+  sessionType: 'claude-code' | 'ruflo';
   memoryProfile?: string;
   preferredNodeId?: string;
   constraints?: SessionConstraints;

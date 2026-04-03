@@ -76,7 +76,7 @@ STANDALONE PACKAGES (No internal dependencies):
 │ @wundr.io/ai-integration    │
 │                             │
 │ - Claude Code Integration   │
-│ - Claude Flow Orchestration │
+│ - Ruflo Orchestration │
 │ - MCP Tools                 │
 │ - Neural Networks           │
 │ - Agent Coordination        │

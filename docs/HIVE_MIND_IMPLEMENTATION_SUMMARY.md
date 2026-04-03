@@ -110,7 +110,7 @@ Infrastructure:
   - Deployment: Vercel/Railway/Docker
 
 AI Integration:
-  - Orchestration: Claude Flow
+  - Orchestration: Ruflo
   - Agents: 54 specialized types
   - Tools: 87+ MCP implementations
   - Consensus: Byzantine/Raft/PBFT
@@ -127,7 +127,7 @@ AI Integration:
 | **Analysis Engine**       | Code analysis migration | 🔄 In Progress | AST parser integration |
 | **Environment Setup**     | Cross-platform tools    | 📅 Pending     | Installer scripts      |
 | **Dashboard Platform**    | Next.js web interface   | 📅 Pending     | Component library      |
-| **AI Integration**        | Claude Flow/MCP         | 📅 Pending     | Tool registry          |
+| **AI Integration**        | Ruflo/MCP               | 📅 Pending     | Tool registry          |
 | **CLI Framework**         | Unified commands        | 🔄 In Progress | Command structure      |
 | **Testing & Quality**     | Test coverage           | 📅 Pending     | Test suites            |
 | **Documentation**         | Technical docs          | 📅 Pending     | API reference          |

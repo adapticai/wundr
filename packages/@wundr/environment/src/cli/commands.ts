@@ -93,7 +93,7 @@ export const quickstartCommand = new Command('quickstart')
       // eslint-disable-next-line no-console
       console.log('   wundr-env status       # Show installation status');
       // eslint-disable-next-line no-console
-      console.log('   claude-flow quickstart # Start AI development');
+      console.log('   ruflo quickstart # Start AI development');
     } catch (error) {
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
       spinner.fail(`❌ Setup failed after ${elapsed}s`);
@@ -311,7 +311,7 @@ export const statusCommand = new Command('status')
           `Claude Code: ${config.tools.some(t => t.name === 'claude-code') ? chalk.green('✓') : chalk.red('✗')}`
         );
         console.log(
-          `Claude Flow: ${config.tools.some(t => t.name === 'claude-flow') ? chalk.green('✓') : chalk.red('✗')}`
+          `Ruflo: ${config.tools.some(t => t.name === 'ruflo') ? chalk.green('✓') : chalk.red('✗')}`
         );
         console.log(`Swarm Capabilities: ${chalk.green('✓')}`);
         console.log(`Neural Features: ${chalk.green('✓')}`);
@@ -402,7 +402,7 @@ export const profilesCommand = new Command('profiles')
       {
         name: 'ai-agent',
         description: 'Optimized environment for AI agents and automation',
-        tools: 'Claude Code, Claude Flow, swarm capabilities',
+        tools: 'Claude Code, Ruflo, swarm capabilities',
       },
       {
         name: 'ci-runner',

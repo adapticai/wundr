@@ -84,7 +84,7 @@ claude mcp list
 | `test_baseline`       | Test coverage management     | create, compare, update            |
 | `claude_config`       | Configuration generation     | claude-md, hooks, conventions, all |
 
-### Claude-Flow MCP Tools (Swarm Coordination)
+### Ruflo MCP Tools (Swarm Coordination)
 
 | Tool               | Purpose                |
 | ------------------ | ---------------------- |

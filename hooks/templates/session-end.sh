@@ -85,8 +85,8 @@ collect_metrics() {
     local metrics_file="$session_dir/metrics.json"
 
     # Get swarm metrics
-    local agent_metrics=$(npx claude-flow@alpha hooks agent-metrics --session-id "$SESSION_ID" 2>/dev/null || echo "{}")
-    local memory_usage=$(npx claude-flow@alpha hooks memory-usage 2>/dev/null || echo "{}")
+    local agent_metrics=$(npx ruflo@latest hooks agent-metrics --session-id "$SESSION_ID" 2>/dev/null || echo "{}")
+    local memory_usage=$(npx ruflo@latest hooks memory-usage 2>/dev/null || echo "{}")
 
     # Collect task statistics
     local total_tasks=0
@@ -129,7 +129,7 @@ save_memory() {
     local memory_snapshot="$session_dir/memory-snapshot.json"
 
     # Export memory state
-    npx claude-flow@alpha hooks memory-export \
+    npx ruflo@latest hooks memory-export \
         --session-id "$SESSION_ID" \
         --output "$memory_snapshot" \
         2>&1 | tee -a "$LOG_FILE" || {
@@ -153,7 +153,7 @@ save_topology() {
     local topology_file="$session_dir/topology.json"
 
     # Get current topology
-    npx claude-flow@alpha hooks swarm-status \
+    npx ruflo@latest hooks swarm-status \
         --session-id "$SESSION_ID" \
         --output "$topology_file" \
         2>&1 | tee -a "$LOG_FILE" || {
@@ -172,7 +172,7 @@ save_patterns() {
     local patterns_file="$session_dir/neural-patterns.json"
 
     # Export neural patterns
-    npx claude-flow@alpha hooks neural-export \
+    npx ruflo@latest hooks neural-export \
         --session-id "$SESSION_ID" \
         --output "$patterns_file" \
         2>&1 | tee -a "$LOG_FILE" || {
@@ -397,7 +397,7 @@ cleanup_temp() {
 shutdown_swarm() {
     log "Shutting down swarm..."
 
-    npx claude-flow@alpha hooks swarm-shutdown \
+    npx ruflo@latest hooks swarm-shutdown \
         --session-id "$SESSION_ID" \
         --graceful true \
         2>&1 | tee -a "$LOG_FILE" || {

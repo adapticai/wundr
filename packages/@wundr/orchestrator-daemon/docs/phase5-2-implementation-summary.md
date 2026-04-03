@@ -27,7 +27,7 @@ for the Neolith platform.
 
 - `canSpawnSessions`: boolean
 - `maxConcurrentSessions`: number
-- `supportedSessionTypes`: Array<'claude-code' | 'claude-flow'>
+- `supportedSessionTypes`: Array<'claude-code' | 'ruflo'>
 - `hasGPUAccess`: boolean
 - `hasHighMemory`: boolean
 - `customCapabilities`: Record<string, boolean> (optional)
@@ -46,7 +46,7 @@ for the Neolith platform.
 
 - `orchestratorId`: string
 - `task`: Task
-- `sessionType`: 'claude-code' | 'claude-flow'
+- `sessionType`: 'claude-code' | 'ruflo'
 - `memoryProfile`: string (optional)
 - `priority`: 'low' | 'medium' | 'high' | 'critical' (optional)
 

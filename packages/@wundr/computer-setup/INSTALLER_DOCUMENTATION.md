@@ -181,7 +181,7 @@ The system supports different developer role profiles:
 - Shell preferences (bash, zsh, fish)
 - Editor integration (VS Code, Vim, Sublime)
 - Git configuration with signing
-- AI tools integration (Claude Code, Claude Flow)
+- AI tools integration (Claude Code, Ruflo)
 
 ### Team Standardization
 

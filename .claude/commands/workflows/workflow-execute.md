@@ -5,7 +5,7 @@ Execute saved workflows.
 ## Usage
 
 ```bash
-npx claude-flow workflow execute [options]
+npx ruflo workflow execute [options]
 ```
 
 ## Options
@@ -18,11 +18,11 @@ npx claude-flow workflow execute [options]
 
 ```bash
 # Execute workflow
-npx claude-flow workflow execute --name "deploy-api"
+npx ruflo workflow execute --name "deploy-api"
 
 # With parameters
-npx claude-flow workflow execute --name "test-suite" --params '{"env": "staging"}'
+npx ruflo workflow execute --name "test-suite" --params '{"env": "staging"}'
 
 # Dry run
-npx claude-flow workflow execute --name "deploy-api" --dry-run
+npx ruflo workflow execute --name "deploy-api" --dry-run
 ```

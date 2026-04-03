@@ -5,7 +5,7 @@ Execute tasks in parallel for maximum efficiency.
 ## Usage
 
 ```bash
-npx claude-flow optimization parallel-execute [options]
+npx ruflo optimization parallel-execute [options]
 ```
 
 ## Options
@@ -18,11 +18,11 @@ npx claude-flow optimization parallel-execute [options]
 
 ```bash
 # Execute task list
-npx claude-flow optimization parallel-execute --tasks tasks.json
+npx ruflo optimization parallel-execute --tasks tasks.json
 
 # Limit parallelism
-npx claude-flow optimization parallel-execute --tasks tasks.json --max-parallel 5
+npx ruflo optimization parallel-execute --tasks tasks.json --max-parallel 5
 
 # Custom strategy
-npx claude-flow optimization parallel-execute --strategy adaptive
+npx ruflo optimization parallel-execute --strategy adaptive
 ```

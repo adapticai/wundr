@@ -1,5 +1,5 @@
 /**
- * Claude Flow Orchestrator - Manages the 54 specialized agents
+ * Ruflo Orchestrator - Manages the 54 specialized agents
  *
  * Handles agent spawning, coordination, and the SPARC methodology integration.
  * Implements concurrent execution patterns and swarm topology management.
@@ -12,7 +12,7 @@ import { EventEmitter } from 'eventemitter3';
 import * as fs from 'fs-extra';
 
 import {
-  ClaudeFlowConfig,
+  RufloConfig,
   Agent,
   AgentType,
   SwarmTopology,
@@ -21,8 +21,8 @@ import {
 } from '../types';
 import { convertErrorToOperationError } from '../utils';
 
-export class ClaudeFlowOrchestrator extends EventEmitter {
-  private config: ClaudeFlowConfig;
+export class RufloOrchestrator extends EventEmitter {
+  private config: RufloConfig;
   private activeAgents: Map<string, Agent> = new Map();
   private topologies: Map<string, SwarmTopology> = new Map();
   private sessionId: string;
@@ -244,7 +244,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
     },
   };
 
-  constructor(config: ClaudeFlowConfig) {
+  constructor(config: RufloConfig) {
     super();
     this.config = config;
     this.sessionId = this.generateSessionId();
@@ -252,8 +252,8 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
 
   async initialize(): Promise<OperationResult> {
     try {
-      // Initialize Claude Flow MCP server
-      await this.setupClaudeFlowMCP();
+      // Initialize Ruflo MCP server
+      await this.setupRufloMCP();
 
       // Create session directory
       await this.createSessionDirectory();
@@ -263,21 +263,21 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
 
       return {
         success: true,
-        message: 'Claude Flow Orchestrator initialized successfully',
+        message: 'Ruflo Orchestrator initialized successfully',
       };
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
       return {
         success: false,
-        message: `Claude Flow initialization failed: ${errorMessage}`,
-        error: convertErrorToOperationError(error, 'CLAUDE_FLOW_INIT_ERROR'),
+        message: `Ruflo initialization failed: ${errorMessage}`,
+        error: convertErrorToOperationError(error, 'RUFLO_INIT_ERROR'),
       };
     }
   }
 
-  private async setupClaudeFlowMCP(): Promise<void> {
-    // Check if Claude Flow MCP is installed and configured
+  private async setupRufloMCP(): Promise<void> {
+    // Check if Ruflo MCP is installed and configured
     const mcpConfigPath = path.join(
       process.env['HOME'] || '',
       '.claude',
@@ -286,10 +286,10 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
 
     try {
       const mcpConfig = await fs.readJson(mcpConfigPath);
-      const hasClaudeFlow = mcpConfig.servers?.['claude-flow'];
+      const hasRuflo = mcpConfig.servers?.['ruflo'];
 
-      if (!hasClaudeFlow) {
-        throw new Error('Claude Flow MCP server not configured');
+      if (!hasRuflo) {
+        throw new Error('Ruflo MCP server not configured');
       }
     } catch (error) {
       // Log the error for debugging - could be file not found or JSON parse error
@@ -298,24 +298,16 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
       console.debug(
         `MCP config check failed (${errorMessage}), attempting auto-install`
       );
-      // Auto-install Claude Flow MCP server
-      await this.installClaudeFlowMCP();
+      // Auto-install Ruflo MCP server
+      await this.installRufloMCP();
     }
   }
 
-  private async installClaudeFlowMCP(): Promise<void> {
+  private async installRufloMCP(): Promise<void> {
     return new Promise((resolve, reject) => {
       const installProcess = spawn(
         'claude',
-        [
-          'mcp',
-          'add',
-          'claude-flow',
-          'npx',
-          'claude-flow@alpha',
-          'mcp',
-          'start',
-        ],
+        ['mcp', 'add', 'ruflo', 'npx', 'ruflo@latest', 'mcp', 'start'],
         {
           stdio: 'inherit',
         }
@@ -325,9 +317,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
         if (code === 0) {
           resolve();
         } else {
-          reject(
-            new Error(`Claude Flow MCP installation failed with code ${code}`)
-          );
+          reject(new Error(`Ruflo MCP installation failed with code ${code}`));
         }
       });
 
@@ -380,7 +370,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
   }
 
   /**
-   * Spawn agents using Claude Flow with specified topology
+   * Spawn agents using Ruflo with specified topology
    */
   async spawnAgents(
     agentTypes: AgentType[],
@@ -389,7 +379,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
     const agents: Agent[] = [];
 
     // Initialize swarm with topology
-    await this.executeClaudeFlowCommand('swarm_init', {
+    await this.executeRufloCommand('swarm_init', {
       topology: topology.type,
       maxAgents: agentTypes.length,
     });
@@ -415,8 +405,8 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
       throw new Error(`Unknown agent type: ${agentType}`);
     }
 
-    // Spawn agent using Claude Flow MCP
-    const agentId = await this.executeClaudeFlowCommand('agent_spawn', {
+    // Spawn agent using Ruflo MCP
+    const agentId = await this.executeRufloCommand('agent_spawn', {
       type: agentType,
       category: agentConfig.category,
       capabilities: agentConfig.capabilities,
@@ -459,17 +449,14 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
       for (const phase of phases) {
         switch (phase) {
           case 'specification':
-            results.specification = await this.executeClaudeFlowCommand(
-              'sparc',
-              {
-                mode: 'spec-pseudocode',
-                task: task,
-              }
-            );
+            results.specification = await this.executeRufloCommand('sparc', {
+              mode: 'spec-pseudocode',
+              task: task,
+            });
             break;
 
           case 'pseudocode':
-            results.pseudocode = await this.executeClaudeFlowCommand('sparc', {
+            results.pseudocode = await this.executeRufloCommand('sparc', {
               mode: 'spec-pseudocode',
               task: task,
               context: results.specification,
@@ -477,21 +464,18 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
             break;
 
           case 'architecture':
-            results.architecture = await this.executeClaudeFlowCommand(
-              'sparc',
-              {
-                mode: 'architect',
-                task: task,
-                context: {
-                  specification: results.specification,
-                  pseudocode: results.pseudocode,
-                },
-              }
-            );
+            results.architecture = await this.executeRufloCommand('sparc', {
+              mode: 'architect',
+              task: task,
+              context: {
+                specification: results.specification,
+                pseudocode: results.pseudocode,
+              },
+            });
             break;
 
           case 'refinement':
-            results.refinement = await this.executeClaudeFlowCommand('sparc', {
+            results.refinement = await this.executeRufloCommand('sparc', {
               mode: 'tdd',
               task: task,
               context: results,
@@ -499,7 +483,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
             break;
 
           case 'completion':
-            results.completion = await this.executeClaudeFlowCommand('sparc', {
+            results.completion = await this.executeRufloCommand('sparc', {
               mode: 'integration',
               task: task,
               context: results,
@@ -521,7 +505,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
       return {
         success: false,
         message: `SPARC workflow failed: ${errorMessage}`,
-        error: convertErrorToOperationError(error, 'CLAUDE_FLOW_INIT_ERROR'),
+        error: convertErrorToOperationError(error, 'RUFLO_INIT_ERROR'),
       };
     }
   }
@@ -531,7 +515,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
    */
   async executeBatchOperations(operations: any[]): Promise<OperationResult[]> {
     const results = await Promise.allSettled(
-      operations.map(op => this.executeClaudeFlowCommand(op.command, op.params))
+      operations.map(op => this.executeRufloCommand(op.command, op.params))
     );
 
     return results.map(result => ({
@@ -546,9 +530,9 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
   }
 
   /**
-   * Execute Claude Flow command via MCP
+   * Execute Ruflo command via MCP
    */
-  private async executeClaudeFlowCommand(
+  private async executeRufloCommand(
     command: string,
     params: any
   ): Promise<any> {
@@ -561,7 +545,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
     await this.executeHook('pre-task', { command, params });
 
     // Execute main command (simulated)
-    const result = await this.simulateClaudeFlowExecution(sessionCommand);
+    const result = await this.simulateRufloExecution(sessionCommand);
 
     // Execute post-task hooks
     await this.executeHook('post-task', { command, params, result });
@@ -574,17 +558,17 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
     params: any
   ): Promise<string> {
     const hooks = {
-      'pre-task': `npx claude-flow@alpha hooks pre-task --description "${params.task || command}"`,
-      'session-restore': `npx claude-flow@alpha hooks session-restore --session-id "${this.sessionId}"`,
-      'post-edit': `npx claude-flow@alpha hooks post-edit --file "${params.file || 'unknown'}" --memory-key "swarm/${command}/${Date.now()}"`,
-      notify: `npx claude-flow@alpha hooks notify --message "${params.message || 'Command executed'}"`,
-      'post-task': `npx claude-flow@alpha hooks post-task --task-id "${params.taskId || command}"`,
-      'session-end': `npx claude-flow@alpha hooks session-end --export-metrics true`,
+      'pre-task': `npx ruflo@latest hooks pre-task --description "${params.task || command}"`,
+      'session-restore': `npx ruflo@latest hooks session-restore --session-id "${this.sessionId}"`,
+      'post-edit': `npx ruflo@latest hooks post-edit --file "${params.file || 'unknown'}" --memory-key "swarm/${command}/${Date.now()}"`,
+      notify: `npx ruflo@latest hooks notify --message "${params.message || 'Command executed'}"`,
+      'post-task': `npx ruflo@latest hooks post-task --task-id "${params.taskId || command}"`,
+      'session-end': `npx ruflo@latest hooks session-end --export-metrics true`,
     };
 
     return (
       (hooks as Record<string, string>)[command] ||
-      `npx claude-flow@alpha ${command}`
+      `npx ruflo@latest ${command}`
     );
   }
 
@@ -592,12 +576,12 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
     // Execute hooks based on the Agent Coordination Protocol
     const hookCommands = {
       'pre-task': [
-        `npx claude-flow@alpha hooks pre-task --description "${context.command}"`,
-        `npx claude-flow@alpha hooks session-restore --session-id "${this.sessionId}"`,
+        `npx ruflo@latest hooks pre-task --description "${context.command}"`,
+        `npx ruflo@latest hooks session-restore --session-id "${this.sessionId}"`,
       ],
       'post-task': [
-        `npx claude-flow@alpha hooks post-task --task-id "${context.command}"`,
-        `npx claude-flow@alpha hooks session-end --export-metrics true`,
+        `npx ruflo@latest hooks post-task --task-id "${context.command}"`,
+        `npx ruflo@latest hooks session-end --export-metrics true`,
       ],
     };
 
@@ -631,8 +615,8 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
     });
   }
 
-  private async simulateClaudeFlowExecution(command: string): Promise<any> {
-    // Simulate Claude Flow command execution
+  private async simulateRufloExecution(command: string): Promise<any> {
+    // Simulate Ruflo command execution
     // In a real implementation, this would interface with the actual MCP server
 
     await new Promise(resolve => setTimeout(resolve, 100)); // Simulate execution time
@@ -673,7 +657,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
     try {
       // Shutdown all active agents
       for (const agent of this.activeAgents.values()) {
-        await this.executeClaudeFlowCommand('agent_shutdown', {
+        await this.executeRufloCommand('agent_shutdown', {
           agentId: agent.id,
         });
       }
@@ -683,7 +667,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
 
       return {
         success: true,
-        message: 'Claude Flow Orchestrator shutdown completed',
+        message: 'Ruflo Orchestrator shutdown completed',
       };
     } catch (error) {
       const errorMessage =
@@ -691,7 +675,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
       return {
         success: false,
         message: `Shutdown failed: ${errorMessage}`,
-        error: convertErrorToOperationError(error, 'CLAUDE_FLOW_INIT_ERROR'),
+        error: convertErrorToOperationError(error, 'RUFLO_INIT_ERROR'),
       };
     }
   }

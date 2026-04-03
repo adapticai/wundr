@@ -1,7 +1,7 @@
-# Agent Configuration Guide: Customizing Claude Flow Agents
+# Agent Configuration Guide: Customizing Ruflo Agents
 
-Complete guide to configuring, customizing, and creating agents for Claude Flow integration with
-Claude Code.
+Complete guide to configuring, customizing, and creating agents for Ruflo integration with Claude
+Code.
 
 ## Table of Contents
 
@@ -17,8 +17,8 @@ Claude Code.
 
 ## Agent Overview
 
-Claude Flow provides 54+ specialized agents that coordinate through MCP while Claude Code executes
-the actual work.
+Ruflo provides 54+ specialized agents that coordinate through MCP while Claude Code executes the
+actual work.
 
 ### Agent Architecture
 
@@ -26,7 +26,7 @@ the actual work.
 ┌─────────────────────────────────────────────┐
 │         Coordination Layer (MCP)            │
 │  ┌─────────────────────────────────────┐   │
-│  │   Claude Flow Agent Manager         │   │
+│  │   Ruflo Agent Manager         │   │
 │  │  - Task Distribution                │   │
 │  │  - Memory Management                │   │
 │  │  - Performance Tracking             │   │
@@ -78,7 +78,7 @@ the actual work.
 **Usage**:
 
 ```bash
-npx claude-flow@alpha agent spawn --type coder
+npx ruflo@latest agent spawn --type coder
 ```
 
 #### reviewer
@@ -333,7 +333,7 @@ npx claude-flow@alpha agent spawn --type coder
 
 ### Global Configuration
 
-Create `.claude-flow/agents.config.json`:
+Create `.ruflo/agents.config.json`:
 
 ```json
 {
@@ -384,27 +384,27 @@ Create `.claude-flow/agents.config.json`:
 
 ```bash
 # Configure coder agent
-npx claude-flow@alpha agent configure coder \
+npx ruflo@latest agent configure coder \
   --timeout 600000 \
   --auto-format true \
   --lint-on-save true \
   --languages "typescript,python,go"
 
 # Configure tester agent
-npx claude-flow@alpha agent configure tester \
+npx ruflo@latest agent configure tester \
   --framework jest \
   --coverage-min 80 \
   --test-types "unit,integration"
 
 # Configure reviewer agent
-npx claude-flow@alpha agent configure reviewer \
+npx ruflo@latest agent configure reviewer \
   --checks "security,performance,best-practices" \
   --complexity-max 15
 ```
 
 #### Agent-Specific Config Files
 
-Create `.claude-flow/agents/coder.config.json`:
+Create `.ruflo/agents/coder.config.json`:
 
 ```json
 {
@@ -480,7 +480,7 @@ Create `.claude-flow/agents/coder.config.json`:
 
 ### Basic Custom Agent
 
-Create `.claude-flow/agents/custom/my-agent.js`:
+Create `.ruflo/agents/custom/my-agent.js`:
 
 ```javascript
 module.exports = {
@@ -619,26 +619,26 @@ module.exports = {
 
 ```bash
 # Register agent
-npx claude-flow@alpha agent register \
-  --file .claude-flow/agents/custom/my-agent.js
+npx ruflo@latest agent register \
+  --file .ruflo/agents/custom/my-agent.js
 
 # Verify registration
-npx claude-flow@alpha agent list --custom
+npx ruflo@latest agent list --custom
 
 # Spawn custom agent
-npx claude-flow@alpha agent spawn --type my-custom-agent
+npx ruflo@latest agent spawn --type my-custom-agent
 ```
 
 ### Advanced Custom Agent with Plugins
 
 ```javascript
-// .claude-flow/agents/custom/advanced-agent.js
+// .ruflo/agents/custom/advanced-agent.js
 module.exports = {
   name: 'advanced-custom-agent',
   version: '2.0.0',
 
   // Plugin system
-  plugins: ['@claude-flow/plugin-git', '@claude-flow/plugin-github', '@claude-flow/plugin-testing'],
+  plugins: ['@ruflo/plugin-git', '@ruflo/plugin-github', '@ruflo/plugin-testing'],
 
   // Agent state
   state: {
@@ -758,14 +758,14 @@ module.exports = {
 
 ```bash
 # Create specialized coder for TypeScript
-npx claude-flow@alpha agent specialize coder \
+npx ruflo@latest agent specialize coder \
   --name typescript-expert \
   --language typescript \
   --frameworks "react,nestjs" \
   --patterns "clean-architecture,ddd"
 
 # Create specialized tester for E2E
-npx claude-flow@alpha agent specialize tester \
+npx ruflo@latest agent specialize tester \
   --name e2e-specialist \
   --test-type e2e \
   --framework playwright \
@@ -863,18 +863,18 @@ npx claude-flow@alpha agent specialize tester \
 
 ```bash
 # Hierarchical for structured tasks
-npx claude-flow@alpha swarm start \
+npx ruflo@latest swarm start \
   --topology hierarchical \
   --coordinator hierarchical-coordinator \
   --agents backend-dev,coder,tester,reviewer
 
 # Mesh for collaborative tasks
-npx claude-flow@alpha swarm start \
+npx ruflo@latest swarm start \
   --topology mesh \
   --agents coder,coder,coder,reviewer
 
 # Adaptive (auto-selects based on task)
-npx claude-flow@alpha swarm start \
+npx ruflo@latest swarm start \
   --topology adaptive \
   --task "Build microservices architecture"
 ```
@@ -919,16 +919,16 @@ npx claude-flow@alpha swarm start \
 
 ```bash
 # View agent metrics
-npx claude-flow@alpha agent metrics <agent-id>
+npx ruflo@latest agent metrics <agent-id>
 
 # Performance report
-npx claude-flow@alpha agent report \
+npx ruflo@latest agent report \
   --agent coder \
   --period 7d \
   --format json
 
 # Benchmark agents
-npx claude-flow@alpha agent benchmark \
+npx ruflo@latest agent benchmark \
   --agents coder,reviewer,tester \
   --task "Implement CRUD API"
 ```
@@ -991,8 +991,8 @@ npx claude-flow@alpha agent benchmark \
 Usage:
 
 ```bash
-npx claude-flow@alpha swarm start \
-  --config .claude-flow/teams/ecommerce.json \
+npx ruflo@latest swarm start \
+  --config .ruflo/teams/ecommerce.json \
   --task "Build complete shopping cart and checkout system"
 ```
 
@@ -1000,7 +1000,7 @@ npx claude-flow@alpha swarm start \
 
 ```bash
 # Spawn specialized team
-npx claude-flow@alpha swarm start \
+npx ruflo@latest swarm start \
   --topology adaptive \
   --task "Refactor monolith to microservices"
 
@@ -1016,7 +1016,7 @@ npx claude-flow@alpha swarm start \
 
 ```bash
 # Security-focused team
-npx claude-flow@alpha swarm start \
+npx ruflo@latest swarm start \
   --topology hierarchical \
   --coordinator security-manager \
   --agents code-analyzer,reviewer,tester \
@@ -1028,7 +1028,7 @@ npx claude-flow@alpha swarm start \
 ### 1. Agent Assignment Strategy
 
 ```javascript
-// .claude-flow/agent-strategy.js
+// .ruflo/agent-strategy.js
 module.exports = {
   assignAgent(file, task) {
     // File-based assignment
@@ -1050,13 +1050,13 @@ module.exports = {
 
 ```bash
 # Agent-scoped memory
-npx claude-flow@alpha memory store \
+npx ruflo@latest memory store \
   --key "agent/coder-1/preferences" \
   --value '{"style": "airbnb"}' \
   --scope agent
 
 # Shared team memory
-npx claude-flow@alpha memory store \
+npx ruflo@latest memory store \
   --key "team/backend/conventions" \
   --value '{"architecture": "clean"}' \
   --scope team

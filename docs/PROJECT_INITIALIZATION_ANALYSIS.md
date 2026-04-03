@@ -31,7 +31,7 @@ consolidation.
 **Status**: Standalone CLI command **Lines**: 374 **Functionality**:
 
 - Standalone `claude-setup` command
-- Steps through: Claude Flow setup → MCP Tools → CLAUDE.md generation → Project templates
+- Steps through: Ruflo setup → MCP Tools → CLAUDE.md generation → Project templates
 - Uses dynamic CLAUDE.md generator
 - Creates project structure templates (TypeScript, React, Node.js, Monorepo)
 
@@ -40,7 +40,7 @@ consolidation.
 ```typescript
 export function createClaudeSetupCommand(): Command {
   // Lines 16-91: Main command handler
-  // - Claude Flow installation
+  // - Ruflo installation
   // - MCP Tools setup
   // - Dynamic CLAUDE.md generation
   // - Project template selection
@@ -232,7 +232,7 @@ ClaudeConfigGenerator
   - Docker integration
   - GitHub workflows
   - Slack integration
-  - Claude Flow
+  - Ruflo
 - `getConfigsForProjectType()` - Returns config templates:
   - node: eslint, jest, tsconfig-node
   - react: eslint, jest, tsconfig-react
@@ -487,7 +487,7 @@ Input: wundr claude-setup [path]
 1. Verify Git Repository
   ├─ If missing: Prompt for git init
   ↓
-2. Setup Claude Flow
+2. Setup Ruflo
   ├─ Check if installed
   ├─ Install if needed (global or local)
   ├─ Add MCP server config
@@ -509,7 +509,7 @@ Input: wundr claude-setup [path]
   ├─ Create index file
   ↓
 6. Initialize Swarm
-  ├─ Run: npx claude-flow@alpha init
+  ├─ Run: npx ruflo@latest init
   ↓
 7. Validate Setup
   ├─ Check CLAUDE.md exists
@@ -744,7 +744,7 @@ generateTroubleshootingGuide(): string
      "agents": {...},
      "mcp": {...},
      "hooks": {...},
-     "claudeFlow": {...}
+     "ruflo": {...}
    }
    ```
 
@@ -930,7 +930,7 @@ generateTroubleshootingGuide(): string
 - Implement createProjectTemplates()
 - Copy all configuration templates
 - Generate Docker/GitHub/Slack configs
-- Setup Claude Flow integration
+- Setup Ruflo integration
 ```
 
 ---

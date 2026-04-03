@@ -232,25 +232,25 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# CLAUDE-FLOW INTEGRATION (Optional)
+# RUFLO INTEGRATION (Optional)
 # -----------------------------------------------------------------------------
 
 echo ""
-echo "--- Claude-Flow Integration ---"
+echo "--- Ruflo Integration ---"
 
 if command -v npx &> /dev/null; then
-    # Pre-task hook for claude-flow
-    if npx claude-flow@alpha --version &> /dev/null 2>&1; then
-        echo "Claude-Flow detected, initializing pre-task context..."
-        npx claude-flow@alpha hooks pre-task --description "$TASK_DESC" 2>/dev/null || echo "  Claude-Flow pre-task hook skipped"
+    # Pre-task hook for ruflo
+    if npx ruflo@latest --version &> /dev/null 2>&1; then
+        echo "Ruflo detected, initializing pre-task context..."
+        npx ruflo@latest hooks pre-task --description "$TASK_DESC" 2>/dev/null || echo "  Ruflo pre-task hook skipped"
 
         # Session restore
-        npx claude-flow@alpha hooks session-restore --session-id "$SESSION_ID" 2>/dev/null || echo "  Session restore skipped"
+        npx ruflo@latest hooks session-restore --session-id "$SESSION_ID" 2>/dev/null || echo "  Session restore skipped"
     else
-        echo "Claude-Flow not available - skipping integration"
+        echo "Ruflo not available - skipping integration"
     fi
 else
-    echo "npx not available - skipping Claude-Flow integration"
+    echo "npx not available - skipping Ruflo integration"
 fi
 
 # -----------------------------------------------------------------------------

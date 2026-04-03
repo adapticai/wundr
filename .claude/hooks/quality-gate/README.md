@@ -1,9 +1,9 @@
 # Quality Gate Hooks System
 
 This directory contains the Quality Gate hook configuration files that enforce code quality
-standards throughout the development workflow. These hooks integrate with Claude-Flow to provide
-automated checks, AI-powered reviews, and comprehensive validation at critical points in the
-development lifecycle.
+standards throughout the development workflow. These hooks integrate with Ruflo to provide automated
+checks, AI-powered reviews, and comprehensive validation at critical points in the development
+lifecycle.
 
 ## Overview
 
@@ -124,7 +124,7 @@ notifications:
 
 ## Agent Integration
 
-Quality Gate hooks integrate with Claude-Flow agents for AI-powered checks:
+Quality Gate hooks integrate with Ruflo agents for AI-powered checks:
 
 ### Code Reviewer Agent
 
@@ -162,17 +162,17 @@ Used in pre-push for security analysis:
 
 ### Manual Execution
 
-Run hooks manually using Claude-Flow:
+Run hooks manually using Ruflo:
 
 ```bash
 # Run pre-commit checks
-npx claude-flow hooks pre-commit
+npx ruflo hooks pre-commit
 
 # Run post-commit verification
-npx claude-flow hooks post-commit
+npx ruflo hooks post-commit
 
 # Run pre-push validation
-npx claude-flow hooks pre-push
+npx ruflo hooks pre-push
 ```
 
 ### Git Integration
@@ -181,10 +181,10 @@ Hooks are automatically triggered by Git operations when configured:
 
 ```bash
 # Install Git hooks
-npx claude-flow hooks install
+npx ruflo hooks install
 
 # Verify installation
-npx claude-flow hooks status
+npx ruflo hooks status
 ```
 
 ### Skip Hooks (Use with Caution)
@@ -270,7 +270,7 @@ SKIP_QUALITY_GATE=true git push
 
 ## Related Documentation
 
-- [Claude-Flow Hooks Documentation](https://github.com/ruvnet/claude-flow)
+- [Ruflo Hooks Documentation](https://github.com/ruvnet/ruflo)
 - [SPARC Development Workflow](../../../CLAUDE.md)
 - [Agent Configuration](../../agents/README.md)
 

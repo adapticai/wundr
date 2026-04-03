@@ -108,8 +108,8 @@ restore_memory() {
         return 0
     fi
 
-    # Restore memory using claude-flow
-    npx claude-flow@alpha hooks session-restore \
+    # Restore memory using ruflo
+    npx ruflo@latest hooks session-restore \
         --session-id "$SESSION_ID" \
         --restore-memory true \
         2>&1 | tee -a "$LOG_FILE" || {
@@ -143,7 +143,7 @@ rebuild_topology() {
     log "Restoring topology: $topology (max agents: $max_agents)"
 
     # Initialize swarm with saved topology
-    npx claude-flow@alpha hooks swarm-init \
+    npx ruflo@latest hooks swarm-init \
         --topology "$topology" \
         --max-agents "$max_agents" \
         --session-id "$SESSION_ID" \
@@ -158,7 +158,7 @@ rebuild_topology() {
         log "Respawning $agent_count agents..."
 
         echo "$agents" | jq -r '.[] | .type' | while read -r agent_type; do
-            npx claude-flow@alpha hooks agent-spawn \
+            npx ruflo@latest hooks agent-spawn \
                 --type "$agent_type" \
                 --session-id "$SESSION_ID" \
                 2>&1 | tee -a "$LOG_FILE" || warn "Failed to spawn $agent_type"
@@ -316,8 +316,8 @@ restore_patterns() {
         return 0
     fi
 
-    # Load patterns using claude-flow
-    npx claude-flow@alpha hooks neural-restore \
+    # Load patterns using ruflo
+    npx ruflo@latest hooks neural-restore \
         --session-id "$SESSION_ID" \
         --patterns-file "$patterns_file" \
         2>&1 | tee -a "$LOG_FILE" || {
@@ -361,14 +361,14 @@ health_check() {
     log "Running post-restore health check..."
 
     # Check swarm status
-    npx claude-flow@alpha hooks swarm-status \
+    npx ruflo@latest hooks swarm-status \
         --session-id "$SESSION_ID" \
         2>&1 | tee -a "$LOG_FILE" || {
         warn "Swarm status check failed"
     }
 
     # Check memory usage
-    npx claude-flow@alpha hooks memory-usage \
+    npx ruflo@latest hooks memory-usage \
         2>&1 | tee -a "$LOG_FILE" || {
         warn "Memory usage check failed"
     }

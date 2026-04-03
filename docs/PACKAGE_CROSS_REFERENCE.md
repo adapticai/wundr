@@ -38,7 +38,7 @@ Advanced functionality built on core packages.
 | Package                       | Description                                          | Key Exports                    |
 | ----------------------------- | ---------------------------------------------------- | ------------------------------ |
 | **@wundr.io/analysis-engine** | AST parsing, complexity metrics, duplicate detection | CodeAnalyzer, MetricsCollector |
-| **@wundr.io/ai-integration**  | Claude Code, Claude Flow, MCP orchestration          | AIOrchestrator, MCPClient      |
+| **@wundr.io/ai-integration**  | Claude Code, Ruflo, MCP orchestration                | AIOrchestrator, MCPClient      |
 | **@wundr.io/security**        | Enterprise security, encryption, RBAC                | SecurityManager, Encryption    |
 
 ### Tool Packages (Application)

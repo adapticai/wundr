@@ -216,7 +216,7 @@ const TaskStatusSchema = z.enum([
 /**
  * Session type enum.
  */
-const SessionTypeSchema = z.enum(['claude-code', 'claude-flow']);
+const SessionTypeSchema = z.enum(['claude-code', 'ruflo']);
 
 /**
  * Schema for spawn_session payload.

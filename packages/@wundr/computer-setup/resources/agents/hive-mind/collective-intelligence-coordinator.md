@@ -14,7 +14,7 @@ hooks:
   pre: |
     echo "🧠 Collective Intelligence Coordinator orchestrating: $TASK"
     # Initialize shared memory context
-    if command -v mcp__claude_flow__memory_usage &> /dev/null; then
+    if command -v mcp__ruflo__memory_usage &> /dev/null; then
       echo "📊 Preparing collective knowledge aggregation"
     fi
   post: |

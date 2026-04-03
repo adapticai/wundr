@@ -231,7 +231,7 @@ export function getDefaultTemplateVariables(
     VALID_ENVIRONMENTS: 'staging,production',
     AVAILABLE_SERVICES: 'api,web,worker',
 
-    // Claude Flow defaults
+    // Ruflo defaults
     CLAUDE_MODEL: 'claude-sonnet-4-20250514',
     TEMPERATURE: 0.7,
     MAX_CONCURRENT_AGENTS: 54,

@@ -24,7 +24,7 @@ hooks:
     fi
   post: |
     echo "✅ Deployment monitoring session complete"
-    npx claude-flow@alpha hooks post-task --task-id "deployment-monitor"
+    npx ruflo@latest hooks post-task --task-id "deployment-monitor"
 ---
 
 # Deployment Monitor Agent

@@ -3,7 +3,7 @@
 ## Overview
 
 Claude Code hooks provide lifecycle automation for development workflows, integrating seamlessly
-with claude-flow for swarm coordination, memory management, and neural pattern learning.
+with ruflo for swarm coordination, memory management, and neural pattern learning.
 
 ## Table of Contents
 
@@ -11,7 +11,7 @@ with claude-flow for swarm coordination, memory management, and neural pattern l
 - [Hook Types](#hook-types)
 - [Configuration](#configuration)
 - [Usage Examples](#usage-examples)
-- [Integration with Claude Flow](#integration-with-claude-flow)
+- [Integration with Ruflo](#integration-with-ruflo)
 - [Git Worktree Integration](#git-worktree-integration)
 - [Memory Management](#memory-management)
 - [Error Handling](#error-handling)
@@ -27,8 +27,8 @@ with claude-flow for swarm coordination, memory management, and neural pattern l
 node --version  # v16+ required
 npm --version
 
-# Claude Flow (optional but recommended)
-npm install -g claude-flow@alpha
+# Ruflo (optional but recommended)
+npm install -g ruflo@latest
 
 # Git (for worktree features)
 git --version
@@ -393,13 +393,13 @@ SESSION_ID="swarm-789"
 ./hooks/templates/session-restore.sh "$SESSION_ID" true true true
 ```
 
-## Integration with Claude Flow
+## Integration with Ruflo
 
 ### Swarm Initialization
 
 ```bash
 # Initialize swarm before pre-task
-npx claude-flow@alpha hooks swarm-init \
+npx ruflo@latest hooks swarm-init \
     --topology mesh \
     --max-agents 6 \
     --session-id "swarm-123"
@@ -412,12 +412,12 @@ npx claude-flow@alpha hooks swarm-init \
 
 ```bash
 # Store data in memory
-npx claude-flow@alpha hooks memory-store \
+npx ruflo@latest hooks memory-store \
     --key "swarm/123/custom-data" \
     --value '{"important": "data"}'
 
 # Retrieve in hook
-npx claude-flow@alpha hooks memory-retrieve \
+npx ruflo@latest hooks memory-retrieve \
     --key "swarm/123/custom-data"
 ```
 
@@ -425,7 +425,7 @@ npx claude-flow@alpha hooks memory-retrieve \
 
 ```bash
 # Train patterns from successful task
-npx claude-flow@alpha hooks neural-train \
+npx ruflo@latest hooks neural-train \
     --pattern-type "task-completion" \
     --input "./results.json" \
     --auto-learn true
@@ -495,7 +495,7 @@ SESSION_ID="swarm-123"
 TASK_ID="task-456"
 
 # Store task-specific data
-npx claude-flow@alpha hooks memory-store \
+npx ruflo@latest hooks memory-store \
     --key "swarm/$SESSION_ID/task/$TASK_ID/custom" \
     --value '{"step": "in-progress", "percentage": 50}'
 ```
@@ -504,7 +504,7 @@ npx claude-flow@alpha hooks memory-store \
 
 ```bash
 # Retrieve data
-DATA=$(npx claude-flow@alpha hooks memory-retrieve \
+DATA=$(npx ruflo@latest hooks memory-retrieve \
     --key "swarm/$SESSION_ID/task/$TASK_ID/custom" \
     --format json)
 
@@ -614,14 +614,14 @@ chmod +x .claude/hooks/*.sh
 bash -x .claude/hooks/pre-task.sh "Test"
 ```
 
-### Claude Flow Connection Issues
+### Ruflo Connection Issues
 
 ```bash
 # Verify installation
-npx claude-flow@alpha --version
+npx ruflo@latest --version
 
 # Test connection
-npx claude-flow@alpha hooks swarm-status
+npx ruflo@latest hooks swarm-status
 ```
 
 ### Worktree Issues
@@ -641,10 +641,10 @@ git worktree remove .worktrees/task/task-123 --force
 
 ```bash
 # Check memory usage
-npx claude-flow@alpha hooks memory-usage
+npx ruflo@latest hooks memory-usage
 
 # Clear old entries
-npx claude-flow@alpha hooks memory-clear --older-than "7d"
+npx ruflo@latest hooks memory-clear --older-than "7d"
 ```
 
 ### Lock File Issues
@@ -727,7 +727,7 @@ function runWithHooks(taskDescription, work) {
 ## Support
 
 - Documentation: [CLAUDE.md](/CLAUDE.md)
-- Issues: https://github.com/ruvnet/claude-flow/issues
+- Issues: https://github.com/ruvnet/ruflo/issues
 - Examples: [hooks/examples/](/hooks/examples/)
 
 ---

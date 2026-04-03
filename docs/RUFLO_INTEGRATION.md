@@ -1,12 +1,11 @@
-# Claude Code + Claude Flow: Complete Integration Documentation
+# Claude Code + Ruflo: Complete Integration Documentation
 
-Comprehensive documentation for the enhanced Claude Code and Claude Flow integration.
+Comprehensive documentation for the enhanced Claude Code and Ruflo integration.
 
 ## 🚀 Overview
 
-This integration combines Claude Code's powerful AI-assisted development with Claude Flow's
-intelligent agent orchestration, SPARC methodology, and automated workflows for maximum
-productivity.
+This integration combines Claude Code's powerful AI-assisted development with Ruflo's intelligent
+agent orchestration, SPARC methodology, and automated workflows for maximum productivity.
 
 ### Key Features
 
@@ -77,7 +76,7 @@ productivity.
    - Configuration options
    - Code examples
 
-8. **[Troubleshooting Guide](./guides/CLAUDE_FLOW_TROUBLESHOOTING.md)**
+8. **[Troubleshooting Guide](./guides/RUFLO_TROUBLESHOOTING.md)**
    - Common issues
    - Diagnostic tools
    - Error messages
@@ -95,7 +94,7 @@ productivity.
 - **Create custom workflows** → [Hook Development](./guides/HOOK_DEVELOPMENT.md)
 - **Enable parallel development** → [Git-Worktree Guide](./guides/GIT_WORKTREE.md)
 - **Customize for my stack** → [Template Customization](./guides/TEMPLATE_CUSTOMIZATION.md)
-- **Fix an issue** → [Troubleshooting](./guides/CLAUDE_FLOW_TROUBLESHOOTING.md)
+- **Fix an issue** → [Troubleshooting](./guides/RUFLO_TROUBLESHOOTING.md)
 - **Look up a command** → [API Reference](./reference/API.md)
 
 ### By Role
@@ -136,7 +135,7 @@ productivity.
 
 1. [Quick Start Guide](./guides/QUICK_START.md)
 2. [Template Customization](./guides/TEMPLATE_CUSTOMIZATION.md)
-3. [Troubleshooting](./guides/CLAUDE_FLOW_TROUBLESHOOTING.md)
+3. [Troubleshooting](./guides/RUFLO_TROUBLESHOOTING.md)
 
 **Intermediate**
 
@@ -169,7 +168,7 @@ productivity.
 └─────────────────────────────────────────────────────────┘
                             ↕
 ┌─────────────────────────────────────────────────────────┐
-│                   Claude Flow                           │
+│                   Ruflo                           │
 │                (Coordination Layer)                     │
 │  • Agent Management     • Memory System                 │
 │  • Task Orchestration   • Performance Tracking          │
@@ -241,7 +240,7 @@ productivity.
 
 **Day 3-4: Troubleshooting**
 
-- Read [Troubleshooting Guide](./guides/CLAUDE_FLOW_TROUBLESHOOTING.md)
+- Read [Troubleshooting Guide](./guides/RUFLO_TROUBLESHOOTING.md)
 - Set up monitoring
 - Practice debugging
 
@@ -260,7 +259,7 @@ productivity.
 git checkout -b feature/user-auth
 
 # 2. Run SPARC TDD
-npx claude-flow@alpha sparc tdd "Add user authentication with email/password"
+npx ruflo@latest sparc tdd "Add user authentication with email/password"
 
 # 3. Review generated code
 # Files created in src/, tests/, docs/
@@ -282,13 +281,13 @@ git commit -m "feat: add user authentication"
 gh pr create --title "Add authentication" --body "..."
 
 # 2. Run automated review
-npx claude-flow@alpha github review-pr 123
+npx ruflo@latest github review-pr 123
 
 # 3. Address feedback
 # Review suggestions in PR comments
 
 # 4. Enhance PR if needed
-npx claude-flow@alpha github pr-enhance 123 --add-tests --add-docs
+npx ruflo@latest github pr-enhance 123 --add-tests --add-docs
 ```
 
 **Guides**: [API Reference](./reference/API.md) →
@@ -298,12 +297,12 @@ npx claude-flow@alpha github pr-enhance 123 --add-tests --add-docs
 
 ```bash
 # 1. Create feature worktrees
-npx claude-flow@alpha worktree create --name backend --branch feature/api
-npx claude-flow@alpha worktree create --name frontend --branch feature/ui
-npx claude-flow@alpha worktree create --name tests --branch feature/tests
+npx ruflo@latest worktree create --name backend --branch feature/api
+npx ruflo@latest worktree create --name frontend --branch feature/ui
+npx ruflo@latest worktree create --name tests --branch feature/tests
 
 # 2. Start swarm
-npx claude-flow@alpha swarm start \
+npx ruflo@latest swarm start \
   --topology hierarchical \
   --task "Build complete user management system"
 
@@ -313,9 +312,9 @@ npx claude-flow@alpha swarm start \
 # tests → Test suites
 
 # 4. Merge when complete
-npx claude-flow@alpha worktree merge --from backend --to main
-npx claude-flow@alpha worktree merge --from frontend --to main
-npx claude-flow@alpha worktree merge --from tests --to main
+npx ruflo@latest worktree merge --from backend --to main
+npx ruflo@latest worktree merge --from frontend --to main
+npx ruflo@latest worktree merge --from tests --to main
 ```
 
 **Guides**: [Git-Worktree](./guides/GIT_WORKTREE.md) →
@@ -329,17 +328,17 @@ mkdir my-project && cd my-project
 git init
 
 # 2. Initialize with template
-npx claude-flow@alpha init --template react
+npx ruflo@latest init --template react
 
 # 3. Configure agents
-npx claude-flow@alpha agent configure coder --languages typescript
-npx claude-flow@alpha agent configure tester --framework jest
+npx ruflo@latest agent configure coder --languages typescript
+npx ruflo@latest agent configure tester --framework jest
 
 # 4. Set up MCP
-claude mcp add claude-flow npx claude-flow@alpha mcp start
+claude mcp add ruflo npx ruflo@latest mcp start
 
 # 5. Start building
-npx claude-flow@alpha sparc tdd "Create project structure"
+npx ruflo@latest sparc tdd "Create project structure"
 ```
 
 **Guides**: [Quick Start](./guides/QUICK_START.md) →
@@ -425,16 +424,16 @@ Track your productivity gains:
 
 ```bash
 # View metrics
-npx claude-flow@alpha metrics show
+npx ruflo@latest metrics show
 
 # Performance report
-npx claude-flow@alpha metrics --type performance --period 7d
+npx ruflo@latest metrics --type performance --period 7d
 
 # Agent efficiency
-npx claude-flow@alpha agent metrics --all
+npx ruflo@latest agent metrics --all
 
 # SPARC workflow stats
-npx claude-flow@alpha sparc stats
+npx ruflo@latest sparc stats
 ```
 
 **Expected Improvements**:
@@ -451,10 +450,10 @@ See [API Reference](./reference/API.md) for details.
 ### Getting Help
 
 1. **Documentation** (you are here)
-2. **[Troubleshooting Guide](./guides/CLAUDE_FLOW_TROUBLESHOOTING.md)**
+2. **[Troubleshooting Guide](./guides/RUFLO_TROUBLESHOOTING.md)**
 3. **[API Reference](./reference/API.md)**
-4. **GitHub Issues**: https://github.com/ruvnet/claude-flow/issues
-5. **Discussions**: https://github.com/ruvnet/claude-flow/discussions
+4. **GitHub Issues**: https://github.com/ruvnet/ruflo/issues
+5. **Discussions**: https://github.com/ruvnet/ruflo/discussions
 
 ### Contributing
 
@@ -466,10 +465,10 @@ Contributions welcome! See:
 
 ### Resources
 
-- **Official Docs**: https://github.com/ruvnet/claude-flow
+- **Official Docs**: https://github.com/ruvnet/ruflo
 - **Examples**: `/docs/examples/`
-- **Templates**: `.claude-flow/templates/`
-- **Community Templates**: https://github.com/ruvnet/claude-flow-templates
+- **Templates**: `.ruflo/templates/`
+- **Community Templates**: https://github.com/ruvnet/ruflo-templates
 
 ## 🎯 Next Steps
 
@@ -484,7 +483,7 @@ Contributions welcome! See:
 1. ✅ Read [Migration Guide](./guides/MIGRATION.md)
 2. ✅ Backup your project
 3. ✅ Follow step-by-step migration
-4. ✅ Validate with [Troubleshooting](./guides/CLAUDE_FLOW_TROUBLESHOOTING.md)
+4. ✅ Validate with [Troubleshooting](./guides/RUFLO_TROUBLESHOOTING.md)
 
 ### I'm Advanced User
 
@@ -504,8 +503,8 @@ This documentation provides:
 - ✅ **Migration Path**: Upgrade existing projects
 - ✅ **Learning Paths**: Structured learning
 
-**Remember**: Claude Flow coordinates, Claude Code creates, Quality tools ensure excellence!
+**Remember**: Ruflo coordinates, Claude Code creates, Quality tools ensure excellence!
 
 ---
 
-**Version**: 2.0.0 **Last Updated**: 2025-01-21 **Maintained By**: Claude Flow Team **License**: MIT
+**Version**: 2.0.0 **Last Updated**: 2025-01-21 **Maintained By**: Ruflo Team **License**: MIT

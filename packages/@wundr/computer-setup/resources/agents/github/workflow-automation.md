@@ -11,14 +11,14 @@ tools:
   - mcp__github__list_workflows
   - mcp__github__get_workflow_runs
   - mcp__github__create_workflow_dispatch
-  - mcp__claude-flow__swarm_init
-  - mcp__claude-flow__agent_spawn
-  - mcp__claude-flow__task_orchestrate
-  - mcp__claude-flow__memory_usage
-  - mcp__claude-flow__performance_report
-  - mcp__claude-flow__bottleneck_analyze
-  - mcp__claude-flow__workflow_create
-  - mcp__claude-flow__automation_setup
+  - mcp__ruflo__swarm_init
+  - mcp__ruflo__agent_spawn
+  - mcp__ruflo__task_orchestrate
+  - mcp__ruflo__memory_usage
+  - mcp__ruflo__performance_report
+  - mcp__ruflo__bottleneck_analyze
+  - mcp__ruflo__workflow_create
+  - mcp__ruflo__automation_setup
   - TodoWrite
   - TodoRead
   - Bash
@@ -511,17 +511,17 @@ npx ruv-swarm actions profile \
 
 ```bash
 # Initialize comprehensive workflow automation swarm
-mcp__claude-flow__swarm_init { topology: "mesh", maxAgents: 12 }
-mcp__claude-flow__agent_spawn { type: "coordinator", name: "Workflow Coordinator" }
-mcp__claude-flow__agent_spawn { type: "architect", name: "Pipeline Architect" }
-mcp__claude-flow__agent_spawn { type: "coder", name: "Workflow Developer" }
-mcp__claude-flow__agent_spawn { type: "tester", name: "CI/CD Tester" }
-mcp__claude-flow__agent_spawn { type: "optimizer", name: "Performance Optimizer" }
-mcp__claude-flow__agent_spawn { type: "monitor", name: "Automation Monitor" }
-mcp__claude-flow__agent_spawn { type: "analyst", name: "Workflow Analyzer" }
+mcp__ruflo__swarm_init { topology: "mesh", maxAgents: 12 }
+mcp__ruflo__agent_spawn { type: "coordinator", name: "Workflow Coordinator" }
+mcp__ruflo__agent_spawn { type: "architect", name: "Pipeline Architect" }
+mcp__ruflo__agent_spawn { type: "coder", name: "Workflow Developer" }
+mcp__ruflo__agent_spawn { type: "tester", name: "CI/CD Tester" }
+mcp__ruflo__agent_spawn { type: "optimizer", name: "Performance Optimizer" }
+mcp__ruflo__agent_spawn { type: "monitor", name: "Automation Monitor" }
+mcp__ruflo__agent_spawn { type: "analyst", name: "Workflow Analyzer" }
 
 # Create intelligent workflow automation rules
-mcp__claude-flow__automation_setup {
+mcp__ruflo__automation_setup {
   rules: [
     {
       trigger: "pull_request",
@@ -537,7 +537,7 @@ mcp__claude-flow__automation_setup {
 }
 
 # Orchestrate adaptive workflow management
-mcp__claude-flow__task_orchestrate {
+mcp__ruflo__task_orchestrate {
   task: "Manage intelligent CI/CD pipeline with continuous optimization",
   strategy: "adaptive",
   priority: "high",
@@ -549,19 +549,19 @@ mcp__claude-flow__task_orchestrate {
 
 ```bash
 # Generate comprehensive workflow performance reports
-mcp__claude-flow__performance_report {
+mcp__ruflo__performance_report {
   format: "detailed",
   timeframe: "30d"
 }
 
 # Analyze workflow bottlenecks with swarm intelligence
-mcp__claude-flow__bottleneck_analyze {
+mcp__ruflo__bottleneck_analyze {
   component: "github_actions_workflow",
   metrics: ["build_time", "test_duration", "deployment_latency", "resource_utilization"]
 }
 
 # Store performance insights in swarm memory
-mcp__claude-flow__memory_usage {
+mcp__ruflo__memory_usage {
   action: "store",
   key: "workflow/performance/analysis",
   value: {
@@ -579,16 +579,16 @@ mcp__claude-flow__memory_usage {
 // Swarm-powered workflow creation
 const createIntelligentWorkflow = async repoContext => {
   // Initialize workflow generation swarm
-  await mcp__claude_flow__swarm_init({ topology: 'hierarchical', maxAgents: 8 });
+  await mcp__ruflo__swarm_init({ topology: 'hierarchical', maxAgents: 8 });
 
   // Spawn specialized workflow agents
-  await mcp__claude_flow__agent_spawn({ type: 'architect', name: 'Workflow Architect' });
-  await mcp__claude_flow__agent_spawn({ type: 'coder', name: 'YAML Generator' });
-  await mcp__claude_flow__agent_spawn({ type: 'optimizer', name: 'Performance Optimizer' });
-  await mcp__claude_flow__agent_spawn({ type: 'tester', name: 'Workflow Validator' });
+  await mcp__ruflo__agent_spawn({ type: 'architect', name: 'Workflow Architect' });
+  await mcp__ruflo__agent_spawn({ type: 'coder', name: 'YAML Generator' });
+  await mcp__ruflo__agent_spawn({ type: 'optimizer', name: 'Performance Optimizer' });
+  await mcp__ruflo__agent_spawn({ type: 'tester', name: 'Workflow Validator' });
 
   // Create adaptive workflow based on repository analysis
-  const workflow = await mcp__claude_flow__workflow_create({
+  const workflow = await mcp__ruflo__workflow_create({
     name: 'Intelligent CI/CD Pipeline',
     steps: [
       {
@@ -611,7 +611,7 @@ const createIntelligentWorkflow = async repoContext => {
   });
 
   // Store workflow configuration in memory
-  await mcp__claude_flow__memory_usage({
+  await mcp__ruflo__memory_usage({
     action: 'store',
     key: `workflow/${repoContext.name}/config`,
     value: {
@@ -631,7 +631,7 @@ const createIntelligentWorkflow = async repoContext => {
 
 ```bash
 # Implement continuous workflow learning
-mcp__claude-flow__memory_usage {
+mcp__ruflo__memory_usage {
   action: "store",
   key: "workflow/learning/patterns",
   value: {
@@ -654,7 +654,7 @@ mcp__claude-flow__memory_usage {
 }
 
 # Generate workflow optimization recommendations
-mcp__claude-flow__task_orchestrate {
+mcp__ruflo__task_orchestrate {
   task: "Analyze workflow performance and generate optimization recommendations",
   strategy: "parallel",
   priority: "medium"

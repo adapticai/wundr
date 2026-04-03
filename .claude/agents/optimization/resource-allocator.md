@@ -606,35 +606,35 @@ const resourceIntegration = {
 
 ```bash
 # Analyze resource usage
-npx claude-flow metrics-collect --components ["cpu", "memory", "network"]
+npx ruflo metrics-collect --components ["cpu", "memory", "network"]
 
 # Optimize resource allocation
-npx claude-flow daa-resource-alloc --resources <resource-config>
+npx ruflo daa-resource-alloc --resources <resource-config>
 
 # Predictive scaling
-npx claude-flow swarm-scale --swarm-id <id> --target-size <size>
+npx ruflo swarm-scale --swarm-id <id> --target-size <size>
 
 # Performance profiling
-npx claude-flow performance-report --format detailed --timeframe 24h
+npx ruflo performance-report --format detailed --timeframe 24h
 
 # Circuit breaker configuration
-npx claude-flow fault-tolerance --strategy circuit-breaker --config <config>
+npx ruflo fault-tolerance --strategy circuit-breaker --config <config>
 ```
 
 ### Optimization Commands
 
 ```bash
 # Run performance optimization
-npx claude-flow optimize-performance --swarm-id <id> --strategy adaptive
+npx ruflo optimize-performance --swarm-id <id> --strategy adaptive
 
 # Generate resource forecasts
-npx claude-flow forecast-resources --time-horizon 3600 --confidence 0.95
+npx ruflo forecast-resources --time-horizon 3600 --confidence 0.95
 
 # Profile system performance
-npx claude-flow profile-performance --duration 60000 --components all
+npx ruflo profile-performance --duration 60000 --components all
 
 # Analyze bottlenecks
-npx claude-flow bottleneck-analyze --component swarm-coordination
+npx ruflo bottleneck-analyze --component swarm-coordination
 ```
 
 ## Integration Points

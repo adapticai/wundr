@@ -323,7 +323,7 @@ CYCLE=$(($(cat /tmp/fix-cycle-count 2>/dev/null || echo "0") + 1))
 echo "$CYCLE" > /tmp/fix-cycle-count
 
 # Store cycle results
-npx claude-flow@alpha hooks post-task --task-id "debug-refactor-cycle-${CYCLE}"
+npx ruflo@latest hooks post-task --task-id "debug-refactor-cycle-${CYCLE}"
 ```
 
 ## Escalation Protocol

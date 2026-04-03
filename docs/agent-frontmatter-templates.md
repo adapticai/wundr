@@ -1,6 +1,6 @@
 # Agent Frontmatter Templates - Complete Reference
 
-This document contains standardized frontmatter templates for all 54 agent types in the Claude Flow
+This document contains standardized frontmatter templates for all 54 agent types in the Ruflo
 ecosystem.
 
 ## Template Structure
@@ -101,7 +101,7 @@ skills: analysis, documentation-review, research
 ---
 name: hierarchical-coordinator
 description: Manage multi-level agent hierarchies with clear command chains for complex projects
-tools: Task, TodoWrite, mcp__claude-flow__agent_spawn, mcp__claude-flow__swarm_status
+tools: Task, TodoWrite, mcp__ruflo__agent_spawn, mcp__ruflo__swarm_status
 model: opus
 permissionMode: plan
 skills: hierarchy-management, delegation, oversight
@@ -114,7 +114,7 @@ skills: hierarchy-management, delegation, oversight
 ---
 name: mesh-coordinator
 description: Coordinate peer-to-peer agent networks where agents collaborate as equals
-tools: Task, TodoWrite, mcp__claude-flow__agent_spawn, mcp__claude-flow__swarm_monitor
+tools: Task, TodoWrite, mcp__ruflo__agent_spawn, mcp__ruflo__swarm_monitor
 model: sonnet
 permissionMode: plan
 skills: peer-coordination, distributed-collaboration, consensus-building
@@ -127,7 +127,7 @@ skills: peer-coordination, distributed-collaboration, consensus-building
 ---
 name: adaptive-coordinator
 description: Dynamically adjust swarm topology and agent allocation based on task complexity
-tools: Task, TodoWrite, mcp__claude-flow__agent_spawn, mcp__claude-flow__agent_metrics
+tools: Task, TodoWrite, mcp__ruflo__agent_spawn, mcp__ruflo__agent_metrics
 model: opus
 permissionMode: plan
 skills: dynamic-optimization, topology-adaptation, resource-allocation
@@ -141,7 +141,7 @@ skills: dynamic-optimization, topology-adaptation, resource-allocation
 name: collective-intelligence-coordinator
 description:
   Aggregate insights from multiple agents to make informed decisions and solve complex problems
-tools: Task, TodoWrite, mcp__claude-flow__task_results, mcp__claude-flow__neural_patterns
+tools: Task, TodoWrite, mcp__ruflo__task_results, mcp__ruflo__neural_patterns
 model: opus
 permissionMode: plan
 skills: insight-aggregation, collective-reasoning, decision-synthesis
@@ -154,7 +154,7 @@ skills: insight-aggregation, collective-reasoning, decision-synthesis
 ---
 name: swarm-memory-manager
 description: Manage shared memory across agents, persist context, and ensure knowledge continuity
-tools: mcp__claude-flow__memory_usage, mcp__claude-flow__neural_train, Read, Write
+tools: mcp__ruflo__memory_usage, mcp__ruflo__neural_train, Read, Write
 model: sonnet
 permissionMode: acceptEdits
 skills: memory-management, context-persistence, knowledge-sharing
@@ -172,7 +172,7 @@ skills: memory-management, context-persistence, knowledge-sharing
 name: byzantine-coordinator
 description:
   Ensure fault-tolerant consensus in adversarial environments with Byzantine fault tolerance
-tools: Task, TodoWrite, mcp__claude-flow__swarm_status, mcp__claude-flow__task_results
+tools: Task, TodoWrite, mcp__ruflo__swarm_status, mcp__ruflo__task_results
 model: opus
 permissionMode: plan
 skills: fault-tolerance, byzantine-consensus, security-verification
@@ -185,7 +185,7 @@ skills: fault-tolerance, byzantine-consensus, security-verification
 ---
 name: raft-manager
 description: Implement Raft consensus algorithm for leader election and log replication
-tools: Task, TodoWrite, mcp__claude-flow__swarm_monitor, mcp__claude-flow__agent_metrics
+tools: Task, TodoWrite, mcp__ruflo__swarm_monitor, mcp__ruflo__agent_metrics
 model: sonnet
 permissionMode: plan
 skills: leader-election, log-replication, consensus-protocols
@@ -198,7 +198,7 @@ skills: leader-election, log-replication, consensus-protocols
 ---
 name: gossip-coordinator
 description: Propagate information through gossip protocols for eventual consistency
-tools: Task, mcp__claude-flow__agent_list, mcp__claude-flow__swarm_status
+tools: Task, mcp__ruflo__agent_list, mcp__ruflo__swarm_status
 model: sonnet
 permissionMode: plan
 skills: gossip-protocols, information-propagation, eventual-consistency
@@ -211,7 +211,7 @@ skills: gossip-protocols, information-propagation, eventual-consistency
 ---
 name: consensus-builder
 description: Build consensus among agents through voting, negotiation, and conflict resolution
-tools: Task, TodoWrite, mcp__claude-flow__task_results, mcp__claude-flow__agent_metrics
+tools: Task, TodoWrite, mcp__ruflo__task_results, mcp__ruflo__agent_metrics
 model: opus
 permissionMode: plan
 skills: voting-systems, conflict-resolution, negotiation
@@ -224,7 +224,7 @@ skills: voting-systems, conflict-resolution, negotiation
 ---
 name: crdt-synchronizer
 description: Synchronize distributed state using Conflict-free Replicated Data Types
-tools: Read, Write, mcp__claude-flow__memory_usage, mcp__claude-flow__neural_patterns
+tools: Read, Write, mcp__ruflo__memory_usage, mcp__ruflo__neural_patterns
 model: sonnet
 permissionMode: acceptEdits
 skills: crdt-implementation, state-synchronization, conflict-resolution
@@ -237,7 +237,7 @@ skills: crdt-implementation, state-synchronization, conflict-resolution
 ---
 name: quorum-manager
 description: Manage quorum-based decision making and ensure majority agreement
-tools: Task, TodoWrite, mcp__claude-flow__agent_list, mcp__claude-flow__task_results
+tools: Task, TodoWrite, mcp__ruflo__agent_list, mcp__ruflo__task_results
 model: sonnet
 permissionMode: plan
 skills: quorum-management, majority-voting, distributed-agreement
@@ -250,7 +250,7 @@ skills: quorum-management, majority-voting, distributed-agreement
 ---
 name: security-manager
 description: Enforce security policies, validate permissions, and protect against threats
-tools: Read, Grep, Bash, mcp__claude-flow__swarm_status
+tools: Read, Grep, Bash, mcp__ruflo__swarm_status
 model: opus
 permissionMode: default
 skills: security-analysis, threat-detection, policy-enforcement
@@ -267,7 +267,7 @@ skills: security-analysis, threat-detection, policy-enforcement
 ---
 name: perf-analyzer
 description: Analyze code performance, identify bottlenecks, and recommend optimizations
-tools: Read, Grep, Bash, mcp__claude-flow__benchmark_run
+tools: Read, Grep, Bash, mcp__ruflo__benchmark_run
 model: sonnet
 permissionMode: default
 skills: performance-analysis, bottleneck-detection, profiling
@@ -280,7 +280,7 @@ skills: performance-analysis, bottleneck-detection, profiling
 ---
 name: performance-benchmarker
 description: Create and run benchmarks to measure performance metrics and track improvements
-tools: Read, Write, Bash, mcp__claude-flow__benchmark_run
+tools: Read, Write, Bash, mcp__ruflo__benchmark_run
 model: sonnet
 permissionMode: acceptEdits
 skills: benchmarking, metrics-collection, performance-testing
@@ -293,7 +293,7 @@ skills: benchmarking, metrics-collection, performance-testing
 ---
 name: task-orchestrator
 description: Orchestrate complex multi-agent tasks with optimal scheduling and resource allocation
-tools: Task, TodoWrite, mcp__claude-flow__task_orchestrate, mcp__claude-flow__agent_metrics
+tools: Task, TodoWrite, mcp__ruflo__task_orchestrate, mcp__ruflo__agent_metrics
 model: opus
 permissionMode: plan
 skills: task-scheduling, resource-optimization, workflow-orchestration
@@ -306,7 +306,7 @@ skills: task-scheduling, resource-optimization, workflow-orchestration
 ---
 name: memory-coordinator
 description: Optimize memory usage across agents and manage memory-intensive operations
-tools: mcp__claude-flow__memory_usage, mcp__claude-flow__neural_status, Bash
+tools: mcp__ruflo__memory_usage, mcp__ruflo__neural_status, Bash
 model: sonnet
 permissionMode: plan
 skills: memory-optimization, resource-management, cache-coordination
@@ -319,8 +319,7 @@ skills: memory-optimization, resource-management, cache-coordination
 ---
 name: smart-agent
 description: Use neural patterns and machine learning to adapt strategies and improve performance
-tools:
-  mcp__claude-flow__neural_train, mcp__claude-flow__neural_patterns, mcp__claude-flow__neural_status
+tools: mcp__ruflo__neural_train, mcp__ruflo__neural_patterns, mcp__ruflo__neural_status
 model: opus
 permissionMode: plan
 skills: machine-learning, pattern-recognition, adaptive-optimization
@@ -337,7 +336,7 @@ skills: machine-learning, pattern-recognition, adaptive-optimization
 ---
 name: github-modes
 description: Execute GitHub-specific workflows including issues, PRs, and repository management
-tools: Bash, mcp__claude-flow__github_swarm, mcp__claude-flow__repo_analyze
+tools: Bash, mcp__ruflo__github_swarm, mcp__ruflo__repo_analyze
 model: sonnet
 permissionMode: acceptEdits
 skills: github-api, workflow-automation, repository-operations
@@ -350,7 +349,7 @@ skills: github-api, workflow-automation, repository-operations
 ---
 name: pr-manager
 description: Create, review, and manage pull requests with automated checks and approvals
-tools: Bash, Read, mcp__claude-flow__pr_enhance, mcp__claude-flow__code_review
+tools: Bash, Read, mcp__ruflo__pr_enhance, mcp__ruflo__code_review
 model: sonnet
 permissionMode: acceptEdits
 skills: pr-management, code-review, merge-strategies
@@ -363,7 +362,7 @@ skills: pr-management, code-review, merge-strategies
 ---
 name: code-review-swarm
 description: Coordinate multiple agents to perform comprehensive code reviews
-tools: Task, Read, Grep, mcp__claude-flow__code_review, mcp__claude-flow__pr_enhance
+tools: Task, Read, Grep, mcp__ruflo__code_review, mcp__ruflo__pr_enhance
 model: opus
 permissionMode: plan
 skills: distributed-review, quality-analysis, feedback-aggregation
@@ -376,7 +375,7 @@ skills: distributed-review, quality-analysis, feedback-aggregation
 ---
 name: issue-tracker
 description: Triage, categorize, and manage GitHub issues with automated workflows
-tools: Bash, mcp__claude-flow__issue_triage, mcp__claude-flow__github_swarm
+tools: Bash, mcp__ruflo__issue_triage, mcp__ruflo__github_swarm
 model: sonnet
 permissionMode: acceptEdits
 skills: issue-management, triage, automation
@@ -389,7 +388,7 @@ skills: issue-management, triage, automation
 ---
 name: release-manager
 description: Coordinate release processes including versioning, changelogs, and deployment
-tools: Bash, Read, Write, mcp__claude-flow__github_swarm
+tools: Bash, Read, Write, mcp__ruflo__github_swarm
 model: sonnet
 permissionMode: acceptEdits
 skills: release-management, versioning, changelog-generation
@@ -402,7 +401,7 @@ skills: release-management, versioning, changelog-generation
 ---
 name: workflow-automation
 description: Create and maintain GitHub Actions workflows and CI/CD pipelines
-tools: Read, Write, Edit, Bash, mcp__claude-flow__github_swarm
+tools: Read, Write, Edit, Bash, mcp__ruflo__github_swarm
 model: sonnet
 permissionMode: acceptEdits
 skills: cicd, github-actions, workflow-design
@@ -415,7 +414,7 @@ skills: cicd, github-actions, workflow-design
 ---
 name: project-board-sync
 description: Synchronize GitHub project boards with task status and team progress
-tools: Bash, TodoWrite, mcp__claude-flow__github_swarm
+tools: Bash, TodoWrite, mcp__ruflo__github_swarm
 model: sonnet
 permissionMode: acceptEdits
 skills: project-management, board-automation, status-sync
@@ -428,7 +427,7 @@ skills: project-management, board-automation, status-sync
 ---
 name: repo-architect
 description: Design repository structure, organize code, and establish architectural patterns
-tools: Read, Write, Bash, Glob, mcp__claude-flow__repo_analyze
+tools: Read, Write, Bash, Glob, mcp__ruflo__repo_analyze
 model: opus
 permissionMode: acceptEdits
 skills: architecture-design, repository-organization, structure-planning
@@ -441,7 +440,7 @@ skills: architecture-design, repository-organization, structure-planning
 ---
 name: multi-repo-swarm
 description: Coordinate operations across multiple repositories in monorepo or multi-repo setups
-tools: Task, Bash, Glob, mcp__claude-flow__github_swarm, mcp__claude-flow__agent_spawn
+tools: Task, Bash, Glob, mcp__ruflo__github_swarm, mcp__ruflo__agent_spawn
 model: opus
 permissionMode: plan
 skills: multi-repo-management, cross-repo-coordination, monorepo-operations
@@ -458,7 +457,7 @@ skills: multi-repo-management, cross-repo-coordination, monorepo-operations
 ---
 name: sparc-coord
 description: Orchestrate the complete SPARC workflow from specification to completion
-tools: Task, TodoWrite, Bash, mcp__claude-flow__task_orchestrate
+tools: Task, TodoWrite, Bash, mcp__ruflo__task_orchestrate
 model: opus
 permissionMode: plan
 skills: sparc-methodology, workflow-orchestration, phase-coordination
@@ -523,7 +522,7 @@ skills: system-design, architecture-patterns, component-design
 ---
 name: refinement
 description: Refine implementations through testing, optimization, and iterative improvement
-tools: Read, Edit, Bash, Grep, mcp__claude-flow__benchmark_run
+tools: Read, Edit, Bash, Grep, mcp__ruflo__benchmark_run
 model: sonnet
 permissionMode: acceptEdits
 skills: code-refinement, optimization, iterative-improvement
@@ -566,7 +565,7 @@ skills: mobile-development, react-native, flutter, native-apps
 ---
 name: ml-developer
 description: Implement machine learning models, train algorithms, and deploy ML solutions
-tools: Read, Write, Edit, Bash, mcp__claude-flow__neural_train
+tools: Read, Write, Edit, Bash, mcp__ruflo__neural_train
 model: opus
 permissionMode: acceptEdits
 skills: machine-learning, model-training, data-science
@@ -605,7 +604,7 @@ skills: technical-writing, api-documentation, openapi-spec
 ---
 name: system-architect
 description: Design large-scale systems, define infrastructure, and establish technical standards
-tools: Read, Write, Edit, Glob, Grep, mcp__claude-flow__repo_analyze
+tools: Read, Write, Edit, Glob, Grep, mcp__ruflo__repo_analyze
 model: opus
 permissionMode: acceptEdits
 skills: system-architecture, infrastructure-design, technical-standards
@@ -618,7 +617,7 @@ skills: system-architecture, infrastructure-design, technical-standards
 ---
 name: code-analyzer
 description: Perform static analysis, detect code smells, and identify technical debt
-tools: Read, Grep, Glob, Bash, mcp__claude-flow__repo_analyze
+tools: Read, Grep, Glob, Bash, mcp__ruflo__repo_analyze
 model: sonnet
 permissionMode: default
 skills: static-analysis, code-quality, technical-debt-detection
@@ -648,7 +647,7 @@ skills: template-generation, boilerplate-creation, project-scaffolding
 ---
 name: tdd-london-swarm
 description: Implement London School TDD with heavy mocking and outside-in development
-tools: Task, Read, Write, Edit, Bash, mcp__claude-flow__agent_spawn
+tools: Task, Read, Write, Edit, Bash, mcp__ruflo__agent_spawn
 model: opus
 permissionMode: plan
 skills: london-tdd, mocking, outside-in-development, test-doubles
@@ -661,7 +660,7 @@ skills: london-tdd, mocking, outside-in-development, test-doubles
 ---
 name: production-validator
 description: Validate production readiness including security, performance, and reliability
-tools: Read, Bash, Grep, mcp__claude-flow__benchmark_run
+tools: Read, Bash, Grep, mcp__ruflo__benchmark_run
 model: opus
 permissionMode: default
 skills: production-validation, security-audit, performance-verification
@@ -691,7 +690,7 @@ skills: migration-planning, refactoring-strategy, upgrade-coordination
 ---
 name: swarm-init
 description: Initialize swarm environments, configure topologies, and bootstrap agent teams
-tools: TodoWrite, Bash, mcp__claude-flow__swarm_init, mcp__claude-flow__agent_spawn
+tools: TodoWrite, Bash, mcp__ruflo__swarm_init, mcp__ruflo__agent_spawn
 model: sonnet
 permissionMode: plan
 skills: swarm-initialization, topology-setup, team-bootstrap
@@ -737,7 +736,7 @@ skills: swarm-initialization, topology-setup, team-bootstrap
 ### Tool Selection Best Practices
 
 1. **File Operations**: Read, Write, Edit, Glob, Grep
-2. **Coordination**: Task, TodoWrite, mcp**claude-flow**\*
+2. **Coordination**: Task, TodoWrite, mcp**ruflo**\*
 3. **System**: Bash (for terminal commands)
 4. **Research**: WebSearch, WebFetch
 5. **Testing**: Bash + Read + Write combination
@@ -749,7 +748,7 @@ skills: swarm-initialization, topology-setup, team-bootstrap
 These templates are designed to work seamlessly with the SPARC Development Environment:
 
 - All agents follow concurrent execution patterns
-- Memory and neural tools integrate with Claude Flow
+- Memory and neural tools integrate with Ruflo
 - GitHub tools complement repository operations
 - Verification protocols apply to all agent outputs
 

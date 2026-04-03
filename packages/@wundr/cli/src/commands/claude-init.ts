@@ -31,9 +31,7 @@ export class ClaudeInitCommand {
     this.program
       .command('claude-init')
       .alias('ci')
-      .description(
-        'Initialize Claude Code and Claude Flow in current repository'
-      )
+      .description('Initialize Claude Code and Ruflo in current repository')
       .option('-i, --interactive', 'Interactive mode with prompts')
       .option('-a, --audit', 'Run repository audit first')
       .option('-f, --force', 'Force overwrite existing CLAUDE.md')
@@ -81,8 +79,8 @@ export class ClaudeInitCommand {
     // Generate CLAUDE.md
     await this.generateClaudeMd(projectInfo, options);
 
-    // Setup Claude Flow
-    await this.setupClaudeFlow(projectInfo, options);
+    // Setup Ruflo
+    await this.setupRuflo(projectInfo, options);
 
     // Setup MCP tools
     await this.setupMcpTools(options.mcpTools);
@@ -295,8 +293,8 @@ export class ClaudeInitCommand {
     const answers = await inquirer.prompt([
       {
         type: 'confirm',
-        name: 'setupClaudeFlow',
-        message: 'Setup Claude Flow orchestration?',
+        name: 'setupRuflo',
+        message: 'Setup Ruflo orchestration?',
         default: true,
       },
       {
@@ -564,19 +562,19 @@ By: Wundr Claude Init
     return patterns.join('\n\n');
   }
 
-  private async setupClaudeFlow(
+  private async setupRuflo(
     projectInfo: ProjectInfo,
     options: any
   ): Promise<void> {
-    if (!options.setupClaudeFlow) {
+    if (!options.setupRuflo) {
       return;
     }
 
-    this.spinner.start('Setting up Claude Flow...');
+    this.spinner.start('Setting up Ruflo...');
 
     try {
-      // Initialize Claude Flow
-      execSync('npx claude-flow@alpha init', { stdio: 'ignore' });
+      // Initialize Ruflo
+      execSync('npx ruflo@latest init', { stdio: 'ignore' });
 
       // Configure for project
       const config = {
@@ -587,18 +585,18 @@ By: Wundr Claude Init
           : this.getDefaultAgents(projectInfo),
         memory: {
           backend: 'sqlite',
-          path: '.claude-flow/memory.db',
+          path: '.ruflo/memory.db',
         },
         neural: {
           enabled: true,
-          modelPath: '.claude-flow/models',
+          modelPath: '.ruflo/models',
         },
       };
 
-      await fs.writeJson('.claude-flow/config.json', config, { spaces: 2 });
-      this.spinner.succeed('Claude Flow configured');
+      await fs.writeJson('.ruflo/config.json', config, { spaces: 2 });
+      this.spinner.succeed('Ruflo configured');
     } catch (error) {
-      this.spinner.fail('Failed to setup Claude Flow');
+      this.spinner.fail('Failed to setup Ruflo');
       console.error(chalk.red(error));
     }
   }
@@ -710,9 +708,7 @@ echo "✅ All quality checks passed!"
       chalk.white('3. Restart Claude Desktop to load new configurations')
     );
     console.log(
-      chalk.white(
-        '4. Run: npx claude-flow@alpha sparc tdd "your first feature"'
-      )
+      chalk.white('4. Run: npx ruflo@latest sparc tdd "your first feature"')
     );
     console.log(chalk.cyan('\n🚀 Happy coding with Claude!\n'));
   }

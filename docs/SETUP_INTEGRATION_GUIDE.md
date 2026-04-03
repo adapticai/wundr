@@ -44,7 +44,7 @@ Project Initialization
     │   └── Environment detection
     │
     ├── Core Setup Steps
-    │   ├── 1. Claude Flow installation
+    │   ├── 1. Ruflo installation
     │   ├── 2. MCP tools setup
     │   ├── 3. Agent configuration
     │   ├── 4. CLAUDE.md generation
@@ -95,7 +95,7 @@ export class UnifiedClaudeSetupCommands {
     const claudeSetup = this.program
       .command('claude-setup')
       .alias('cs')
-      .description('Complete Claude Code, Claude Flow, and MCP setup');
+      .description('Complete Claude Code, Ruflo, and MCP setup');
 
     // Main command
     claudeSetup
@@ -119,9 +119,9 @@ export class UnifiedClaudeSetupCommands {
       // Step 1: Validate prerequisites
       await this.validatePrerequisites(spinner);
 
-      // Step 2: Setup Claude Flow
+      // Step 2: Setup Ruflo
       if (!options.skipFlow) {
-        await this.setupClaudeFlow(spinner);
+        await this.setupRuflo(spinner);
       }
 
       // Step 3: Setup MCP Tools
@@ -240,7 +240,7 @@ private async createDefaultFiles(
   if (!existsSync(settingsPath)) {
     const settings = {
       project: basename(repoPath),
-      claudeFlow: { enabled: true, version: 'alpha' },
+      ruflo: { enabled: true, version: 'alpha' },
       agents: { enabled: true },
       mcp: { enabled: true },
       hooks: { enabled: true }
@@ -811,7 +811,7 @@ echo "✓ Validation complete"
 
 - [ ] Create UnifiedClaudeSetupCommands class
 - [ ] Implement validatePrerequisites()
-- [ ] Implement setupClaudeFlow()
+- [ ] Implement setupRuflo()
 - [ ] Implement setupMCPTools()
 - [ ] Implement configureAgents()
 - [ ] Implement generateClaudeConfig()

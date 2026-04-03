@@ -328,7 +328,7 @@ async function createInteractiveProfile(): Promise<any> {
       type: 'confirm',
       name: 'aiTools',
       message:
-        'Do you want to set up AI development tools (Claude Code, Claude Flow)?',
+        'Do you want to set up AI development tools (Claude Code, Ruflo)?',
       default: true,
     },
     {
@@ -365,7 +365,7 @@ async function createInteractiveProfile(): Promise<any> {
       },
       aiTools: {
         claudeCode: answers.aiTools,
-        claudeFlow: answers.aiTools,
+        ruflo: answers.aiTools,
         mcpTools: answers.aiTools ? ['all'] : [],
         swarmAgents: answers.aiTools ? ['default'] : [],
         memoryAllocation: '2GB',
@@ -474,7 +474,7 @@ interface DeveloperProfile {
     };
     aiTools: {
       claudeCode: boolean;
-      claudeFlow: boolean;
+      ruflo: boolean;
       mcpTools: string[];
       swarmAgents: string[];
       memoryAllocation: string;

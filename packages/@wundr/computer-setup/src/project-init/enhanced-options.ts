@@ -19,7 +19,7 @@ export type MemoryArchitecture = 'basic' | 'tiered' | 'memgpt';
  * Orchestration framework types for agent coordination
  */
 export type OrchestrationFramework =
-  | 'claude-flow'
+  | 'ruflo'
   | 'sparc'
   | 'custom'
   | 'standalone';
@@ -485,8 +485,8 @@ export const DEFAULT_ORCHESTRATION_CONFIGS: Record<
   OrchestrationFramework,
   OrchestrationConfig
 > = {
-  'claude-flow': {
-    framework: 'claude-flow',
+  ruflo: {
+    framework: 'ruflo',
     enableSwarm: true,
     swarmTopology: 'adaptive',
     maxConcurrentAgents: 10,
@@ -572,8 +572,7 @@ export function createEnhancedOptions(
   }
 ): EnhancedProjectOptions {
   const memoryArchitecture = options.memoryConfig?.architecture || 'basic';
-  const orchestrationFramework =
-    options.orchestration?.framework || 'claude-flow';
+  const orchestrationFramework = options.orchestration?.framework || 'ruflo';
   const securityLevel = options.security?.policyLevel || 'standard';
 
   return {

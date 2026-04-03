@@ -78,7 +78,7 @@ export interface Session {
   id: string;
   orchestratorId: string;
   task: Task;
-  type: 'claude-code' | 'claude-flow';
+  type: 'claude-code' | 'ruflo';
   status:
     | 'initializing'
     | 'running'
@@ -173,7 +173,7 @@ export type WSMessage =
 export interface SpawnSessionPayload {
   orchestratorId: string;
   task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>;
-  sessionType: 'claude-code' | 'claude-flow';
+  sessionType: 'claude-code' | 'ruflo';
   memoryProfile?: string;
 }
 

@@ -1,13 +1,13 @@
 /**
  * AI Integration Hive Queen - Central orchestration system
  *
- * Coordinates all AI capabilities including Claude Code, Claude Flow, and MCP tools.
+ * Coordinates all AI capabilities including Claude Code, Ruflo, and MCP tools.
  * Implements the main orchestration logic for the AI integration ecosystem.
  */
 
 import { EventEmitter } from 'eventemitter3';
 
-import { ClaudeFlowOrchestrator } from './ClaudeFlowOrchestrator';
+import { RufloOrchestrator } from './RufloOrchestrator';
 import { MCPToolsRegistry } from './MCPToolsRegistry';
 import { MemoryManager } from './MemoryManager';
 import { NeuralTrainingPipeline } from './NeuralTrainingPipeline';
@@ -25,7 +25,7 @@ import {
 } from '../types';
 
 export class AIIntegrationHive extends EventEmitter {
-  private claudeFlowOrchestrator!: ClaudeFlowOrchestrator;
+  private rufloOrchestrator!: RufloOrchestrator;
   private mcpToolsRegistry!: MCPToolsRegistry;
   private neuralTrainingPipeline!: NeuralTrainingPipeline;
   private swarmIntelligence!: SwarmIntelligence;
@@ -44,9 +44,7 @@ export class AIIntegrationHive extends EventEmitter {
 
   private initializeComponents(): void {
     // Initialize core orchestration components
-    this.claudeFlowOrchestrator = new ClaudeFlowOrchestrator(
-      this.config.claudeFlow
-    );
+    this.rufloOrchestrator = new RufloOrchestrator(this.config.ruflo);
     this.mcpToolsRegistry = new MCPToolsRegistry(this.config.mcpTools);
     this.neuralTrainingPipeline = new NeuralTrainingPipeline(
       this.config.neural
@@ -62,11 +60,11 @@ export class AIIntegrationHive extends EventEmitter {
 
   private setupEventHandlers(): void {
     // Cross-component event coordination
-    this.claudeFlowOrchestrator.on(
+    this.rufloOrchestrator.on(
       'agent-spawned',
       this.handleAgentSpawned.bind(this)
     );
-    this.claudeFlowOrchestrator.on(
+    this.rufloOrchestrator.on(
       'task-completed',
       this.handleTaskCompleted.bind(this)
     );
@@ -99,7 +97,7 @@ export class AIIntegrationHive extends EventEmitter {
 
       // Initialize all components in parallel
       await Promise.all([
-        this.claudeFlowOrchestrator.initialize(),
+        this.rufloOrchestrator.initialize(),
         this.mcpToolsRegistry.initialize(),
         this.neuralTrainingPipeline.initialize(),
         this.swarmIntelligence.initialize(),
@@ -134,7 +132,7 @@ export class AIIntegrationHive extends EventEmitter {
   }
 
   /**
-   * Spawn AI agents using Claude Flow orchestration
+   * Spawn AI agents using Ruflo orchestration
    */
   async spawnAgents(
     agentTypes: string[],
@@ -145,7 +143,7 @@ export class AIIntegrationHive extends EventEmitter {
         agentTypes,
         task
       );
-      const agents = await this.claudeFlowOrchestrator.spawnAgents(
+      const agents = await this.rufloOrchestrator.spawnAgents(
         agentTypes as any,
         topology
       );
@@ -233,7 +231,7 @@ export class AIIntegrationHive extends EventEmitter {
         status: this.status,
         uptime: process.uptime(),
       },
-      claudeFlow: await this.claudeFlowOrchestrator.getMetrics(),
+      ruflo: await this.rufloOrchestrator.getMetrics(),
       mcpTools: await this.mcpToolsRegistry.getMetrics(),
       neural: await this.neuralTrainingPipeline.getMetrics(),
       swarm: await this.swarmIntelligence.getMetrics(),
@@ -290,7 +288,7 @@ export class AIIntegrationHive extends EventEmitter {
 
       // Shutdown all components in parallel
       await Promise.all([
-        this.claudeFlowOrchestrator.shutdown(),
+        this.rufloOrchestrator.shutdown(),
         this.mcpToolsRegistry.shutdown(),
         this.neuralTrainingPipeline.shutdown(),
         this.swarmIntelligence.shutdown(),

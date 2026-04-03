@@ -1,22 +1,22 @@
-# Claude Flow MCP Tools Fix - Computer Setup Integration
+# Ruflo MCP Tools Fix - Computer Setup Integration
 
 ## 🎉 Summary
 
-Successfully fixed the wundr computer-setup to install corrected Claude Flow templates with
-**verified working MCP tool names** instead of the broken ones from `claude-flow hive-mind spawn`.
+Successfully fixed the wundr computer-setup to install corrected Ruflo templates with **verified
+working MCP tool names** instead of the broken ones from `ruflo hive-mind spawn`.
 
 ## ❌ Problem Identified
 
-The `claude-flow hive-mind spawn` command generates prompts with **fictional MCP tool names** that
-don't exist:
+The `ruflo hive-mind spawn` command generates prompts with **fictional MCP tool names** that don't
+exist:
 
-| Broken Tools (Don't Exist)         | Correct Tools (Actually Available)   |
-| ---------------------------------- | ------------------------------------ |
-| `mcp__claude-flow__queen_command`  | `mcp__claude-flow__task_orchestrate` |
-| `mcp__claude-flow__memory_share`   | `mcp__claude-flow__memory_usage`     |
-| `mcp__claude-flow__consensus_vote` | `mcp__claude-flow__daa_consensus`    |
-| `mcp__claude-flow__swarm_think`    | `mcp__claude-flow__neural_patterns`  |
-| `mcp__claude-flow__queen_monitor`  | `mcp__claude-flow__swarm_status`     |
+| Broken Tools (Don't Exist)   | Correct Tools (Actually Available) |
+| ---------------------------- | ---------------------------------- |
+| `mcp__ruflo__queen_command`  | `mcp__ruflo__task_orchestrate`     |
+| `mcp__ruflo__memory_share`   | `mcp__ruflo__memory_usage`         |
+| `mcp__ruflo__consensus_vote` | `mcp__ruflo__daa_consensus`        |
+| `mcp__ruflo__swarm_think`    | `mcp__ruflo__neural_patterns`      |
+| `mcp__ruflo__queen_monitor`  | `mcp__ruflo__swarm_status`         |
 
 ## ✅ Solution Implemented
 
@@ -27,7 +27,7 @@ don't exist:
 - ✅ **hive-swarm.md** - General-purpose hive mind with flexible agent count
 - ✅ **hive-strategic.md** - Enterprise-scale with 20 workers, Byzantine consensus
 
-Both templates use **only verified tool names** from the actual claude-flow MCP server (87 tools
+Both templates use **only verified tool names** from the actual ruflo MCP server (87 tools
 available).
 
 ### 2. Updated Computer Setup Installer
@@ -49,16 +49,16 @@ available).
 
 ### 3. Fixed better-sqlite3 Issue
 
-**Problem:** Node.js version mismatch causing `claude-flow` commands to fail
+**Problem:** Node.js version mismatch causing `ruflo` commands to fail
 
 **Solution:**
 
 ```bash
 rm -rf ~/.npm/_npx/*
-npm install -g claude-flow@alpha
+npm install -g ruflo@latest
 ```
 
-**Result:** ✅ `claude-flow hive-mind status` now works
+**Result:** ✅ `ruflo hive-mind status` now works
 
 ## 📚 Tool Reference
 
@@ -148,22 +148,22 @@ Objective: Your critical enterprise task
 
 ```bash
 # Check MCP server is connected
-claude mcp list | grep claude-flow
-# Should show: claude-flow: npx claude-flow@alpha mcp start - ✓ Connected
+claude mcp list | grep ruflo
+# Should show: ruflo: npx ruflo@latest mcp start - ✓ Connected
 
 # Check commands are installed
 ls ~/.claude/commands/
 # Should show: hive-swarm.md  hive-strategic.md
 
 # Verify tools are available
-npx claude-flow@alpha mcp tools --category=swarm
+npx ruflo@latest mcp tools --category=swarm
 # Should list 12 swarm coordination tools
 ```
 
 ## 📝 Testing Checklist
 
 - [x] better-sqlite3 rebuilt for correct Node version
-- [x] claude-flow MCP server connects successfully
+- [x] ruflo MCP server connects successfully
 - [x] 87 tools verified available
 - [x] Corrected templates created with verified tool names
 - [x] Templates added to computer-setup resources
@@ -199,9 +199,9 @@ npx claude-flow@alpha mcp tools --category=swarm
 
 ## 💡 Key Learnings
 
-1. **Don't use `claude-flow hive-mind spawn`** - generates broken prompts
+1. **Don't use `ruflo hive-mind spawn`** - generates broken prompts
 2. **Use the slash commands instead** - `/hive-swarm` or `/hive-strategic`
-3. **MCP tools work** - 87 tools available from claude-flow server
+3. **MCP tools work** - 87 tools available from ruflo server
 4. **Memory is unified** - Use `memory_usage` with `action: "store"/"retrieve"`
 5. **Consensus is DAA** - Use `daa_consensus`, not `consensus_vote`
 
@@ -214,7 +214,7 @@ npx claude-flow@alpha mcp tools --category=swarm
 
 ## 📚 References
 
-- Claude Flow MCP Server: 87 tools verified available
+- Ruflo MCP Server: 87 tools verified available
 - Computer Setup Package: `@wundr.io/computer-setup@1.0.0`
 - Resource Templates: `packages/@wundr/computer-setup/resources/`
 - Installer: `src/installers/claude-installer.ts`

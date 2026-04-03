@@ -27,8 +27,14 @@ import {
  */
 export const CommonOptionsSchema = z.object({
   verbose: z.boolean().optional().describe('Enable verbose output'),
-  dryRun: z.boolean().optional().describe('Show what would be done without making changes'),
-  format: z.enum(['json', 'table', 'text']).optional().describe('Output format'),
+  dryRun: z
+    .boolean()
+    .optional()
+    .describe('Show what would be done without making changes'),
+  format: z
+    .enum(['json', 'table', 'text'])
+    .optional()
+    .describe('Output format'),
 });
 
 // ============================================================================
@@ -39,14 +45,48 @@ export const CommonOptionsSchema = z.object({
  * Schema for computer-setup main command
  */
 export const ComputerSetupSchema = z.object({
-  subcommand: z.enum(['run', 'resume', 'validate', 'doctor', 'install', 'profile', 'team', 'backup', 'rollback', 'claude-config']).optional().default('run').describe('Subcommand to execute'),
-  profile: z.enum(['frontend', 'backend', 'fullstack', 'devops', 'ml']).optional().describe('Developer profile to use'),
-  team: z.string().optional().describe('Team identifier for team-specific configurations'),
-  mode: z.enum(['interactive', 'automated', 'minimal']).optional().default('automated').describe('Setup mode'),
-  skipExisting: z.boolean().optional().describe('Skip tools that are already installed'),
-  parallel: z.boolean().optional().describe('Install tools in parallel where possible'),
+  subcommand: z
+    .enum([
+      'run',
+      'resume',
+      'validate',
+      'doctor',
+      'install',
+      'profile',
+      'team',
+      'backup',
+      'rollback',
+      'claude-config',
+    ])
+    .optional()
+    .default('run')
+    .describe('Subcommand to execute'),
+  profile: z
+    .enum(['frontend', 'backend', 'fullstack', 'devops', 'ml'])
+    .optional()
+    .describe('Developer profile to use'),
+  team: z
+    .string()
+    .optional()
+    .describe('Team identifier for team-specific configurations'),
+  mode: z
+    .enum(['interactive', 'automated', 'minimal'])
+    .optional()
+    .default('automated')
+    .describe('Setup mode'),
+  skipExisting: z
+    .boolean()
+    .optional()
+    .describe('Skip tools that are already installed'),
+  parallel: z
+    .boolean()
+    .optional()
+    .describe('Install tools in parallel where possible'),
   report: z.boolean().optional().describe('Generate detailed setup report'),
-  dryRun: z.boolean().optional().describe('Show what would be installed without making changes'),
+  dryRun: z
+    .boolean()
+    .optional()
+    .describe('Show what would be installed without making changes'),
 });
 
 export type ComputerSetupInput = z.infer<typeof ComputerSetupSchema>;
@@ -56,7 +96,10 @@ export type ComputerSetupInput = z.infer<typeof ComputerSetupSchema>;
  */
 export const ClaudeConfigSchema = z.object({
   skipBackup: z.boolean().optional().describe('Skip backup creation'),
-  overwrite: z.boolean().optional().describe('Overwrite existing configurations'),
+  overwrite: z
+    .boolean()
+    .optional()
+    .describe('Overwrite existing configurations'),
   verbose: z.boolean().optional().describe('Show detailed output'),
   dryRun: z.boolean().optional().describe('Show what would be installed'),
 });
@@ -67,7 +110,9 @@ export type ClaudeConfigInput = z.infer<typeof ClaudeConfigSchema>;
  * Schema for computer-setup backup subcommand
  */
 export const BackupSchema = z.object({
-  action: z.enum(['list', 'create', 'verify', 'cleanup']).describe('Backup action to perform'),
+  action: z
+    .enum(['list', 'create', 'verify', 'cleanup'])
+    .describe('Backup action to perform'),
   backupId: z.string().optional().describe('Backup ID for verify action'),
 });
 
@@ -93,7 +138,19 @@ export type RollbackInput = z.infer<typeof RollbackSchema>;
  */
 export const ProjectInitSchema = z.object({
   name: z.string().optional().describe('Project name'),
-  template: z.enum(['default', 'monorepo', 'frontend', 'backend', 'fullstack', 'api', 'library']).optional().default('default').describe('Project template to use'),
+  template: z
+    .enum([
+      'default',
+      'monorepo',
+      'frontend',
+      'backend',
+      'fullstack',
+      'api',
+      'library',
+    ])
+    .optional()
+    .default('default')
+    .describe('Project template to use'),
   skipGit: z.boolean().optional().describe('Skip git initialization'),
   skipInstall: z.boolean().optional().describe('Skip dependency installation'),
   monorepo: z.boolean().optional().describe('Initialize as monorepo'),
@@ -110,13 +167,28 @@ export type ProjectInitInput = z.infer<typeof ProjectInitSchema>;
  * Schema for claude-setup consolidated command
  */
 export const ClaudeSetupSchema = z.object({
-  subcommand: z.enum(['install', 'mcp', 'agents', 'validate', 'extension', 'optimize']).optional().default('install').describe('Subcommand to execute'),
+  subcommand: z
+    .enum(['install', 'mcp', 'agents', 'validate', 'extension', 'optimize'])
+    .optional()
+    .default('install')
+    .describe('Subcommand to execute'),
   skipChrome: z.boolean().optional().describe('Skip Chrome installation'),
   skipMcp: z.boolean().optional().describe('Skip MCP tools installation'),
   skipAgents: z.boolean().optional().describe('Skip agent configuration'),
-  tool: z.string().optional().describe('Specific MCP tool to install (firecrawl, context7, playwright, browser, sequentialthinking)'),
-  profile: z.enum(['frontend', 'backend', 'fullstack', 'devops']).optional().describe('Profile-specific agents to configure'),
-  agents: z.string().optional().describe('Comma-separated list of agents to enable'),
+  tool: z
+    .string()
+    .optional()
+    .describe(
+      'Specific MCP tool to install (firecrawl, context7, playwright, browser, sequentialthinking)'
+    ),
+  profile: z
+    .enum(['frontend', 'backend', 'fullstack', 'devops'])
+    .optional()
+    .describe('Profile-specific agents to configure'),
+  agents: z
+    .string()
+    .optional()
+    .describe('Comma-separated list of agents to enable'),
   fix: z.boolean().optional().describe('Attempt to fix validation issues'),
   force: z.boolean().optional().describe('Force reinstallation'),
 });
@@ -131,16 +203,39 @@ export type ClaudeSetupInput = z.infer<typeof ClaudeSetupSchema>;
  * Schema for drift-detection command
  */
 export const DriftDetectionSchema = z.object({
-  action: z.enum(['check', 'baseline', 'trends', 'report']).describe('Drift detection action'),
+  action: z
+    .enum(['check', 'baseline', 'trends', 'report'])
+    .describe('Drift detection action'),
   path: z.string().optional().describe('Path to analyze for drift'),
   baselineId: z.string().optional().describe('Baseline ID for comparison'),
   threshold: z.number().optional().describe('Drift threshold percentage'),
-  categories: z.array(z.string()).optional().describe('Categories to check (quality, security, performance)'),
-  format: z.enum(['json', 'table', 'markdown']).optional().default('table').describe('Output format'),
+  categories: z
+    .array(z.string())
+    .optional()
+    .describe('Categories to check (quality, security, performance)'),
+  format: z
+    .enum(['json', 'table', 'markdown'])
+    .optional()
+    .default('table')
+    .describe('Output format'),
   // RAG-enhanced drift detection parameters
-  baselineStoreName: z.string().optional().describe('RAG store name containing baseline patterns for semantic comparison'),
-  currentStoreName: z.string().optional().describe('RAG store name containing current patterns for semantic comparison'),
-  enableSemanticAnalysis: z.boolean().optional().default(false).describe('Enable RAG-powered semantic pattern drift detection'),
+  baselineStoreName: z
+    .string()
+    .optional()
+    .describe(
+      'RAG store name containing baseline patterns for semantic comparison'
+    ),
+  currentStoreName: z
+    .string()
+    .optional()
+    .describe(
+      'RAG store name containing current patterns for semantic comparison'
+    ),
+  enableSemanticAnalysis: z
+    .boolean()
+    .optional()
+    .default(false)
+    .describe('Enable RAG-powered semantic pattern drift detection'),
 });
 
 export type DriftDetectionInput = z.infer<typeof DriftDetectionSchema>;
@@ -153,12 +248,29 @@ export type DriftDetectionInput = z.infer<typeof DriftDetectionSchema>;
  * Schema for pattern-standardize command
  */
 export const PatternStandardizeSchema = z.object({
-  action: z.enum(['fix', 'review', 'list', 'configure']).describe('Pattern standardization action'),
-  pattern: z.enum(['error-handling', 'import-ordering', 'naming-conventions', 'logging', 'all']).optional().describe('Pattern type to standardize'),
+  action: z
+    .enum(['fix', 'review', 'list', 'configure'])
+    .describe('Pattern standardization action'),
+  pattern: z
+    .enum([
+      'error-handling',
+      'import-ordering',
+      'naming-conventions',
+      'logging',
+      'all',
+    ])
+    .optional()
+    .describe('Pattern type to standardize'),
   path: z.string().optional().describe('Path to analyze and fix'),
   autoFix: z.boolean().optional().describe('Automatically fix detected issues'),
-  dryRun: z.boolean().optional().describe('Show what would be changed without making changes'),
-  severity: z.enum(['error', 'warning', 'info']).optional().describe('Minimum severity level'),
+  dryRun: z
+    .boolean()
+    .optional()
+    .describe('Show what would be changed without making changes'),
+  severity: z
+    .enum(['error', 'warning', 'info'])
+    .optional()
+    .describe('Minimum severity level'),
 });
 
 export type PatternStandardizeInput = z.infer<typeof PatternStandardizeSchema>;
@@ -171,12 +283,31 @@ export type PatternStandardizeInput = z.infer<typeof PatternStandardizeSchema>;
  * Schema for monorepo-manage command
  */
 export const MonorepoManageSchema = z.object({
-  action: z.enum(['init', 'add-package', 'check-circular', 'sync-versions', 'list-packages', 'graph']).describe('Monorepo management action'),
-  packageName: z.string().optional().describe('Package name for add-package action'),
-  packageType: z.enum(['library', 'app', 'tool', 'plugin']).optional().describe('Type of package to create'),
+  action: z
+    .enum([
+      'init',
+      'add-package',
+      'check-circular',
+      'sync-versions',
+      'list-packages',
+      'graph',
+    ])
+    .describe('Monorepo management action'),
+  packageName: z
+    .string()
+    .optional()
+    .describe('Package name for add-package action'),
+  packageType: z
+    .enum(['library', 'app', 'tool', 'plugin'])
+    .optional()
+    .describe('Type of package to create'),
   template: z.string().optional().describe('Template to use for new package'),
   scope: z.string().optional().describe('Package scope (e.g., @wundr)'),
-  format: z.enum(['json', 'table', 'graph']).optional().default('table').describe('Output format'),
+  format: z
+    .enum(['json', 'table', 'graph'])
+    .optional()
+    .default('table')
+    .describe('Output format'),
 });
 
 export type MonorepoManageInput = z.infer<typeof MonorepoManageSchema>;
@@ -189,13 +320,32 @@ export type MonorepoManageInput = z.infer<typeof MonorepoManageSchema>;
  * Schema for governance-report command
  */
 export const GovernanceReportSchema = z.object({
-  reportType: z.enum(['weekly', 'monthly', 'compliance', 'quality', 'security', 'custom']).describe('Type of report to generate'),
-  period: z.enum(['daily', 'weekly', 'monthly', 'quarterly']).optional().default('weekly').describe('Report period'),
-  startDate: z.string().optional().describe('Start date for custom period (YYYY-MM-DD)'),
-  endDate: z.string().optional().describe('End date for custom period (YYYY-MM-DD)'),
+  reportType: z
+    .enum(['weekly', 'monthly', 'compliance', 'quality', 'security', 'custom'])
+    .describe('Type of report to generate'),
+  period: z
+    .enum(['daily', 'weekly', 'monthly', 'quarterly'])
+    .optional()
+    .default('weekly')
+    .describe('Report period'),
+  startDate: z
+    .string()
+    .optional()
+    .describe('Start date for custom period (YYYY-MM-DD)'),
+  endDate: z
+    .string()
+    .optional()
+    .describe('End date for custom period (YYYY-MM-DD)'),
   output: z.string().optional().describe('Output file path'),
-  format: z.enum(['json', 'markdown', 'html', 'pdf']).optional().default('markdown').describe('Report format'),
-  includeMetrics: z.array(z.string()).optional().describe('Specific metrics to include'),
+  format: z
+    .enum(['json', 'markdown', 'html', 'pdf'])
+    .optional()
+    .default('markdown')
+    .describe('Report format'),
+  includeMetrics: z
+    .array(z.string())
+    .optional()
+    .describe('Specific metrics to include'),
 });
 
 export type GovernanceReportInput = z.infer<typeof GovernanceReportSchema>;
@@ -208,12 +358,24 @@ export type GovernanceReportInput = z.infer<typeof GovernanceReportSchema>;
  * Schema for dependency-analyze command
  */
 export const DependencyAnalyzeSchema = z.object({
-  action: z.enum(['circular', 'unused', 'outdated', 'security', 'graph', 'all']).describe('Dependency analysis action'),
+  action: z
+    .enum(['circular', 'unused', 'outdated', 'security', 'graph', 'all'])
+    .describe('Dependency analysis action'),
   path: z.string().optional().describe('Path to analyze'),
   depth: z.number().optional().describe('Depth of dependency analysis'),
-  includeDevDeps: z.boolean().optional().describe('Include dev dependencies in analysis'),
-  format: z.enum(['json', 'table', 'graph', 'dot']).optional().default('table').describe('Output format'),
-  output: z.string().optional().describe('Output file path for graph/dot formats'),
+  includeDevDeps: z
+    .boolean()
+    .optional()
+    .describe('Include dev dependencies in analysis'),
+  format: z
+    .enum(['json', 'table', 'graph', 'dot'])
+    .optional()
+    .default('table')
+    .describe('Output format'),
+  output: z
+    .string()
+    .optional()
+    .describe('Output file path for graph/dot formats'),
 });
 
 export type DependencyAnalyzeInput = z.infer<typeof DependencyAnalyzeSchema>;
@@ -226,12 +388,24 @@ export type DependencyAnalyzeInput = z.infer<typeof DependencyAnalyzeSchema>;
  * Schema for test-baseline command
  */
 export const TestBaselineSchema = z.object({
-  action: z.enum(['create', 'compare', 'update', 'report']).describe('Test baseline action'),
-  baselineId: z.string().optional().describe('Baseline ID for comparison/update'),
+  action: z
+    .enum(['create', 'compare', 'update', 'report'])
+    .describe('Test baseline action'),
+  baselineId: z
+    .string()
+    .optional()
+    .describe('Baseline ID for comparison/update'),
   path: z.string().optional().describe('Path to test files'),
-  coverageThreshold: z.number().optional().describe('Minimum coverage threshold percentage'),
+  coverageThreshold: z
+    .number()
+    .optional()
+    .describe('Minimum coverage threshold percentage'),
   failOnDecrease: z.boolean().optional().describe('Fail if coverage decreases'),
-  format: z.enum(['json', 'table', 'markdown']).optional().default('table').describe('Output format'),
+  format: z
+    .enum(['json', 'table', 'markdown'])
+    .optional()
+    .default('table')
+    .describe('Output format'),
   output: z.string().optional().describe('Output file path'),
 });
 
@@ -264,9 +438,16 @@ export type {
  * context and working examples using RAG, and generates actionable fix suggestions.
  */
 export const ErrorDebuggerRagSchema = z.object({
-  errorType: z.enum(['lint', 'typecheck', 'build']).describe('Type of error to debug (lint, typecheck, or build)'),
-  errorMessages: z.array(z.string()).min(1).describe('Array of error messages to debug'),
-  targetPath: z.string().describe('Path to search for context and working examples'),
+  errorType: z
+    .enum(['lint', 'typecheck', 'build'])
+    .describe('Type of error to debug (lint, typecheck, or build)'),
+  errorMessages: z
+    .array(z.string())
+    .min(1)
+    .describe('Array of error messages to debug'),
+  targetPath: z
+    .string()
+    .describe('Path to search for context and working examples'),
   maxSuggestionsPerError: z
     .number()
     .int()
@@ -286,48 +467,128 @@ export type ErrorDebuggerRagInput = z.infer<typeof ErrorDebuggerRagSchema>;
  * Schema for RAG-enhanced codebase analysis
  */
 export const CodebaseAnalysisRagSchema = z.object({
-  targetPath: z.string().describe('Root directory path of the codebase to analyze'),
-  storeName: z.string().optional().describe('Name for the RAG store (auto-generated if not provided)'),
-  forceReindex: z.boolean().optional().default(false).describe('Force reindexing even if store exists'),
-  includePatterns: z.array(z.string()).optional().default(['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx', '**/*.md', '**/*.json']).describe('File patterns to include in analysis'),
-  excludePatterns: z.array(z.string()).optional().default(['**/node_modules/**', '**/dist/**', '**/.git/**', '**/coverage/**']).describe('File patterns to exclude from analysis'),
-  analysisCategories: z.array(z.enum([
-    'architecture',
-    'patterns',
-    'dependencies',
-    'tests',
-    'security',
-  ])).optional().default(['architecture', 'patterns', 'dependencies', 'tests', 'security']).describe('Categories to analyze'),
-  maxResultsPerCategory: z.number().int().positive().optional().default(10).describe('Maximum results per analysis category'),
-  generateSummary: z.boolean().optional().default(true).describe('Generate AI-powered summary of findings'),
+  targetPath: z
+    .string()
+    .describe('Root directory path of the codebase to analyze'),
+  storeName: z
+    .string()
+    .optional()
+    .describe('Name for the RAG store (auto-generated if not provided)'),
+  forceReindex: z
+    .boolean()
+    .optional()
+    .default(false)
+    .describe('Force reindexing even if store exists'),
+  includePatterns: z
+    .array(z.string())
+    .optional()
+    .default([
+      '**/*.ts',
+      '**/*.tsx',
+      '**/*.js',
+      '**/*.jsx',
+      '**/*.md',
+      '**/*.json',
+    ])
+    .describe('File patterns to include in analysis'),
+  excludePatterns: z
+    .array(z.string())
+    .optional()
+    .default([
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.git/**',
+      '**/coverage/**',
+    ])
+    .describe('File patterns to exclude from analysis'),
+  analysisCategories: z
+    .array(
+      z.enum(['architecture', 'patterns', 'dependencies', 'tests', 'security'])
+    )
+    .optional()
+    .default(['architecture', 'patterns', 'dependencies', 'tests', 'security'])
+    .describe('Categories to analyze'),
+  maxResultsPerCategory: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .default(10)
+    .describe('Maximum results per analysis category'),
+  generateSummary: z
+    .boolean()
+    .optional()
+    .default(true)
+    .describe('Generate AI-powered summary of findings'),
 });
 
-export type CodebaseAnalysisRagInput = z.infer<typeof CodebaseAnalysisRagSchema>;
+export type CodebaseAnalysisRagInput = z.infer<
+  typeof CodebaseAnalysisRagSchema
+>;
 
 /**
  * Schema for refactoring impact analysis
  */
 export const RefactoringImpactSchema = z.object({
   targetPath: z.string().describe('Root directory path of the codebase'),
-  refactoringTarget: z.string().describe('The code element being refactored (function name, class name, module path, or pattern)'),
-  refactoringType: z.enum([
-    'rename',
-    'move',
-    'extract',
-    'inline',
-    'change-signature',
-    'restructure',
-    'deprecate',
-    'delete',
-  ]).describe('Type of refactoring operation'),
-  searchScope: z.enum(['local', 'project', 'workspace']).optional().default('project').describe('Scope of impact analysis'),
-  storeName: z.string().optional().describe('Name for the RAG store (auto-generated if not provided)'),
-  forceReindex: z.boolean().optional().default(false).describe('Force reindexing even if store exists'),
-  includePatterns: z.array(z.string()).optional().default(['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx']).describe('File patterns to include in analysis'),
-  excludePatterns: z.array(z.string()).optional().default(['**/node_modules/**', '**/dist/**', '**/.git/**']).describe('File patterns to exclude from analysis'),
-  includeTests: z.boolean().optional().default(true).describe('Include test files in impact analysis'),
-  includeDocs: z.boolean().optional().default(true).describe('Include documentation files in impact analysis'),
-  maxResults: z.number().int().positive().optional().default(50).describe('Maximum number of impacted files to return'),
+  refactoringTarget: z
+    .string()
+    .describe(
+      'The code element being refactored (function name, class name, module path, or pattern)'
+    ),
+  refactoringType: z
+    .enum([
+      'rename',
+      'move',
+      'extract',
+      'inline',
+      'change-signature',
+      'restructure',
+      'deprecate',
+      'delete',
+    ])
+    .describe('Type of refactoring operation'),
+  searchScope: z
+    .enum(['local', 'project', 'workspace'])
+    .optional()
+    .default('project')
+    .describe('Scope of impact analysis'),
+  storeName: z
+    .string()
+    .optional()
+    .describe('Name for the RAG store (auto-generated if not provided)'),
+  forceReindex: z
+    .boolean()
+    .optional()
+    .default(false)
+    .describe('Force reindexing even if store exists'),
+  includePatterns: z
+    .array(z.string())
+    .optional()
+    .default(['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'])
+    .describe('File patterns to include in analysis'),
+  excludePatterns: z
+    .array(z.string())
+    .optional()
+    .default(['**/node_modules/**', '**/dist/**', '**/.git/**'])
+    .describe('File patterns to exclude from analysis'),
+  includeTests: z
+    .boolean()
+    .optional()
+    .default(true)
+    .describe('Include test files in impact analysis'),
+  includeDocs: z
+    .boolean()
+    .optional()
+    .default(true)
+    .describe('Include documentation files in impact analysis'),
+  maxResults: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .default(50)
+    .describe('Maximum number of impacted files to return'),
 });
 
 export type RefactoringImpactInput = z.infer<typeof RefactoringImpactSchema>;
@@ -342,7 +603,8 @@ export type RefactoringImpactInput = z.infer<typeof RefactoringImpactSchema>;
 export const ToolSchemas = {
   'computer-setup': {
     schema: ComputerSetupSchema,
-    description: 'Set up a new developer machine with all required tools and configurations',
+    description:
+      'Set up a new developer machine with all required tools and configurations',
     category: 'setup',
   },
   'claude-config': {
@@ -350,12 +612,12 @@ export const ToolSchemas = {
     description: 'Install Claude Code configuration files',
     category: 'setup',
   },
-  'backup': {
+  backup: {
     schema: BackupSchema,
     description: 'Manage configuration backups',
     category: 'setup',
   },
-  'rollback': {
+  rollback: {
     schema: RollbackSchema,
     description: 'Rollback to a previous configuration backup',
     category: 'setup',
@@ -367,7 +629,7 @@ export const ToolSchemas = {
   },
   'claude-setup': {
     schema: ClaudeSetupSchema,
-    description: 'Setup Claude Code, Claude Flow, and MCP tools',
+    description: 'Setup Claude Code, Ruflo, and MCP tools',
     category: 'setup',
   },
   'drift-detection': {
@@ -403,32 +665,38 @@ export const ToolSchemas = {
   // RAG Tools
   'rag-file-search': {
     schema: RagFileSearchSchema,
-    description: 'Search files using semantic, keyword, or hybrid search with relevance scoring',
+    description:
+      'Search files using semantic, keyword, or hybrid search with relevance scoring',
     category: 'rag',
   },
   'rag-store-manage': {
     schema: RagStoreManageSchema,
-    description: 'Create, manage, and maintain vector stores for RAG operations',
+    description:
+      'Create, manage, and maintain vector stores for RAG operations',
     category: 'rag',
   },
   'rag-context-builder': {
     schema: RagContextBuilderSchema,
-    description: 'Build optimal context for LLM queries using multiple sources and strategies',
+    description:
+      'Build optimal context for LLM queries using multiple sources and strategies',
     category: 'rag',
   },
   'codebase-analysis-rag': {
     schema: CodebaseAnalysisRagSchema,
-    description: 'Analyze a codebase using RAG-enhanced semantic search to understand architecture, patterns, dependencies, tests, and security measures',
+    description:
+      'Analyze a codebase using RAG-enhanced semantic search to understand architecture, patterns, dependencies, tests, and security measures',
     category: 'rag',
   },
   'refactoring-impact': {
     schema: RefactoringImpactSchema,
-    description: 'Analyze the potential impact of a refactoring operation using RAG search to find affected files, tests, and documentation',
+    description:
+      'Analyze the potential impact of a refactoring operation using RAG search to find affected files, tests, and documentation',
     category: 'rag',
   },
   'error-debugger-rag': {
     schema: ErrorDebuggerRagSchema,
-    description: 'Debug errors using RAG-powered analysis with intelligent fix suggestions',
+    description:
+      'Debug errors using RAG-powered analysis with intelligent fix suggestions',
     category: 'rag',
   },
 } as const;
@@ -438,7 +706,9 @@ export type ToolName = keyof typeof ToolSchemas;
 /**
  * Convert Zod schema to JSON Schema for MCP tool registration
  */
-export function zodToJsonSchema(zodSchema: z.ZodType<any>): Record<string, unknown> {
+export function zodToJsonSchema(
+  zodSchema: z.ZodType<any>
+): Record<string, unknown> {
   // Basic conversion - in production, use zod-to-json-schema package
   const shape = (zodSchema as z.ZodObject<any>)._def.shape?.();
   if (!shape) {
@@ -486,8 +756,13 @@ export function zodToJsonSchema(zodSchema: z.ZodType<any>): Record<string, unkno
     // Add description if available
     if (def['description']) {
       propertySchema['description'] = def['description'];
-    } else if (isOptional && (value as any)._def.innerType?._def?.['description']) {
-      propertySchema['description'] = (value as any)._def.innerType._def['description'];
+    } else if (
+      isOptional &&
+      (value as any)._def.innerType?._def?.['description']
+    ) {
+      propertySchema['description'] = (value as any)._def.innerType._def[
+        'description'
+      ];
     }
 
     properties[key] = propertySchema;
@@ -516,8 +791,14 @@ export function getToolJsonSchema(toolName: ToolName): Record<string, unknown> {
 /**
  * Get all tool JSON schemas
  */
-export function getAllToolJsonSchemas(): Record<string, { schema: Record<string, unknown>; description: string; category: string }> {
-  const result: Record<string, { schema: Record<string, unknown>; description: string; category: string }> = {};
+export function getAllToolJsonSchemas(): Record<
+  string,
+  { schema: Record<string, unknown>; description: string; category: string }
+> {
+  const result: Record<
+    string,
+    { schema: Record<string, unknown>; description: string; category: string }
+  > = {};
 
   for (const [name, tool] of Object.entries(ToolSchemas)) {
     result[name] = {

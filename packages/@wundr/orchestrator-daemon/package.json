@@ -10,7 +10,7 @@
     "session-manager",
     "websocket",
     "claude-code",
-    "claude-flow"
+    "ruflo"
   ],
   "homepage": "https://wundr.io",
   "bugs": {

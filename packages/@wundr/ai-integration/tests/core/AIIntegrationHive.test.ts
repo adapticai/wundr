@@ -11,7 +11,7 @@ describe('AIIntegrationHive', () => {
 
   beforeEach(() => {
     mockConfig = {
-      claudeFlow: {
+      ruflo: {
         maxConcurrentAgents: 10,
         defaultTopology: 'adaptive',
         hooks: {
@@ -223,7 +223,7 @@ describe('AIIntegrationHive', () => {
       const metrics = await hive.getMetrics();
 
       expect(metrics).toHaveProperty('hive');
-      expect(metrics).toHaveProperty('claudeFlow');
+      expect(metrics).toHaveProperty('ruflo');
       expect(metrics).toHaveProperty('mcpTools');
       expect(metrics).toHaveProperty('neural');
       expect(metrics).toHaveProperty('swarm');

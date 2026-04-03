@@ -54,7 +54,7 @@ wundr computer-setup doctor     # Diagnose setup issues
 | **Unified CLI**     | ✅ Complete    | 100%     | Commands for both platforms     |
 | **Analysis Engine** | 🔄 In Progress | 60%      | Migration from existing wundr   |
 | **Dashboard**       | 🔄 In Progress | 40%      | Next.js 15 web interface        |
-| **AI Integration**  | 🔄 In Progress | 30%      | Claude Flow orchestration       |
+| **AI Integration**  | 🔄 In Progress | 30%      | Ruflo orchestration             |
 | **Testing**         | 📅 Pending     | 10%      | Test suite development          |
 
 ## 🎯 Clarified Platform Purpose
@@ -73,12 +73,12 @@ wundr computer-setup doctor     # Diagnose setup issues
    - Set up NEW COMPUTERS for engineering team members
    - Install development tools (Node.js, Docker, etc.)
    - Configure Git, SSH, GPG
-   - Set up AI tools (Claude Code, Claude Flow)
+   - Set up AI tools (Claude Code, Ruflo)
    - Apply team-specific configurations
    - Configure communication tools (Slack, etc.)
 
 3. **AI Integration**
-   - Claude Flow orchestration
+   - Ruflo orchestration
    - MCP tools (87+)
    - Swarm intelligence (54 agents)
    - Neural pattern training
@@ -101,7 +101,7 @@ wundr computer-setup doctor     # Diagnose setup issues
 @wundr/installers:      # Tool installers
 
 # AI & Automation
-@wundr/ai-integration:  # Claude Flow
+@wundr/ai-integration:  # Ruflo
 @wundr/mcp-tools:       # MCP implementations
 @wundr/swarm-manager:   # Agent coordination
 

@@ -18,7 +18,7 @@ export class TemplateEngine {
       this.generateBuildSystem(context),
       this.generateQualityStandards(context),
       this.generateIntegrationTips(context),
-      this.generateFooter()
+      this.generateFooter(),
     ].filter(Boolean);
 
     return sections.join('\n\n');
@@ -26,7 +26,7 @@ export class TemplateEngine {
 
   private generateHeader(context: TemplateContext): string {
     const { project, type } = context;
-    
+
     return `# Claude Code Configuration - ${project.name}
 
 ## Project: ${project.name}
@@ -148,7 +148,8 @@ This is a ${this.getProjectTypeDisplay(type)} project`;
   }
 
   private generateCommands(context: TemplateContext): string {
-    const { buildCommands, testCommands, lintCommands, customCommands } = context;
+    const { buildCommands, testCommands, lintCommands, customCommands } =
+      context;
 
     let commands = `## Available Commands
 
@@ -348,7 +349,7 @@ claude mcp list
     if (structure.buildTools.length > 0) {
       buildSystem += `\n\n### Build Tools
 - **Primary**: ${structure.buildTools[0]}`;
-      
+
       if (structure.buildTools.length > 1) {
         buildSystem += `\n- **Additional**: ${structure.buildTools.slice(1).join(', ')}`;
       }
@@ -390,7 +391,7 @@ ${testCommands.map(cmd => `- \`${cmd}\` - Run tests`).join('\n')}`;
 - **Status**: ✅ Enabled
 - **Frameworks**: ${quality.testing.frameworks.join(', ')}
 - **Coverage**: ${quality.coverage?.enabled ? '✅ Enabled' : '❌ Disabled'}`;
-      
+
       if (quality.testing.coverage.threshold) {
         standards += `\n- **Threshold**: ${quality.testing.coverage.threshold}%`;
       }
@@ -457,11 +458,11 @@ ${testCommands.map(cmd => `- \`${cmd}\` - Run tests`).join('\n')}`;
 
 ## Support & Resources
 
-- **Claude Flow**: Orchestration and coordination
+- **Ruflo**: Orchestration and coordination
 - **Claude Code**: Implementation and execution  
 - **Wundr MCP**: Quality assurance and governance
 
-Remember: **Claude Flow coordinates, Claude Code creates, Wundr ensures quality!**
+Remember: **Ruflo coordinates, Claude Code creates, Wundr ensures quality!**
 
 ---
 
@@ -470,16 +471,16 @@ Remember: **Claude Flow coordinates, Claude Code creates, Wundr ensures quality!
 
   private getProjectTypeDisplay(type: ProjectType): string {
     const displayMap: Record<ProjectType, string> = {
-      'react': 'React Application',
-      'nextjs': 'Next.js Application',
-      'nodejs': 'Node.js Application', 
-      'typescript': 'TypeScript Project',
-      'python': 'Python Project',
-      'monorepo': 'Monorepo',
-      'library': 'Library Package',
-      'cli': 'Command Line Interface',
+      react: 'React Application',
+      nextjs: 'Next.js Application',
+      nodejs: 'Node.js Application',
+      typescript: 'TypeScript Project',
+      python: 'Python Project',
+      monorepo: 'Monorepo',
+      library: 'Library Package',
+      cli: 'Command Line Interface',
       'full-stack': 'Full-Stack Application',
-      'unknown': 'Generic Project'
+      unknown: 'Generic Project',
     };
 
     return displayMap[type] || 'Unknown Project Type';

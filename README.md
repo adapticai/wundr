@@ -62,19 +62,23 @@
 
 ## What is Wundr?
 
-Wundr is a comprehensive unified developer platform that provides three distinct but complementary features to support the entire developer lifecycle:
+Wundr is a comprehensive unified developer platform that provides three distinct but complementary
+features to support the entire developer lifecycle:
 
-1. **Computer Setup** - Automated developer machine provisioning with global tools and configurations
+1. **Computer Setup** - Automated developer machine provisioning with global tools and
+   configurations
 2. **Project Creation** - Scaffold new projects with Wundr-compliant best practices built-in
 3. **Code Governance** - Analyze and improve existing codebases with AI-powered insights
 
-Each feature serves a specific purpose in the development workflow, from initial machine setup through project creation to ongoing code quality management.
+Each feature serves a specific purpose in the development workflow, from initial machine setup
+through project creation to ongoing code quality management.
 
 ---
 
 ## Three-Tier Agent Hierarchy
 
-Wundr implements a production-grade **Three-Tier Agent Hierarchy** for fleet-scale autonomous engineering:
+Wundr implements a production-grade **Three-Tier Agent Hierarchy** for fleet-scale autonomous
+engineering:
 
 ```
                     +---------------------------+
@@ -126,11 +130,13 @@ Wundr implements a production-grade **Three-Tier Agent Hierarchy** for fleet-sca
 - **Responsibilities**: Specialized tasks (coding, testing, reviewing, documentation)
 - **Features**: Git worktree isolation, quality gate hooks, focused task execution
 
-**Maximum Scale**: 3,376 autonomous agents (16 VPs + 160 Sessions + 3,200 Workers) directed by a 12-person human cortex = **281:1 leverage ratio**
+**Maximum Scale**: 3,376 autonomous agents (16 VPs + 160 Sessions + 3,200 Workers) directed by a
+12-person human cortex = **281:1 leverage ratio**
 
 ## 🌟 Three Core Features
 
 ### 1. Computer Setup (New Developer Onboarding)
+
 **Purpose**: Set up new developer machines with all required global tools
 
 ```bash
@@ -145,18 +151,20 @@ wundr computer-setup --team platform
 ```
 
 **What it installs**:
+
 - ✅ Development runtimes (Node.js, Python, Go, Rust)
 - ✅ Global CLI tools (git, docker, aws-cli, gh)
 - ✅ Package managers (npm, pnpm, yarn, pip)
 - ✅ Editors and extensions (VS Code, Vim)
 - ✅ Database clients and tools
-- ✅ AI development tools (Claude Code, Claude Flow)
+- ✅ AI development tools (Claude Code, Ruflo)
 - ✅ Hardware-adaptive Claude Code optimizations
 
-**Standalone Claude Code Optimization**:
-Need just the performance optimizations without a full setup?
+**Standalone Claude Code Optimization**: Need just the performance optimizations without a full
+setup?
 
 First, ensure `wundr` CLI is installed:
+
 ```bash
 # Install globally
 npm install -g @wundr.io/cli
@@ -169,6 +177,7 @@ npx @wundr.io/cli claude-setup optimize
 ```
 
 Then run the optimization setup:
+
 ```bash
 # Setup hardware-adaptive Claude Code optimizations
 wundr claude-setup optimize
@@ -180,9 +189,11 @@ wundr claude-setup optimize
 # • Automatic hardware detection and V8 tuning
 ```
 
-See [CLAUDE-CODE-STANDALONE-OPTIMIZATION.md](docs/CLAUDE-CODE-STANDALONE-OPTIMIZATION.md) for details.
+See [CLAUDE-CODE-STANDALONE-OPTIMIZATION.md](docs/CLAUDE-CODE-STANDALONE-OPTIMIZATION.md) for
+details.
 
 **Available Profiles**:
+
 - Frontend Developer
 - Backend Developer
 - Full Stack Developer
@@ -191,6 +202,7 @@ See [CLAUDE-CODE-STANDALONE-OPTIMIZATION.md](docs/CLAUDE-CODE-STANDALONE-OPTIMIZ
 - Mobile Developer
 
 ### 2. Project Creation (Start New Projects Right)
+
 **Purpose**: Create new projects with all Wundr best practices pre-configured
 
 ```bash
@@ -208,6 +220,7 @@ wundr create fullstack my-project
 ```
 
 **What it includes**:
+
 - ✅ TypeScript with strict configuration
 - ✅ ESLint + Prettier pre-configured
 - ✅ Jest/Vitest testing setup
@@ -218,12 +231,14 @@ wundr create fullstack my-project
 - ✅ Docker configuration (optional)
 
 **Project Templates**:
+
 - **Frontend**: Next.js 15 + Tailwind + shadcn/ui
 - **Backend**: Fastify + Prisma + OpenAPI
 - **Monorepo**: Turborepo + multiple packages
 - **Full-stack**: Complete application setup
 
 ### 3. Code Analysis & Governance (Maintain Quality)
+
 **Purpose**: Analyze and improve existing codebases
 
 ```bash
@@ -241,6 +256,7 @@ wundr govern report
 ```
 
 **Analysis Capabilities**:
+
 - ✅ AST-powered code analysis
 - ✅ Duplicate detection and consolidation
 - ✅ Complexity metrics and quality scoring
@@ -330,7 +346,7 @@ packages/@wundr/
 ├── project-templates        # Project scaffolding templates
 ├── analysis-engine          # Code analysis capabilities
 ├── dashboard                # Web dashboard interface
-├── ai-integration           # AI and Claude Flow integration
+├── ai-integration           # AI and Ruflo integration
 ├── security                 # Security scanning and compliance
 ├── environment              # Environment management
 ├── mcp-server               # MCP server implementation
@@ -368,22 +384,22 @@ packages/@wundr/
 
 ### New Packages Reference
 
-| Package | Description | Key Features |
-|---------|-------------|--------------|
-| `@wundr.io/prompt-security` | Prompt injection defense | Action-Selector pattern, input sanitization, threat detection |
-| `@wundr.io/crew-orchestrator` | CrewAI-style orchestration | Role-based teams, task delegation, collaborative workflows |
-| `@wundr.io/langgraph-orchestrator` | LangGraph integration | Cyclic state machines, conditional routing, checkpointing |
-| `@wundr.io/autogen-orchestrator` | AutoGen patterns | Conversational agents, group chat, function calling |
-| `@wundr.io/jit-tools` | Just-In-Time tool loading | Semantic search, dynamic injection, context optimization |
-| `@wundr.io/agent-memory` | Tiered memory system | MemGPT-inspired scratchpad, episodic/semantic stores, forgetting curve |
-| `@wundr.io/agent-delegation` | Sub-agent management | Task routing, worktree isolation, quality gates |
-| `@wundr.io/governance` | IPRE pipeline | Intent-Policy-Reward-Evaluator, compliance checking, alignment debt |
-| `@wundr.io/hydra-config` | Hierarchical config | Composition, overrides, environment-aware configuration |
-| `@wundr.io/mcp-registry` | MCP tool registry | Central catalog, semantic discovery, permission management |
-| `@wundr.io/rag-utils` | RAG utilities | Vector stores, agentic retrieval, context compaction |
-| `@wundr.io/token-budget` | Token management | Rate limiting, tiered allocation, budget tracking |
-| `@wundr.io/agent-eval` | Agent evaluation | Benchmarking, performance metrics, regression testing |
-| `@wundr.io/agent-observability` | Agent monitoring | Telemetry, tracing, decision logging, dashboards |
+| Package                            | Description                | Key Features                                                           |
+| ---------------------------------- | -------------------------- | ---------------------------------------------------------------------- |
+| `@wundr.io/prompt-security`        | Prompt injection defense   | Action-Selector pattern, input sanitization, threat detection          |
+| `@wundr.io/crew-orchestrator`      | CrewAI-style orchestration | Role-based teams, task delegation, collaborative workflows             |
+| `@wundr.io/langgraph-orchestrator` | LangGraph integration      | Cyclic state machines, conditional routing, checkpointing              |
+| `@wundr.io/autogen-orchestrator`   | AutoGen patterns           | Conversational agents, group chat, function calling                    |
+| `@wundr.io/jit-tools`              | Just-In-Time tool loading  | Semantic search, dynamic injection, context optimization               |
+| `@wundr.io/agent-memory`           | Tiered memory system       | MemGPT-inspired scratchpad, episodic/semantic stores, forgetting curve |
+| `@wundr.io/agent-delegation`       | Sub-agent management       | Task routing, worktree isolation, quality gates                        |
+| `@wundr.io/governance`             | IPRE pipeline              | Intent-Policy-Reward-Evaluator, compliance checking, alignment debt    |
+| `@wundr.io/hydra-config`           | Hierarchical config        | Composition, overrides, environment-aware configuration                |
+| `@wundr.io/mcp-registry`           | MCP tool registry          | Central catalog, semantic discovery, permission management             |
+| `@wundr.io/rag-utils`              | RAG utilities              | Vector stores, agentic retrieval, context compaction                   |
+| `@wundr.io/token-budget`           | Token management           | Rate limiting, tiered allocation, budget tracking                      |
+| `@wundr.io/agent-eval`             | Agent evaluation           | Benchmarking, performance metrics, regression testing                  |
+| `@wundr.io/agent-observability`    | Agent monitoring           | Telemetry, tracing, decision logging, dashboards                       |
 
 ## Command Reference
 
@@ -479,7 +495,8 @@ Wundr uses a flexible configuration system in `wundr.config.json`:
 
 ## Architecture
 
-Wundr is built with a modular, event-driven architecture organized around the Three-Tier Agent Hierarchy:
+Wundr is built with a modular, event-driven architecture organized around the Three-Tier Agent
+Hierarchy:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -554,6 +571,7 @@ User Request → CLI/Dashboard
 ## 🎯 Use Cases
 
 ### 1. New Team Member Onboarding
+
 ```bash
 # Day 1: Set up developer machine
 wundr computer-setup --profile fullstack --team platform
@@ -567,6 +585,7 @@ wundr govern check
 ```
 
 ### 2. Starting a New Project
+
 ```bash
 # Create project with best practices
 wundr create monorepo my-platform
@@ -580,6 +599,7 @@ wundr create monorepo my-platform
 ```
 
 ### 3. Maintaining Code Quality
+
 ```bash
 # Regular quality checks
 wundr analyze --watch
@@ -593,18 +613,21 @@ wundr analyze --ci --fail-on-issues
 ## Documentation
 
 ### Getting Started
+
 - [Getting Started Guide](docs/GETTING_STARTED.md)
 - [Development Guide](docs/DEVELOPMENT_GUIDE.md)
 - [CLI Reference](packages/@wundr/cli/README.md)
 - [Computer Setup Guide](packages/@wundr/computer-setup/README.md)
 
 ### Architecture & Design
+
 - [Architecture Overview](docs/architecture/UNIFIED_PLATFORM_ARCHITECTURE.md)
 - [Three-Tier Architecture Implementation Plan](docs/THREE-TIER-ARCHITECTURE-IMPLEMENTATION-PLAN.md)
 - [Further Enhancements to Three-Tier Hierarchy](docs/FURTHER-ENHANCEMENTS-TO-THE-THREE-TIER-HIERARCHY-IMPLEMENTATION-PLAN.md)
 - [Dynamic Context Compilation](docs/Dynamic_Context_Compilation_and_Hierarchical_Organization_Generation_for_AI_Agents.md)
 
 ### Package Documentation
+
 - [Platform Completion Report](docs/PLATFORM_COMPLETION_REPORT.md)
 - [Project Templates](packages/@wundr/project-templates/README.md)
 
@@ -615,6 +638,7 @@ This project automatically publishes to npm under the `@wundr.io` scope.
 ### For End Users
 
 Install packages from npm:
+
 ```bash
 # Install CLI globally
 npm install -g @wundr.io/cli
@@ -626,20 +650,23 @@ npm install @wundr.io/analysis-engine
 
 ### For Maintainers
 
-**Setup npm publishing** (one-time):
-See [NPM Organization Setup Guide](docs/NPM-ORGANIZATION-SETUP.md) for detailed instructions.
+**Setup npm publishing** (one-time): See
+[NPM Organization Setup Guide](docs/NPM-ORGANIZATION-SETUP.md) for detailed instructions.
 
 Quick setup:
+
 1. Create npm account and organization `@wundr.io`
 2. Generate automation token
 3. Add `NPM_TOKEN` secret to GitHub
 4. Packages auto-publish on push to master
 
 **Publishing workflows:**
+
 - **Auto-publish (dev)**: Push to `master` → publishes `@wundr.io/cli@dev`
 - **Stable release**: Create tag `v1.0.0` → publishes `@wundr.io/cli@latest`
 
 See also:
+
 - [NPM Setup Checklist](docs/NPM-SETUP-CHECKLIST.md) - Quick 5-step guide
 - [NPM Organization Setup](docs/NPM-ORGANIZATION-SETUP.md) - Comprehensive guide
 
@@ -694,6 +721,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 ## 🙏 Acknowledgments
 
 Built with ❤️ by the Wundr team using:
+
 - [Turborepo](https://turbo.build) for monorepo management
 - [Commander.js](https://github.com/tj/commander.js) for CLI
 - [Next.js](https://nextjs.org) for dashboard

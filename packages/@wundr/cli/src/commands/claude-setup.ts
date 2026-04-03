@@ -41,7 +41,7 @@ interface OptimizeOptions {
 
 /**
  * Claude Setup Commands
- * Comprehensive setup for Claude Code, Claude Flow, and MCP tools
+ * Comprehensive setup for Claude Code, Ruflo, and MCP tools
  *
  * Consolidated from:
  * - /src/cli/commands/claude-setup.ts (374 lines) - function-based approach
@@ -58,7 +58,7 @@ export class ClaudeSetupCommands {
     const claudeSetup = this.program
       .command('claude-setup')
       .alias('cs')
-      .description('Setup Claude Code, Claude Flow, and MCP tools')
+      .description('Setup Claude Code, Ruflo, and MCP tools')
       .addHelpText(
         'after',
         chalk.gray(`
@@ -80,7 +80,7 @@ Examples:
       .option('--skip-chrome', 'Skip Chrome installation')
       .option('--skip-mcp', 'Skip MCP tools installation')
       .option('--skip-agents', 'Skip agent configuration')
-      .option('--skip-flow', 'Skip Claude Flow setup')
+      .option('--skip-flow', 'Skip Ruflo setup')
       .option('-g, --global', 'Install tools globally')
       .action(async (options: SetupOptions) => {
         await this.runCompleteSetup(options);
@@ -94,7 +94,7 @@ Examples:
       )
       .option('-g, --global', 'Install tools globally')
       .option('--skip-mcp', 'Skip MCP tools installation')
-      .option('--skip-flow', 'Skip Claude Flow setup')
+      .option('--skip-flow', 'Skip Ruflo setup')
       .option(
         '-t, --template <name>',
         'Use specific project template (typescript, react, nodejs, monorepo)'
@@ -109,7 +109,7 @@ Examples:
       .description('Install and configure MCP tools')
       .option(
         '--tool <tool>',
-        'Install specific tool (firecrawl, context7, playwright, browser, sequentialthinking, claude-flow)'
+        'Install specific tool (firecrawl, context7, playwright, browser, sequentialthinking, ruflo)'
       )
       .action(async (options: McpOptions) => {
         await this.installMcpTools(options);
@@ -118,7 +118,7 @@ Examples:
     // Agent configuration
     claudeSetup
       .command('agents')
-      .description('Configure Claude Flow agents')
+      .description('Configure Ruflo agents')
       .option('--list', 'List available agents')
       .option('--enable <agents>', 'Enable specific agents (comma-separated)')
       .option('--profile <profile>', 'Use profile-specific agents')
@@ -190,9 +190,9 @@ Examples:
         spinner.succeed('Chrome installed');
       }
 
-      // Step 3: Claude Flow setup
+      // Step 3: Ruflo setup
       if (!options.skipFlow) {
-        await this.setupClaudeFlow(spinner, process.cwd(), options.global);
+        await this.setupRuflo(spinner, process.cwd(), options.global);
       }
 
       // Step 4: Install MCP tools (if not skipped)
@@ -253,9 +253,9 @@ Examples:
         }
       }
 
-      // Step 1: Claude Flow setup
+      // Step 1: Ruflo setup
       if (!options.skipFlow) {
-        await this.setupClaudeFlow(spinner, repoPath, options.global);
+        await this.setupRuflo(spinner, repoPath, options.global);
       }
 
       // Step 2: MCP Tools setup
@@ -271,7 +271,7 @@ Examples:
         await this.setupProjectTemplate(spinner, repoPath, options.template);
       }
 
-      // Step 5: Initialize swarm if Claude Flow is available
+      // Step 5: Initialize swarm if Ruflo is available
       if (!options.skipFlow) {
         await this.initializeSwarm(spinner, repoPath);
       }
@@ -294,28 +294,28 @@ Examples:
   }
 
   /**
-   * Setup Claude Flow - from /src/cli/commands/claude-setup.ts
+   * Setup Ruflo - from /src/cli/commands/claude-setup.ts
    */
-  private async setupClaudeFlow(
+  private async setupRuflo(
     spinner: OraSpinner,
     repoPath: string,
     global?: boolean
   ): Promise<void> {
-    spinner.text = 'Setting up Claude Flow...';
+    spinner.text = 'Setting up Ruflo...';
 
     try {
-      // Check if Claude Flow is already installed
-      execSync('npx claude-flow --version', { stdio: 'ignore' });
-      spinner.text = 'Claude Flow already available, configuring...';
+      // Check if Ruflo is already installed
+      execSync('npx ruflo@latest --version', { stdio: 'ignore' });
+      spinner.text = 'Ruflo already available, configuring...';
     } catch {
-      spinner.text = 'Installing Claude Flow...';
+      spinner.text = 'Installing Ruflo...';
 
       if (global) {
-        execSync('npm install -g claude-flow@alpha', { stdio: 'inherit' });
+        execSync('npm install -g ruflo@latest', { stdio: 'inherit' });
       } else {
         // Add to package.json dev dependencies if it exists
         if (fs.existsSync(path.join(repoPath, 'package.json'))) {
-          execSync('npm install --save-dev claude-flow@alpha', {
+          execSync('npm install --save-dev ruflo@latest', {
             cwd: repoPath,
             stdio: 'inherit',
           });
@@ -326,7 +326,7 @@ Examples:
     // Add MCP server configuration
     spinner.text = 'Configuring Claude MCP server...';
     try {
-      execSync('claude mcp add claude-flow npx claude-flow@alpha mcp start', {
+      execSync('claude mcp add ruflo npx ruflo@latest mcp start', {
         cwd: repoPath,
         stdio: 'pipe',
       });
@@ -337,12 +337,12 @@ Examples:
       );
       console.log(
         chalk.yellow(
-          'Please run manually: claude mcp add claude-flow npx claude-flow@alpha mcp start'
+          'Please run manually: claude mcp add ruflo npx ruflo@latest mcp start'
         )
       );
     }
 
-    spinner.text = 'Claude Flow setup completed';
+    spinner.text = 'Ruflo setup completed';
   }
 
   /**
@@ -417,8 +417,7 @@ echo "Customize this script with your specific MCP tools"
           browser: 'npx claude mcp add browser npx @browser/mcp-server',
           sequentialthinking:
             'npm install -g @modelcontextprotocol/server-sequentialthinking',
-          'claude-flow':
-            'claude mcp add claude-flow npx claude-flow@alpha mcp start',
+          ruflo: 'claude mcp add ruflo npx ruflo@latest mcp start',
         };
 
         const command = installCommands[options.tool];
@@ -465,7 +464,7 @@ echo "Customize this script with your specific MCP tools"
         // Fallback: install core tools
         console.log(chalk.gray('Installing core MCP tools...'));
 
-        const coreTools = ['claude-flow', 'sequentialthinking'];
+        const coreTools = ['ruflo', 'sequentialthinking'];
         for (const tool of coreTools) {
           try {
             await this.installMcpTools({ tool });
@@ -480,7 +479,7 @@ echo "Customize this script with your specific MCP tools"
   }
 
   /**
-   * Configure Claude Flow agents
+   * Configure Ruflo agents
    */
   private async configureAgents(options: AgentOptions): Promise<void> {
     const spinner = ora();
@@ -490,7 +489,7 @@ echo "Customize this script with your specific MCP tools"
       return;
     }
 
-    spinner.start('Configuring Claude Flow agents...');
+    spinner.start('Configuring Ruflo agents...');
 
     const agents = options.enable
       ? options.enable.split(',')
@@ -526,7 +525,7 @@ echo "Customize this script with your specific MCP tools"
 
     const checks = [
       { name: 'Claude CLI', check: () => this.isClaudeInstalled() },
-      { name: 'Claude Flow', check: () => this.isClaudeFlowInstalled() },
+      { name: 'Ruflo', check: () => this.isRufloInstalled() },
       { name: 'Chrome Browser', check: () => this.isChromeInstalled() },
       { name: 'Claude Directory', check: () => this.claudeDirExists() },
       { name: 'Agent Configurations', check: () => this.agentsConfigured() },
@@ -791,8 +790,8 @@ This project uses Claude Code for AI-assisted development.
 - Add tests for new features
 
 ## MCP Tools
-Claude Flow is configured for enhanced AI coordination.
-Run \`npx claude-flow sparc modes\` to see available modes.
+Ruflo is configured for enhanced AI coordination.
+Run \`npx ruflo@latest sparc modes\` to see available modes.
 `;
   }
 
@@ -935,11 +934,11 @@ Run \`npx claude-flow sparc modes\` to see available modes.
     spinner: OraSpinner,
     repoPath: string
   ): Promise<void> {
-    spinner.text = 'Initializing Claude Flow swarm...';
+    spinner.text = 'Initializing Ruflo swarm...';
 
     try {
       // Initialize basic swarm configuration
-      execSync('npx claude-flow@alpha init', {
+      execSync('npx ruflo@latest init', {
         cwd: repoPath,
         stdio: 'pipe',
       });
@@ -950,7 +949,7 @@ Run \`npx claude-flow sparc modes\` to see available modes.
       );
       console.log(
         chalk.yellow(
-          'You can initialize manually later with: npx claude-flow init'
+          'You can initialize manually later with: npx ruflo@latest init'
         )
       );
     }
@@ -1098,7 +1097,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
     const config = {
       claudeCodeOptions: {
         enabledMcpjsonServers: [
-          'claude-flow',
+          'ruflo',
           'firecrawl',
           'context7',
           'playwright',
@@ -1129,9 +1128,9 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
     }
   }
 
-  private isClaudeFlowInstalled(): boolean {
+  private isRufloInstalled(): boolean {
     try {
-      execSync('npx claude-flow@alpha --version', { stdio: 'ignore' });
+      execSync('npx ruflo@latest --version', { stdio: 'ignore' });
       return true;
     } catch {
       return false;
@@ -1178,7 +1177,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
   }
 
   private listAgents(): void {
-    console.log(chalk.cyan('\n📋 Available Claude Flow Agents:\n'));
+    console.log(chalk.cyan('\n📋 Available Ruflo Agents:\n'));
 
     const categories: Record<string, string[]> = {
       'Core Development': [
@@ -1293,7 +1292,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
     return {
       name: agentName,
       enabled: true,
-      description: `${agentName} agent for Claude Flow`,
+      description: `${agentName} agent for Ruflo`,
       configuration: {
         maxTokens: 8000,
         temperature: 0.7,
@@ -1317,7 +1316,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
     console.log(chalk.yellow('\n📋 What was set up:'));
     console.log('✅ CLAUDE.md configuration generated');
     if (!options.skipFlow) {
-      console.log('✅ Claude Flow installed and configured');
+      console.log('✅ Ruflo installed and configured');
     }
     if (!options.skipMcp) {
       console.log('✅ MCP Tools directory created');
@@ -1330,13 +1329,13 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
     console.log('3. Verify Claude Desktop MCP connection');
 
     if (!options.skipFlow) {
-      console.log('4. Test Claude Flow: npx claude-flow sparc modes');
+      console.log('4. Test Ruflo: npx ruflo@latest sparc modes');
     }
 
     console.log('5. Start coding with optimized Claude Code integration!');
 
     console.log(chalk.yellow('\n📚 Resources:'));
-    console.log('• Claude Flow: https://github.com/ruvnet/claude-flow');
+    console.log('• Ruflo: https://github.com/ruvnet/ruflo');
     console.log('• MCP Documentation: https://modelcontextprotocol.io/docs');
     console.log('• Wundr Documentation: ./docs/');
 
@@ -1355,7 +1354,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
     console.log('3. Restart Claude Desktop to load new configurations');
     console.log('4. Initialize a project: wundr claude-setup project');
     console.log(
-      '5. Start coding with Claude Flow: npx claude-flow@alpha sparc tdd "feature"'
+      '5. Start coding with Ruflo: npx ruflo@latest sparc tdd "feature"'
     );
   }
 }

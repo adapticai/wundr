@@ -586,19 +586,19 @@ Actions:
 
 ```bash
 # Comprehensive risk assessment
-npx claude-flow@alpha agent spawn --type risk-analyst \
+npx ruflo@latest agent spawn --type risk-analyst \
   --task "Assess regulatory compliance risks for Q4 vendor contracts" \
   --scope "vendor-contracts" \
   --frameworks "gdpr,soc2"
 
 # Pattern detection across portfolio
-npx claude-flow@alpha agent spawn --type risk-analyst \
+npx ruflo@latest agent spawn --type risk-analyst \
   --task "Detect risk patterns in contract portfolio" \
   --input "/docs/contracts/" \
   --mode "pattern-detection"
 
 # Control effectiveness review
-npx claude-flow@alpha agent spawn --type risk-analyst \
+npx ruflo@latest agent spawn --type risk-analyst \
   --task "Evaluate data protection controls against GDPR requirements" \
   --framework "gdpr" \
   --controls "/docs/controls/data-protection.md"

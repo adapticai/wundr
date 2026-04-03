@@ -1,7 +1,7 @@
 /**
  * DaemonSessionManager
  *
- * High-level helper that wraps DaemonClient to manage Claude Code / Claude Flow
+ * High-level helper that wraps DaemonClient to manage Claude Code / Ruflo
  * sessions through the orchestrator daemon.
  */
 

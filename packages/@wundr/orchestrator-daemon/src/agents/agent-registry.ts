@@ -14,7 +14,7 @@
  * - Per-agent instance limit enforcement
  * - Agent definition enrichment from frontmatter config
  *
- * Replaces the hardcoded AGENT_REGISTRY in ClaudeFlowOrchestrator with a
+ * Replaces the hardcoded AGENT_REGISTRY in RufloOrchestrator with a
  * dynamic, file-driven registry.
  */
 

@@ -1244,11 +1244,11 @@ collaboration and avoid conflicts.
 
 ```bash
 # Initialize swarm with appropriate topology
-npx claude-flow@alpha mcp start
-npx claude-flow@alpha swarm init --topology mesh --max-agents 6
+npx ruflo@latest mcp start
+npx ruflo@latest swarm init --topology mesh --max-agents 6
 
 # Set up memory context
-npx claude-flow@alpha hooks session-restore --session-id "swarm-$(date +%s)"
+npx ruflo@latest hooks session-restore --session-id "swarm-$(date +%s)"
 ```
 
 #### 2. Task Distribution
@@ -1312,7 +1312,7 @@ TodoWrite({
 
 ```bash
 # Pre-task hook
-npx claude-flow@alpha hooks pre-task \
+npx ruflo@latest hooks pre-task \
   --description "Implement JWT authentication" \
   --agent-type "coder"
 ```
@@ -1321,12 +1321,12 @@ npx claude-flow@alpha hooks pre-task \
 
 ```bash
 # After each file edit
-npx claude-flow@alpha hooks post-edit \
+npx ruflo@latest hooks post-edit \
   --file "/path/to/file.ts" \
   --memory-key "swarm/coder/jwt-implementation"
 
 # Notify other agents
-npx claude-flow@alpha hooks notify \
+npx ruflo@latest hooks notify \
   --message "JWT middleware implemented, ready for testing"
 ```
 
@@ -1334,12 +1334,12 @@ npx claude-flow@alpha hooks notify \
 
 ```bash
 # Post-task hook
-npx claude-flow@alpha hooks post-task \
+npx ruflo@latest hooks post-task \
   --task-id "implement-1" \
   --status "completed"
 
 # Update shared memory
-npx claude-flow@alpha memory store \
+npx ruflo@latest memory store \
   --key "swarm/coder/jwt-complete" \
   --value "JWT implementation complete, files: auth.middleware.ts, auth.service.ts"
 ```
@@ -1350,15 +1350,15 @@ npx claude-flow@alpha memory store \
 
 ```bash
 # Before editing a file, check if another agent is working on it
-npx claude-flow@alpha memory retrieve --key "locks/auth.middleware.ts"
+npx ruflo@latest memory retrieve --key "locks/auth.middleware.ts"
 
 # If unlocked, acquire lock
-npx claude-flow@alpha memory store \
+npx ruflo@latest memory store \
   --key "locks/auth.middleware.ts" \
   --value "coder-agent-$(date +%s)"
 
 # After editing, release lock
-npx claude-flow@alpha memory delete --key "locks/auth.middleware.ts"
+npx ruflo@latest memory delete --key "locks/auth.middleware.ts"
 ```
 
 ### Concurrent Operations Rules
@@ -1407,12 +1407,12 @@ Bash('npm run build'); // Depends on edit completing
 
 ```bash
 # Agent checks in
-npx claude-flow@alpha memory store \
+npx ruflo@latest memory store \
   --key "agents/coder/status" \
   --value '{"status":"active","task":"implement-1","started":"2025-01-15T10:00:00Z"}'
 
 # Agent checks out
-npx claude-flow@alpha memory store \
+npx ruflo@latest memory store \
   --key "agents/coder/status" \
   --value '{"status":"idle","lastTask":"implement-1","completed":"2025-01-15T11:00:00Z"}'
 ```
@@ -1423,7 +1423,7 @@ npx claude-flow@alpha memory store \
 
 ```bash
 # 1. Log the error
-npx claude-flow@alpha hooks notify \
+npx ruflo@latest hooks notify \
   --message "ERROR: Failed to implement JWT - missing dependency"
 
 # 2. Update task status
@@ -1466,10 +1466,10 @@ fi
 
 ```bash
 # Check agent metrics
-npx claude-flow@alpha agent metrics --agent-id "coder-1"
+npx ruflo@latest agent metrics --agent-id "coder-1"
 
 # Check task bottlenecks
-npx claude-flow@alpha task status --show-bottlenecks
+npx ruflo@latest task status --show-bottlenecks
 ```
 
 ---
@@ -1687,12 +1687,12 @@ git worktree add ../project-worktrees/agent-feature-1 -b feature/parallel-impl-1
 git worktree add ../project-worktrees/agent-feature-2 -b feature/parallel-impl-2
 
 # Agent 1 works in first worktree
-npx claude-flow@alpha hooks pre-task \
+npx ruflo@latest hooks pre-task \
   --description "Implement feature variant 1" \
   --workspace "../project-worktrees/agent-feature-1"
 
 # Agent 2 works in second worktree simultaneously
-npx claude-flow@alpha hooks pre-task \
+npx ruflo@latest hooks pre-task \
   --description "Implement feature variant 2" \
   --workspace "../project-worktrees/agent-feature-2"
 

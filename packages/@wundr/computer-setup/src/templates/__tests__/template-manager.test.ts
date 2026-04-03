@@ -34,7 +34,7 @@ describe('TemplateManager', () => {
         },
         aiTools: {
           claudeCode: true,
-          claudeFlow: true,
+          ruflo: true,
           mcpTools: [],
           swarmAgents: [],
           memoryAllocation: '4GB',

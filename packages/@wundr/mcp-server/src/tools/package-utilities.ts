@@ -22,7 +22,8 @@ import {
 
 import type {
   ProjectInitOptions,
-  TemplateSelectionCriteria} from './adapters.js';
+  TemplateSelectionCriteria,
+} from './adapters.js';
 
 /**
  * MCP Tool definition interface
@@ -55,19 +56,38 @@ const ProjectInitInputSchema = z.object({
   projectPath: z.string().describe('Absolute path to the project directory'),
   projectName: z.string().describe('Name of the project'),
   projectType: ProjectTypeSchema.describe('Type of project to initialize'),
-  includeClaudeSetup: z.boolean().default(true).describe('Include .claude directory setup'),
+  includeClaudeSetup: z
+    .boolean()
+    .default(true)
+    .describe('Include .claude directory setup'),
   includeAgents: z.boolean().default(true).describe('Include agent templates'),
   includeHooks: z.boolean().default(true).describe('Include automation hooks'),
-  includeGitWorktree: z.boolean().default(false).describe('Include git-worktree configuration'),
-  includeTemplates: z.boolean().default(true).describe('Include project templates'),
+  includeGitWorktree: z
+    .boolean()
+    .default(false)
+    .describe('Include git-worktree configuration'),
+  includeTemplates: z
+    .boolean()
+    .default(true)
+    .describe('Include project templates'),
   force: z.boolean().default(false).describe('Force overwrite existing files'),
 });
 
 const TemplateSelectionInputSchema = z.object({
-  projectType: z.string().describe('Type of project (node, react, vue, python, etc.)'),
-  framework: z.string().optional().describe('Framework to use (express, nextjs, etc.)'),
-  features: z.array(z.string()).optional().describe('Features to include (typescript, testing, cicd, etc.)'),
-  scale: ScaleSchema.optional().describe('Project scale (small, medium, large, enterprise)'),
+  projectType: z
+    .string()
+    .describe('Type of project (node, react, vue, python, etc.)'),
+  framework: z
+    .string()
+    .optional()
+    .describe('Framework to use (express, nextjs, etc.)'),
+  features: z
+    .array(z.string())
+    .optional()
+    .describe('Features to include (typescript, testing, cicd, etc.)'),
+  scale: ScaleSchema.optional().describe(
+    'Project scale (small, medium, large, enterprise)'
+  ),
   teamSize: z.number().optional().describe('Expected team size'),
   useTypeScript: z.boolean().optional().describe('Use TypeScript'),
   useTesting: z.boolean().optional().describe('Include testing setup'),
@@ -75,7 +95,9 @@ const TemplateSelectionInputSchema = z.object({
 });
 
 const TemplateIdInputSchema = z.object({
-  templateId: z.string().describe('Template identifier (e.g., node-basic, react-frontend)'),
+  templateId: z
+    .string()
+    .describe('Template identifier (e.g., node-basic, react-frontend)'),
 });
 
 const ProjectPathInputSchema = z.object({
@@ -84,17 +106,26 @@ const ProjectPathInputSchema = z.object({
 
 const ValidateProjectInputSchema = z.object({
   projectPath: z.string().describe('Absolute path to the project directory'),
-  autoFix: z.boolean().default(false).describe('Automatically fix fixable issues'),
+  autoFix: z
+    .boolean()
+    .default(false)
+    .describe('Automatically fix fixable issues'),
 });
 
 const CustomizeContentInputSchema = z.object({
   content: z.string().describe('Content to customize with template variables'),
   projectName: z.string().describe('Project name'),
-  projectDescription: z.string().default('Project description').describe('Project description'),
+  projectDescription: z
+    .string()
+    .default('Project description')
+    .describe('Project description'),
   projectType: ProjectTypeSchema.describe('Project type'),
   authorName: z.string().default('Developer').describe('Author name'),
   authorEmail: z.string().default('dev@example.com').describe('Author email'),
-  filePath: z.string().optional().describe('Optional file path for file-specific customizations'),
+  filePath: z
+    .string()
+    .optional()
+    .describe('Optional file path for file-specific customizations'),
 });
 
 const BackupInputSchema = z.object({
@@ -112,8 +143,14 @@ const BackupIdInputSchema = z.object({
 });
 
 const ClaudeInstallInputSchema = z.object({
-  profileName: z.string().default('Developer').describe('Developer profile name'),
-  profileEmail: z.string().default('dev@example.com').describe('Developer email'),
+  profileName: z
+    .string()
+    .default('Developer')
+    .describe('Developer profile name'),
+  profileEmail: z
+    .string()
+    .default('dev@example.com')
+    .describe('Developer email'),
   profileRole: z.string().default('developer').describe('Developer role'),
 });
 
@@ -124,8 +161,14 @@ const SetupExistingProjectInputSchema = z.object({
 const InitializeProjectInputSchema = z.object({
   projectPath: z.string().describe('Absolute path to the project directory'),
   projectName: z.string().describe('Name of the project'),
-  interactive: z.boolean().default(false).describe('Use interactive mode for template selection'),
-  autoFix: z.boolean().default(true).describe('Automatically fix validation issues'),
+  interactive: z
+    .boolean()
+    .default(false)
+    .describe('Use interactive mode for template selection'),
+  autoFix: z
+    .boolean()
+    .default(true)
+    .describe('Automatically fix validation issues'),
 });
 
 // ============================================================================
@@ -157,7 +200,7 @@ Example usage:
 - Initialize a React project with testing: { "projectPath": "/path/to/project", "projectName": "my-app", "projectType": "react", "includeAgents": true }
 - Force reinitialize: { "projectPath": "/path/to/project", "projectName": "my-app", "projectType": "node", "force": true }`,
   inputSchema: ProjectInitInputSchema,
-  handler: async (input) => {
+  handler: async input => {
     const validated = ProjectInitInputSchema.parse(input);
     const options: ProjectInitOptions = {
       projectPath: validated.projectPath,
@@ -199,7 +242,7 @@ Example usage:
 - Select React templates: { "projectType": "react", "features": ["typescript", "testing"], "scale": "medium" }
 - Select enterprise Node.js: { "projectType": "node", "scale": "enterprise", "useTypeScript": true }`,
   inputSchema: TemplateSelectionInputSchema,
-  handler: async (input) => {
+  handler: async input => {
     const validated = TemplateSelectionInputSchema.parse(input);
     const criteria: TemplateSelectionCriteria = {
       projectType: validated.projectType,
@@ -225,7 +268,7 @@ Example usage:
 
 Available template IDs: node-basic, react-frontend, nextjs-fullstack, monorepo-workspace, python-app, go-microservice, rust-app, enterprise-backend`,
   inputSchema: TemplateIdInputSchema,
-  handler: async (input) => {
+  handler: async input => {
     const validated = TemplateIdInputSchema.parse(input);
     return await templateSelector.getTemplate(validated.templateId);
   },
@@ -250,7 +293,7 @@ Example usage:
   inputSchema: z.object({
     projectType: z.string().describe('Project type to get templates for'),
   }),
-  handler: async (input) => {
+  handler: async input => {
     const validated = z.object({ projectType: z.string() }).parse(input);
     return await templateSelector.getTemplatesForType(validated.projectType);
   },
@@ -267,7 +310,7 @@ export const customizationApply: MCPTool = {
 Example usage:
 - Customize content: { "content": "Hello {{PROJECT_NAME}}", "projectName": "my-app", "projectType": "node" }`,
   inputSchema: CustomizeContentInputSchema,
-  handler: async (input) => {
+  handler: async input => {
     const validated = CustomizeContentInputSchema.parse(input);
     const context = {
       profile: {
@@ -282,7 +325,14 @@ Example usage:
         name: validated.projectName,
         description: validated.projectDescription,
         version: '1.0.0',
-        type: validated.projectType as 'node' | 'react' | 'vue' | 'python' | 'go' | 'rust' | 'java',
+        type: validated.projectType as
+          | 'node'
+          | 'react'
+          | 'vue'
+          | 'python'
+          | 'go'
+          | 'rust'
+          | 'java',
         packageManager: 'pnpm' as const,
         license: 'MIT',
         author: validated.authorName,
@@ -297,7 +347,7 @@ Example usage:
     return await customizationEngine.customize(
       validated.content,
       context,
-      validated.filePath,
+      validated.filePath
     );
   },
 };
@@ -316,7 +366,7 @@ Example usage:
     authorName: z.string().default('Developer'),
     authorEmail: z.string().default('dev@example.com'),
   }),
-  handler: async (input) => {
+  handler: async input => {
     const validated = z
       .object({
         projectPath: z.string(),
@@ -341,7 +391,14 @@ Example usage:
         name: validated.projectName,
         description: validated.projectDescription,
         version: '1.0.0',
-        type: validated.projectType as 'node' | 'react' | 'vue' | 'python' | 'go' | 'rust' | 'java',
+        type: validated.projectType as
+          | 'node'
+          | 'react'
+          | 'vue'
+          | 'python'
+          | 'go'
+          | 'rust'
+          | 'java',
         packageManager: 'pnpm' as const,
         license: 'MIT',
         author: validated.authorName,
@@ -353,7 +410,10 @@ Example usage:
         shell: 'zsh' as const,
       },
     };
-    return await customizationEngine.customizeProject(validated.projectPath, context);
+    return await customizationEngine.customizeProject(
+      validated.projectPath,
+      context
+    );
   },
 };
 
@@ -375,7 +435,7 @@ Returns validation report with:
 - Individual check results by category
 - Overall score percentage`,
   inputSchema: ValidateProjectInputSchema,
-  handler: async (input) => {
+  handler: async input => {
     const validated = ValidateProjectInputSchema.parse(input);
     if (validated.autoFix) {
       return await validationChecker.autoFix(validated.projectPath);
@@ -391,7 +451,7 @@ export const validationAutoFix: MCPTool = {
 Example usage:
 - Fix issues: { "projectPath": "/path/to/project" }`,
   inputSchema: ProjectPathInputSchema,
-  handler: async (input) => {
+  handler: async input => {
     const validated = ProjectPathInputSchema.parse(input);
     return await validationChecker.autoFix(validated.projectPath);
   },
@@ -409,9 +469,12 @@ Example usage:
 - Create backup: { "sourcePath": "/path/to/project" }
 - Create named backup: { "sourcePath": "/path/to/project", "backupName": "pre-migration" }`,
   inputSchema: BackupInputSchema,
-  handler: async (input) => {
+  handler: async input => {
     const validated = BackupInputSchema.parse(input);
-    return await backupManager.createBackup(validated.sourcePath, validated.backupName);
+    return await backupManager.createBackup(
+      validated.sourcePath,
+      validated.backupName
+    );
   },
 };
 
@@ -422,9 +485,12 @@ export const backupRestore: MCPTool = {
 Example usage:
 - Restore backup: { "backupId": "backup-1234567890", "targetPath": "/path/to/restore" }`,
   inputSchema: RestoreInputSchema,
-  handler: async (input) => {
+  handler: async input => {
     const validated = RestoreInputSchema.parse(input);
-    return await backupManager.restore(validated.backupId, validated.targetPath);
+    return await backupManager.restore(
+      validated.backupId,
+      validated.targetPath
+    );
   },
 };
 
@@ -444,7 +510,7 @@ export const backupDelete: MCPTool = {
 Example usage:
 - Delete backup: { "backupId": "backup-1234567890" }`,
   inputSchema: BackupIdInputSchema,
-  handler: async (input) => {
+  handler: async input => {
     const validated = BackupIdInputSchema.parse(input);
     return await backupManager.deleteBackup(validated.backupId);
   },
@@ -456,7 +522,7 @@ Example usage:
 
 export const claudeIsInstalled: MCPTool = {
   name: 'claude_is_installed',
-  description: 'Check if Claude CLI and Claude Flow are installed.',
+  description: 'Check if Claude CLI and Ruflo are installed.',
   inputSchema: z.object({}),
   handler: async () => {
     return await claudeConfigInstaller.isInstalled();
@@ -485,7 +551,7 @@ export const claudeGetSteps: MCPTool = {
   name: 'claude_get_steps',
   description: 'Get Claude installation steps for the current platform.',
   inputSchema: ClaudeInstallInputSchema,
-  handler: async (input) => {
+  handler: async input => {
     const validated = ClaudeInstallInputSchema.parse(input);
     const profile = {
       name: validated.profileName,
@@ -518,7 +584,7 @@ Example usage:
 
 This is the recommended high-level tool for project initialization.`,
   inputSchema: InitializeProjectInputSchema,
-  handler: async (input) => {
+  handler: async input => {
     const validated = InitializeProjectInputSchema.parse(input);
     return await projectOrchestrator.initializeProject({
       projectPath: validated.projectPath,
@@ -542,9 +608,11 @@ This tool:
 3. Adds agent templates based on project type
 4. Configures hooks and conventions`,
   inputSchema: SetupExistingProjectInputSchema,
-  handler: async (input) => {
+  handler: async input => {
     const validated = SetupExistingProjectInputSchema.parse(input);
-    return await projectOrchestrator.setupExistingProject(validated.projectPath);
+    return await projectOrchestrator.setupExistingProject(
+      validated.projectPath
+    );
   },
 };
 
@@ -556,11 +624,11 @@ Example usage:
 - Validate only: { "projectPath": "/path/to/project", "autoFix": false }
 - Validate and fix: { "projectPath": "/path/to/project", "autoFix": true }`,
   inputSchema: ValidateProjectInputSchema,
-  handler: async (input) => {
+  handler: async input => {
     const validated = ValidateProjectInputSchema.parse(input);
     return await projectOrchestrator.validateProject(
       validated.projectPath,
-      validated.autoFix,
+      validated.autoFix
     );
   },
 };
@@ -572,7 +640,7 @@ export const orchestratorUpdateTemplates: MCPTool = {
 Example usage:
 - Update templates: { "projectPath": "/path/to/project" }`,
   inputSchema: ProjectPathInputSchema,
-  handler: async (input) => {
+  handler: async input => {
     const validated = ProjectPathInputSchema.parse(input);
     return await projectOrchestrator.updateTemplates(validated.projectPath);
   },
@@ -627,14 +695,14 @@ export const packageUtilityTools: MCPTool[] = [
  * Get tool by name
  */
 export function getToolByName(name: string): MCPTool | undefined {
-  return packageUtilityTools.find((tool) => tool.name === name);
+  return packageUtilityTools.find(tool => tool.name === name);
 }
 
 /**
  * Get all tool names
  */
 export function getToolNames(): string[] {
-  return packageUtilityTools.map((tool) => tool.name);
+  return packageUtilityTools.map(tool => tool.name);
 }
 
 /**
@@ -642,11 +710,29 @@ export function getToolNames(): string[] {
  */
 export const packageClassToToolMapping = {
   ProjectInitializer: ['project_initialize', 'project_get_supported_types'],
-  TemplateSelector: ['template_select', 'template_get', 'template_list', 'template_get_for_type'],
-  CustomizationEngine: ['customization_apply', 'customization_apply_to_project'],
+  TemplateSelector: [
+    'template_select',
+    'template_get',
+    'template_list',
+    'template_get_for_type',
+  ],
+  CustomizationEngine: [
+    'customization_apply',
+    'customization_apply_to_project',
+  ],
   ValidationChecker: ['validation_check', 'validation_auto_fix'],
-  BackupRollbackManager: ['backup_create', 'backup_restore', 'backup_list', 'backup_delete'],
-  ClaudeConfigInstaller: ['claude_is_installed', 'claude_get_version', 'claude_validate', 'claude_get_steps'],
+  BackupRollbackManager: [
+    'backup_create',
+    'backup_restore',
+    'backup_list',
+    'backup_delete',
+  ],
+  ClaudeConfigInstaller: [
+    'claude_is_installed',
+    'claude_get_version',
+    'claude_validate',
+    'claude_get_steps',
+  ],
   ProjectInitOrchestrator: [
     'orchestrator_initialize',
     'orchestrator_setup_existing',

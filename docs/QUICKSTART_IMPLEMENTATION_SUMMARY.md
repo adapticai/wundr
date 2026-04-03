@@ -52,7 +52,7 @@ wundr-quickstart                        # Standalone executable
 ### 4. Simplified AI Agent Setup
 
 - **Quick Configuration**: Basic 8-agent setup instead of complex 54-agent system
-- **Pre-built Templates**: Optimized Claude Flow configurations
+- **Pre-built Templates**: Optimized Ruflo configurations
 - **Optional Installation**: `--skip-ai` flag for faster non-AI setups
 - **Progressive Enhancement**: Can upgrade to full agent system later
 
@@ -161,7 +161,7 @@ export const quickstartCommand = new Command('quickstart')
 3. Core Tools (20s parallel)     # git, curl, jq, tree
 4. Node.js Ecosystem (45s)       # Node, npm, global packages
 5. Development Tools (60s parallel) # Docker, VS Code, extensions
-6. AI Tools (30s parallel)       # Claude Code, Claude Flow
+6. AI Tools (30s parallel)       # Claude Code, Ruflo
 7. Environment Setup (15s)       # Aliases, directories, configs
 ```
 

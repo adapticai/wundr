@@ -1,6 +1,6 @@
-# Quick Start Guide: Claude Code + Claude Flow Integration
+# Quick Start Guide: Claude Code + Ruflo Integration
 
-Get up and running with enhanced Claude Code and Claude Flow integration in just 5 minutes.
+Get up and running with enhanced Claude Code and Ruflo integration in just 5 minutes.
 
 ## Prerequisites
 
@@ -9,27 +9,27 @@ Get up and running with enhanced Claude Code and Claude Flow integration in just
 - Git repository initialized
 - npm or yarn package manager
 
-## Step 1: Install Claude Flow (1 minute)
+## Step 1: Install Ruflo (1 minute)
 
 ```bash
-# Install Claude Flow globally or use npx
-npm install -g @ruvnet/claude-flow@alpha
+# Install Ruflo globally or use npx
+npm install -g @ruvnet/ruflo@latest
 
 # OR use npx (no installation needed)
-npx @ruvnet/claude-flow@alpha --version
+npx @ruvnet/ruflo@latest --version
 ```
 
 ## Step 2: Add MCP Server (1 minute)
 
 ```bash
-# Add Claude Flow MCP server to Claude Code
-claude mcp add claude-flow npx claude-flow@alpha mcp start
+# Add Ruflo MCP server to Claude Code
+claude mcp add ruflo npx ruflo@latest mcp start
 
 # Verify installation
 claude mcp list
 ```
 
-You should see `claude-flow` in the list of MCP servers.
+You should see `ruflo` in the list of MCP servers.
 
 ## Step 3: Initialize Your Project (2 minutes)
 
@@ -37,16 +37,16 @@ You should see `claude-flow` in the list of MCP servers.
 # Navigate to your project
 cd /path/to/your/project
 
-# Initialize Claude Flow
-npx claude-flow@alpha init
+# Initialize Ruflo
+npx ruflo@latest init
 
 # Set up SPARC configuration
-npx claude-flow@alpha sparc init
+npx ruflo@latest sparc init
 ```
 
 This creates:
 
-- `.claude-flow/` - Configuration directory
+- `.ruflo/` - Configuration directory
 - `CLAUDE.md` - Project instructions for Claude Code
 - `.sparc/` - SPARC workflow configuration
 - Git hooks for automation
@@ -57,10 +57,10 @@ This creates:
 
 ```bash
 # List available SPARC modes
-npx claude-flow@alpha sparc modes
+npx ruflo@latest sparc modes
 
 # Run a simple specification
-npx claude-flow@alpha sparc run spec-pseudocode "Create a user authentication module"
+npx ruflo@latest sparc run spec-pseudocode "Create a user authentication module"
 ```
 
 ### Test Agent Spawning
@@ -83,7 +83,7 @@ Let's build a simple feature using the full workflow:
 
 ```bash
 # Run complete TDD workflow
-npx claude-flow@alpha sparc tdd "Add user login with email validation"
+npx ruflo@latest sparc tdd "Add user login with email validation"
 ```
 
 This will:
@@ -98,7 +98,7 @@ This will:
 
 ### Behind the Scenes
 
-1. **MCP Tools Coordinated**: Claude Flow managed agent orchestration
+1. **MCP Tools Coordinated**: Ruflo managed agent orchestration
 2. **Claude Code Executed**: All file operations and code generation
 3. **Hooks Automated**: Pre/post operations handled automatically
 4. **Memory Persisted**: Context saved for future sessions
@@ -110,26 +110,26 @@ This will:
 
 ```bash
 # List all modes
-npx claude-flow@alpha sparc modes
+npx ruflo@latest sparc modes
 
 # Run specific mode
-npx claude-flow@alpha sparc run <mode> "<task>"
+npx ruflo@latest sparc run <mode> "<task>"
 
 # Full TDD workflow
-npx claude-flow@alpha sparc tdd "<feature>"
+npx ruflo@latest sparc tdd "<feature>"
 ```
 
 ### Agent Management
 
 ```bash
 # Initialize swarm
-npx claude-flow@alpha swarm init
+npx ruflo@latest swarm init
 
 # Spawn agent
-npx claude-flow@alpha agent spawn --type coder
+npx ruflo@latest agent spawn --type coder
 
 # List active agents
-npx claude-flow@alpha agent list
+npx ruflo@latest agent list
 ```
 
 ## Next Steps
@@ -142,10 +142,10 @@ npx claude-flow@alpha agent list
 ## Getting Help
 
 - **Documentation**: `/docs/guides/` - All guides
-- **Troubleshooting**: `/docs/guides/CLAUDE_FLOW_TROUBLESHOOTING.md`
+- **Troubleshooting**: `/docs/guides/RUFLO_TROUBLESHOOTING.md`
 - **API Reference**: `/docs/reference/API.md`
-- **Issues**: https://github.com/ruvnet/claude-flow/issues
+- **Issues**: https://github.com/ruvnet/ruflo/issues
 
 ---
 
-**Remember**: Claude Flow coordinates, Claude Code creates, quality tools ensure excellence!
+**Remember**: Ruflo coordinates, Claude Code creates, quality tools ensure excellence!

@@ -1,15 +1,15 @@
-# 🚀 Claude Flow Multi-Hive Execution Guide
+# 🚀 Ruflo Multi-Hive Execution Guide
 
-## 🚨 UPDATED: Correct Commands for Claude Flow v2.0.0-alpha.88
+## 🚨 UPDATED: Correct Commands for Ruflo v2.0.0-alpha.88
 
 After testing, the previous commands were aspirational. Here are the **actual working commands**
-based on Claude Flow's real capabilities:
+based on Ruflo's real capabilities:
 
 ## 🎯 **RECOMMENDED: Interactive Hive Mind Wizard**
 
 ```bash
 # Start with the interactive wizard (BEST for first time)
-npx claude-flow@alpha hive-mind wizard
+npx ruflo@latest hive-mind wizard
 ```
 
 This will guide you through setting up the optimal hive configuration for the massive Wundr platform
@@ -19,10 +19,10 @@ project.
 
 ```bash
 # Initialize hive mind system first
-npx claude-flow@alpha hive-mind init
+npx ruflo@latest hive-mind init
 
 # Spawn hive with maximum configuration for unified Wundr platform
-npx claude-flow@alpha hive-mind spawn "Execute the unified Wundr platform development from docs/REFINED_WUNDR_EXPANSION_PROMPT.md with full multi-hive orchestration including: 1) Architecture hive for system design, 2) Analysis engine hive for code analysis features, 3) Environment setup hive for cross-platform setup, 4) Dashboard platform hive for Next.js web interface, 5) AI integration hive for Claude/MCP tools, 6) CLI framework hive for command interface, 7) Testing & quality hive for comprehensive testing, 8) Documentation hive for technical docs, 9) Security & compliance hive for enterprise security, 10) Integration & deployment hive for CI/CD - all coordinated with hierarchical mesh topology, Byzantine consensus, auto-scaling, cross-session memory, neural training, and enterprise-grade monitoring" \
+npx ruflo@latest hive-mind spawn "Execute the unified Wundr platform development from docs/REFINED_WUNDR_EXPANSION_PROMPT.md with full multi-hive orchestration including: 1) Architecture hive for system design, 2) Analysis engine hive for code analysis features, 3) Environment setup hive for cross-platform setup, 4) Dashboard platform hive for Next.js web interface, 5) AI integration hive for Claude/MCP tools, 6) CLI framework hive for command interface, 7) Testing & quality hive for comprehensive testing, 8) Documentation hive for technical docs, 9) Security & compliance hive for enterprise security, 10) Integration & deployment hive for CI/CD - all coordinated with hierarchical mesh topology, Byzantine consensus, auto-scaling, cross-session memory, neural training, and enterprise-grade monitoring" \
   --queen-type "strategic" \
   --max-workers 20 \
   --consensus "byzantine" \
@@ -40,7 +40,7 @@ npx claude-flow@alpha hive-mind spawn "Execute the unified Wundr platform develo
 
 ```bash
 # Execute with your refined prompt file directly
-npx claude-flow@alpha hive-mind spawn "$(cat docs/REFINED_WUNDR_EXPANSION_PROMPT.md)" --queen-type strategic --max-workers 20 --consensus byzantine --auto-scale --encryption --monitor --verbose --claude --auto-spawn --execute
+npx ruflo@latest hive-mind spawn "$(cat docs/REFINED_WUNDR_EXPANSION_PROMPT.md)" --queen-type strategic --max-workers 20 --consensus byzantine --auto-scale --encryption --monitor --verbose --claude --auto-spawn --execute
 ```
 
 ## 🎛️ **Step-by-Step Approach (Conservative)**
@@ -48,14 +48,14 @@ npx claude-flow@alpha hive-mind spawn "$(cat docs/REFINED_WUNDR_EXPANSION_PROMPT
 ### Step 1: Initialize System
 
 ```bash
-npx claude-flow@alpha init --monitoring
-npx claude-flow@alpha hive-mind init
+npx ruflo@latest init --monitoring
+npx ruflo@latest hive-mind init
 ```
 
 ### Step 2: Foundation Phase
 
 ```bash
-npx claude-flow@alpha hive-mind spawn "Phase 1: Foundation - Execute architecture planning and security framework from docs/REFINED_WUNDR_EXPANSION_PROMPT.md focusing on unified system design, API specifications, technology stack decisions, and enterprise security requirements" \
+npx ruflo@latest hive-mind spawn "Phase 1: Foundation - Execute architecture planning and security framework from docs/REFINED_WUNDR_EXPANSION_PROMPT.md focusing on unified system design, API specifications, technology stack decisions, and enterprise security requirements" \
   --queen-type "strategic" \
   --max-workers 15 \
   --consensus "weighted" \
@@ -67,7 +67,7 @@ npx claude-flow@alpha hive-mind spawn "Phase 1: Foundation - Execute architectur
 ### Step 3: Core Development Phase
 
 ```bash
-npx claude-flow@alpha hive-mind spawn "Phase 2: Core Development - Build analysis engine, environment setup tools, and CLI framework from existing wundr and new-starter codebases with backward compatibility and enhanced features" \
+npx ruflo@latest hive-mind spawn "Phase 2: Core Development - Build analysis engine, environment setup tools, and CLI framework from existing wundr and new-starter codebases with backward compatibility and enhanced features" \
   --queen-type "tactical" \
   --max-workers 20 \
   --consensus "majority" \
@@ -79,7 +79,7 @@ npx claude-flow@alpha hive-mind spawn "Phase 2: Core Development - Build analysi
 ### Step 4: Platform Development Phase
 
 ```bash
-npx claude-flow@alpha hive-mind spawn "Phase 3: Platform Development - Create Next.js dashboard, AI integration layer, and comprehensive documentation with real-time features and MCP tools integration" \
+npx ruflo@latest hive-mind spawn "Phase 3: Platform Development - Create Next.js dashboard, AI integration layer, and comprehensive documentation with real-time features and MCP tools integration" \
   --queen-type "adaptive" \
   --max-workers 25 \
   --consensus "byzantine" \
@@ -91,7 +91,7 @@ npx claude-flow@alpha hive-mind spawn "Phase 3: Platform Development - Create Ne
 ### Step 5: Integration & Testing Phase
 
 ```bash
-npx claude-flow@alpha hive-mind spawn "Phase 4: Integration & Testing - Comprehensive testing, deployment setup, and launch preparation with quality gates and enterprise compliance" \
+npx ruflo@latest hive-mind spawn "Phase 4: Integration & Testing - Comprehensive testing, deployment setup, and launch preparation with quality gates and enterprise compliance" \
   --queen-type "strategic" \
   --max-workers 20 \
   --consensus "weighted" \
@@ -104,48 +104,48 @@ npx claude-flow@alpha hive-mind spawn "Phase 4: Integration & Testing - Comprehe
 
 ```bash
 # Check status of all hive mind sessions
-npx claude-flow@alpha hive-mind status
+npx ruflo@latest hive-mind status
 
 # View all active sessions
-npx claude-flow@alpha hive-mind sessions
+npx ruflo@latest hive-mind sessions
 
 # Monitor performance metrics
-npx claude-flow@alpha hive-mind metrics
+npx ruflo@latest hive-mind metrics
 
 # View consensus decisions
-npx claude-flow@alpha hive-mind consensus
+npx ruflo@latest hive-mind consensus
 
 # Check collective memory
-npx claude-flow@alpha hive-mind memory
+npx ruflo@latest hive-mind memory
 
 # Start monitoring dashboard
-npx claude-flow@alpha start --ui --swarm
+npx ruflo@latest start --ui --swarm
 ```
 
 ## 🔧 **Additional Configuration Options**
 
 ```bash
 # Enable advanced features
-npx claude-flow@alpha config set neural-training true
-npx claude-flow@alpha config set cross-session-memory true
-npx claude-flow@alpha config set github-integration true
-npx claude-flow@alpha config set webhook-notifications true
+npx ruflo@latest config set neural-training true
+npx ruflo@latest config set cross-session-memory true
+npx ruflo@latest config set github-integration true
+npx ruflo@latest config set webhook-notifications true
 
 # Configure MCP tools
-npx claude-flow@alpha mcp enable
-npx claude-flow@alpha mcp start --tools-count 90
+npx ruflo@latest mcp enable
+npx ruflo@latest mcp start --tools-count 90
 
 # Set up hooks for automation
-npx claude-flow@alpha hooks setup --lifecycle all
-npx claude-flow@alpha hooks migrate
+npx ruflo@latest hooks setup --lifecycle all
+npx ruflo@latest hooks migrate
 
 # Configure SPARC methodology
-npx claude-flow@alpha sparc init
-npx claude-flow@alpha sparc modes
+npx ruflo@latest sparc init
+npx ruflo@latest sparc modes
 
 # Memory management
-npx claude-flow@alpha memory init
-npx claude-flow@alpha memory backup
+npx ruflo@latest memory init
+npx ruflo@latest memory backup
 ```
 
 ## 🎯 **What Actually Happens**
@@ -166,16 +166,16 @@ When you run the hive mind spawn command:
 
 ```bash
 # Pause all hive mind activities
-npx claude-flow@alpha hive-mind stop
+npx ruflo@latest hive-mind stop
 
 # Resume a specific session
-npx claude-flow@alpha hive-mind resume <session-id>
+npx ruflo@latest hive-mind resume <session-id>
 
 # Get help if stuck
-npx claude-flow@alpha hive-mind --help
+npx ruflo@latest hive-mind --help
 
 # System status
-npx claude-flow@alpha status
+npx ruflo@latest status
 ```
 
 ## 🎊 **Success Indicators**
@@ -197,10 +197,10 @@ You'll know it's working when:
 
 ```bash
 # Interactive wizard (easiest)
-npx claude-flow@alpha hive-mind wizard
+npx ruflo@latest hive-mind wizard
 
 # OR direct execution with full power
-npx claude-flow@alpha hive-mind spawn "$(cat docs/REFINED_WUNDR_EXPANSION_PROMPT.md)" --queen-type strategic --max-workers 20 --consensus byzantine --auto-scale --encryption --monitor --verbose --claude --auto-spawn --execute
+npx ruflo@latest hive-mind spawn "$(cat docs/REFINED_WUNDR_EXPANSION_PROMPT.md)" --queen-type strategic --max-workers 20 --consensus byzantine --auto-scale --encryption --monitor --verbose --claude --auto-spawn --execute
 ```
 
 ## 🚀 What Happens After Execution
@@ -239,29 +239,29 @@ npx claude-flow@alpha hive-mind spawn "$(cat docs/REFINED_WUNDR_EXPANSION_PROMPT
 
 ```bash
 # Emergency stop all hives
-npx claude-flow@alpha emergency stop --all-hives
+npx ruflo@latest emergency stop --all-hives
 
 # Pause and checkpoint
-npx claude-flow@alpha pause --checkpoint --reason "review-needed"
+npx ruflo@latest pause --checkpoint --reason "review-needed"
 
 # Resume from checkpoint
-npx claude-flow@alpha resume --from-checkpoint --validate-first
+npx ruflo@latest resume --from-checkpoint --validate-first
 
 # Force restart problematic hive
-npx claude-flow@alpha hive restart <hive-name> --force --preserve-state
+npx ruflo@latest hive restart <hive-name> --force --preserve-state
 ```
 
 ### **Debug and Troubleshooting**
 
 ```bash
 # Detailed status of all hives
-npx claude-flow@alpha status --detailed --all-hives
+npx ruflo@latest status --detailed --all-hives
 
 # Debug specific hive
-npx claude-flow@alpha debug <hive-name> --verbose --trace
+npx ruflo@latest debug <hive-name> --verbose --trace
 
 # Performance analysis
-npx claude-flow@alpha analyze performance --bottlenecks --optimization-suggestions
+npx ruflo@latest analyze performance --bottlenecks --optimization-suggestions
 ```
 
 ## 🎊 Success Indicators

@@ -357,18 +357,18 @@ memory_store({
 
 ```bash
 # Basic contract analysis
-npx claude-flow@alpha agent spawn --type contract-scanner \
+npx ruflo@latest agent spawn --type contract-scanner \
   --task "Analyze vendor agreement" \
   --input "/docs/contracts/vendor-agreement-2024.pdf"
 
 # Analysis with template comparison
-npx claude-flow@alpha agent spawn --type contract-scanner \
+npx ruflo@latest agent spawn --type contract-scanner \
   --task "Compare against standard NDA template" \
   --input "/docs/contracts/partner-nda.pdf" \
   --template "/templates/standard-nda-v2.pdf"
 
 # Focused obligation extraction
-npx claude-flow@alpha agent spawn --type contract-scanner \
+npx ruflo@latest agent spawn --type contract-scanner \
   --task "Extract payment milestones and deadlines" \
   --input "/docs/contracts/development-agreement.pdf" \
   --focus "obligations,deadlines"

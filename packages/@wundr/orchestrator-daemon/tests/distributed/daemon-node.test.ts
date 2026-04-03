@@ -16,7 +16,7 @@ describe('DaemonNode', () => {
   const capabilities: NodeCapabilities = {
     canSpawnSessions: true,
     maxConcurrentSessions: 10,
-    supportedSessionTypes: ['claude-code', 'claude-flow'],
+    supportedSessionTypes: ['claude-code', 'ruflo'],
     hasGPUAccess: false,
     hasHighMemory: true,
   };
@@ -119,7 +119,7 @@ describe('DaemonNode', () => {
           createdAt: new Date(),
           updatedAt: new Date(),
         },
-        sessionType: 'claude-flow',
+        sessionType: 'ruflo',
       };
 
       await expect(restrictedNode.spawnSession(request)).rejects.toThrow(

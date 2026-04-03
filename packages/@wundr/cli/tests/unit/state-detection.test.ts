@@ -976,7 +976,7 @@ describe('Integration Tests', () => {
     await fs.ensureDir(path.join(testDir, '.mcp'));
     await fs.writeJson(path.join(testDir, '.mcp', 'config.json'), {
       servers: {
-        'claude-flow': { url: 'http://localhost:3001' },
+        ruflo: { url: 'http://localhost:3001' },
         'wundr-tools': { url: 'http://localhost:3002' },
       },
     });

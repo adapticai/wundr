@@ -17,7 +17,7 @@ export interface ProjectTemplateOptions {
   includeDocker?: boolean;
   includeGitHub?: boolean;
   includeSlack?: boolean;
-  includeClaudeFlow?: boolean;
+  includeRuflo?: boolean;
   overwrite?: boolean;
   verbose?: boolean;
 }
@@ -70,8 +70,8 @@ export async function createProjectTemplates(
       );
     }
 
-    if (options.includeClaudeFlow) {
-      await generateClaudeFlowTemplates(
+    if (options.includeRuflo) {
+      await generateRufloTemplates(
         templateManager,
         options.projectPath,
         context
@@ -253,18 +253,18 @@ async function generateSlackTemplates(
 }
 
 /**
- * Generate Claude Flow templates
+ * Generate Ruflo templates
  */
-async function generateClaudeFlowTemplates(
+async function generateRufloTemplates(
   templateManager: TemplateManager,
   projectPath: string,
   context: TemplateContext
 ): Promise<void> {
-  logger.info(chalk.blue('🤖 Generating Claude Flow configuration...'));
+  logger.info(chalk.blue('🤖 Generating Ruflo configuration...'));
 
   await templateManager.copyTemplate(
-    'claude-flow/swarm.config.js',
-    path.join(projectPath, 'claude-flow.config.js'),
+    'ruflo/swarm.config.js',
+    path.join(projectPath, 'ruflo.config.js'),
     context,
     { overwrite: true, verbose: true }
   );
@@ -360,7 +360,7 @@ function getCustomVariables(
     BOT_COLOR: '#4A154B',
     BOT_DISPLAY_NAME: 'DevBot',
 
-    // Claude Flow configuration
+    // Ruflo configuration
     CLAUDE_MODEL: 'claude-sonnet-4-20250514',
     TEMPERATURE: 0.7,
     MAX_CONCURRENT_AGENTS: 54,
@@ -404,9 +404,9 @@ function printNextSteps(options: ProjectTemplateOptions): void {
     logger.info(chalk.gray('   - Set up environment variables for Slack bot'));
   }
 
-  if (options.includeClaudeFlow) {
-    logger.info(chalk.white('5. Initialize Claude Flow:'));
-    logger.info(chalk.gray('   npx claude-flow@alpha mcp start'));
+  if (options.includeRuflo) {
+    logger.info(chalk.white('5. Initialize Ruflo:'));
+    logger.info(chalk.gray('   npx ruflo@latest mcp start'));
   }
 
   logger.info(chalk.white('6. Start development:'));

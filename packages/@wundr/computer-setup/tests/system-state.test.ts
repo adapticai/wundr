@@ -38,9 +38,16 @@ jest.mock('fs', () => ({
 }));
 
 // Import after mocking
-import { detectSystemState, quickHealthCheck, DEFAULT_METADATA_SCHEMA_VERSION } from '../src/lib/system-state';
+import {
+  detectSystemState,
+  quickHealthCheck,
+  DEFAULT_METADATA_SCHEMA_VERSION,
+} from '../src/lib/system-state';
 import { VersionTracker } from '../src/lib/version-tracker';
-import { MetadataManager, METADATA_SCHEMA_VERSION } from '../src/lib/metadata-manager';
+import {
+  MetadataManager,
+  METADATA_SCHEMA_VERSION,
+} from '../src/lib/metadata-manager';
 
 describe('System State Detection', () => {
   const mockHomeDir = '/Users/testuser';
@@ -79,7 +86,10 @@ describe('System State Detection', () => {
         throw new Error('Command not found');
       });
 
-      const state = await detectSystemState({ checkMCPServers: false, checkGitConfig: false });
+      const state = await detectSystemState({
+        checkMCPServers: false,
+        checkGitConfig: false,
+      });
 
       expect(state.claudeCode.installed).toBe(true);
       expect(state.claudeCode.version).toBe('claude 1.0.5'); // Version includes full output
@@ -93,14 +103,16 @@ describe('System State Detection', () => {
       const realClaudeDir = path.join(homeDirPath, '.claude');
 
       mockExistsSync.mockImplementation((p: string) => {
-        return p === realClaudeDir ||
-               p === path.join(realClaudeDir, 'settings.json') ||
-               p.includes('.claude');
+        return (
+          p === realClaudeDir ||
+          p === path.join(realClaudeDir, 'settings.json') ||
+          p.includes('.claude')
+        );
       });
 
       mockAccess.mockImplementation((p: string) => {
-        const checkNames = ['agents', 'commands', '.claude-flow'];
-        if (checkNames.some((name) => p.endsWith(name))) {
+        const checkNames = ['agents', 'commands', '.ruflo'];
+        if (checkNames.some(name => p.endsWith(name))) {
           return Promise.resolve();
         }
         return Promise.reject(new Error('ENOENT'));
@@ -108,14 +120,19 @@ describe('System State Detection', () => {
 
       mockReaddir.mockResolvedValue(['custom-agent.custom.json', 'backup.bak']);
 
-      const state = await detectSystemState({ checkMCPServers: false, checkGitConfig: false });
+      const state = await detectSystemState({
+        checkMCPServers: false,
+        checkGitConfig: false,
+      });
 
       expect(state.claudeDirectory.exists).toBe(true);
       expect(state.claudeDirectory.settingsFile).toBe(true);
       expect(state.claudeDirectory.subdirectories.agents).toBe(true);
       expect(state.claudeDirectory.subdirectories.commands).toBe(true);
-      expect(state.claudeDirectory.subdirectories.claudeFlow).toBe(true);
-      expect(state.claudeDirectory.customizations).toContain('custom-agent.custom.json');
+      expect(state.claudeDirectory.subdirectories.ruflo).toBe(true);
+      expect(state.claudeDirectory.customizations).toContain(
+        'custom-agent.custom.json'
+      );
       expect(state.claudeDirectory.backups).toContain('backup.bak');
     });
 
@@ -123,7 +140,8 @@ describe('System State Detection', () => {
       mockExecSync.mockImplementation((cmd: string) => {
         if (cmd === 'git --version') return 'git version 2.42.0\n';
         if (cmd === 'git config --global user.name') return 'Test User\n';
-        if (cmd === 'git config --global user.email') return 'test@example.com\n';
+        if (cmd === 'git config --global user.email')
+          return 'test@example.com\n';
         if (cmd === 'git config --global commit.gpgsign') return 'true\n';
         if (cmd === 'git config --global user.signingkey') return 'ABC123\n';
         if (cmd === 'git config --global init.defaultBranch') return 'main\n';
@@ -157,7 +175,7 @@ describe('System State Detection', () => {
     it('should detect MCP servers from settings.json', async () => {
       const mockSettings = {
         mcpServers: {
-          'claude-flow': { command: 'npx', args: ['claude-flow@alpha', 'mcp', 'start'] },
+          ruflo: { command: 'npx', args: ['ruflo@latest', 'mcp', 'start'] },
           firecrawl: { command: 'npx', args: ['@firecrawl/mcp-server'] },
         },
       };
@@ -169,11 +187,14 @@ describe('System State Detection', () => {
         throw new Error('Command not found');
       });
 
-      const state = await detectSystemState({ checkGitConfig: false, checkClaudeHealth: false });
+      const state = await detectSystemState({
+        checkGitConfig: false,
+        checkClaudeHealth: false,
+      });
 
-      const claudeFlowServer = state.mcpServers.find((s) => s.name === 'claude-flow');
-      expect(claudeFlowServer).toBeDefined();
-      expect(claudeFlowServer!.installed).toBe(true);
+      const rufloServer = state.mcpServers.find(s => s.name === 'ruflo');
+      expect(rufloServer).toBeDefined();
+      expect(rufloServer!.installed).toBe(true);
     });
 
     it('should calculate health correctly', async () => {
@@ -184,10 +205,12 @@ describe('System State Detection', () => {
         if (cmd === 'claude --help') return 'Claude Code CLI\n';
         if (cmd === 'git --version') return 'git version 2.42.0\n';
         if (cmd === 'git config --global user.name') return 'Test User\n';
-        if (cmd === 'git config --global user.email') return 'test@example.com\n';
+        if (cmd === 'git config --global user.email')
+          return 'test@example.com\n';
         if (cmd === 'git config --global commit.gpgsign') return 'false\n';
         if (cmd === 'git config --global init.defaultBranch') return 'main\n';
-        if (cmd === 'git config --global --get-regexp alias') throw new Error('No aliases');
+        if (cmd === 'git config --global --get-regexp alias')
+          throw new Error('No aliases');
         if (cmd === 'node --version') return 'v20.10.0\n';
         if (cmd === 'which node') return '/usr/local/bin/node\n';
         if (cmd.includes('--version 2>&1')) return 'zsh 5.9\n';
@@ -195,13 +218,26 @@ describe('System State Detection', () => {
       });
 
       mockExistsSync.mockImplementation((p: string) => {
-        return p.includes('.claude') || p.includes('settings.json') || p.includes('.gitconfig');
+        return (
+          p.includes('.claude') ||
+          p.includes('settings.json') ||
+          p.includes('.gitconfig')
+        );
       });
 
       mockAccess.mockImplementation((p: string) => {
         // All subdirectories exist
-        const checkNames = ['agents', 'commands', '.claude-flow', 'helpers', 'templates', 'hooks', 'scripts', '.roo'];
-        if (checkNames.some((name) => p.endsWith(name))) {
+        const checkNames = [
+          'agents',
+          'commands',
+          '.ruflo',
+          'helpers',
+          'templates',
+          'hooks',
+          'scripts',
+          '.roo',
+        ];
+        if (checkNames.some(name => p.endsWith(name))) {
           return Promise.resolve();
         }
         return Promise.reject(new Error('ENOENT'));
@@ -223,14 +259,19 @@ describe('System State Detection', () => {
         if (cmd === 'claude --help') throw new Error('Claude not responding');
         if (cmd === 'git --version') return 'git version 2.42.0\n';
         if (cmd === 'git config --global user.name') return 'Test User\n';
-        if (cmd === 'git config --global user.email') return 'test@example.com\n';
+        if (cmd === 'git config --global user.email')
+          return 'test@example.com\n';
         if (cmd === 'node --version') return 'v20.10.0\n';
         if (cmd === 'which node') return '/usr/local/bin/node\n';
         throw new Error('Command not found');
       });
 
       mockExistsSync.mockImplementation((p: string) => {
-        return p.includes('.claude') || p.includes('settings.json') || p.includes('.gitconfig');
+        return (
+          p.includes('.claude') ||
+          p.includes('settings.json') ||
+          p.includes('.gitconfig')
+        );
       });
 
       mockAccess.mockResolvedValue(undefined); // All directories exist
@@ -243,7 +284,9 @@ describe('System State Detection', () => {
 
       expect(state.health.overall).toBe('degraded');
       expect(state.health.issues.length).toBeGreaterThan(0);
-      expect(state.health.issues.some(i => i.includes('not responding'))).toBe(true);
+      expect(state.health.issues.some(i => i.includes('not responding'))).toBe(
+        true
+      );
     });
   });
 
@@ -251,7 +294,8 @@ describe('System State Detection', () => {
     it('should return healthy when all components are present', async () => {
       mockExecSync.mockImplementation((cmd: string) => {
         if (cmd === 'which claude') return '/usr/local/bin/claude\n';
-        if (cmd === 'git config --global user.email') return 'test@example.com\n';
+        if (cmd === 'git config --global user.email')
+          return 'test@example.com\n';
         throw new Error('Command not found');
       });
 
@@ -268,7 +312,8 @@ describe('System State Detection', () => {
     it('should return unhealthy when Claude is missing', async () => {
       mockExecSync.mockImplementation((cmd: string) => {
         if (cmd === 'which claude') throw new Error('not found');
-        if (cmd === 'git config --global user.email') return 'test@example.com\n';
+        if (cmd === 'git config --global user.email')
+          return 'test@example.com\n';
         throw new Error('Command not found');
       });
 
@@ -500,7 +545,10 @@ describe('MetadataManager', () => {
         lastProfile: null,
         runs: Array(50)
           .fill(null)
-          .map((_, i) => ({ id: `run-${i}`, timestamp: new Date().toISOString() })),
+          .map((_, i) => ({
+            id: `run-${i}`,
+            timestamp: new Date().toISOString(),
+          })),
         backups: [],
         components: [],
         customizations: [],

@@ -5,7 +5,7 @@ Automatically select optimal workflow based on task type.
 ## Usage
 
 ```bash
-npx claude-flow automation workflow-select [options]
+npx ruflo automation workflow-select [options]
 ```
 
 ## Options
@@ -18,11 +18,11 @@ npx claude-flow automation workflow-select [options]
 
 ```bash
 # Select workflow for task
-npx claude-flow automation workflow-select --task "Deploy to production"
+npx ruflo automation workflow-select --task "Deploy to production"
 
 # With constraints
-npx claude-flow automation workflow-select --constraints "no-downtime,rollback"
+npx ruflo automation workflow-select --constraints "no-downtime,rollback"
 
 # Preview mode
-npx claude-flow automation workflow-select --task "Database migration" --preview
+npx ruflo automation workflow-select --task "Database migration" --preview
 ```

@@ -5,7 +5,7 @@ Export workflows for sharing.
 ## Usage
 
 ```bash
-npx claude-flow workflow export [options]
+npx ruflo workflow export [options]
 ```
 
 ## Options
@@ -18,11 +18,11 @@ npx claude-flow workflow export [options]
 
 ```bash
 # Export workflow
-npx claude-flow workflow export --name "deploy-api"
+npx ruflo workflow export --name "deploy-api"
 
 # As YAML
-npx claude-flow workflow export --name "test-suite" --format yaml
+npx ruflo workflow export --name "test-suite" --format yaml
 
 # With history
-npx claude-flow workflow export --name "deploy-api" --include-history
+npx ruflo workflow export --name "deploy-api" --include-history
 ```

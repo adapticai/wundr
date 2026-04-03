@@ -32,7 +32,7 @@ implementations:
    - WundrConfigManager integration
    - 6 developer profiles (frontend, backend, fullstack, devops, ml, mobile)
    - Dry-run mode
-   - Post-setup hooks (shell config, team repos, VS Code extensions, Claude Flow)
+   - Post-setup hooks (shell config, team repos, VS Code extensions, Ruflo)
    - Report generation to `~/.wundr/setup-reports/`
 
 ## Overlap Analysis

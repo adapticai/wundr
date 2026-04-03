@@ -31,7 +31,7 @@ export type SessionStatus =
 export interface SessionInfo {
   /** Unique session identifier. */
   id: string;
-  /** Session type (e.g. 'claude-code', 'claude-flow'). */
+  /** Session type (e.g. 'claude-code', 'ruflo'). */
   sessionType?: string;
   /** Current lifecycle status. */
   status: SessionStatus;

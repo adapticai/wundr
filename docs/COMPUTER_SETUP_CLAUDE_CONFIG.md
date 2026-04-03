@@ -312,12 +312,12 @@ workflow:
 wundr computer-setup
 
 # You'll be prompted:
-# "Do you want to set up AI development tools (Claude Code, Claude Flow)?"
+# "Do you want to set up AI development tools (Claude Code, Ruflo)?"
 # Answer: Yes
 
 # This will:
 # 1. Install Claude CLI
-# 2. Install Claude Flow MCP tools
+# 2. Install Ruflo MCP tools
 # 3. Run claude-config installer
 # 4. Set up agent templates
 # 5. Configure git-worktree workflows

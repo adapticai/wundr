@@ -9,9 +9,9 @@
     "coreModules": {
       "AIIntegrationHive": {
         "path": "src/core/AIIntegrationHive.ts",
-        "purpose": "Central orchestration hub coordinating all AI capabilities (Claude Code, Claude Flow, MCP tools)",
+        "purpose": "Central orchestration hub coordinating all AI capabilities (Claude Code, Ruflo, MCP tools)",
         "keyComponents": [
-          "ClaudeFlowOrchestrator",
+          "RufloOrchestrator",
           "MCPToolsRegistry",
           "NeuralTrainingPipeline",
           "SwarmIntelligence",
@@ -21,8 +21,8 @@
           "GitHubIntegration"
         ]
       },
-      "ClaudeFlowOrchestrator": {
-        "path": "src/core/ClaudeFlowOrchestrator.ts",
+      "RufloOrchestrator": {
+        "path": "src/core/RufloOrchestrator.ts",
         "purpose": "Manages 54 specialized agents, topology management, and SPARC methodology execution",
         "agents": 54,
         "categories": [
@@ -105,7 +105,7 @@
       "searchResults": "No OpenAI imports or usage found"
     },
     "supportedProviders": [],
-    "architectureNote": "Package focuses on orchestration and coordination rather than direct LLM API calls. It delegates to external systems (Claude Code, Claude Flow MCP server) for actual LLM interactions."
+    "architectureNote": "Package focuses on orchestration and coordination rather than direct LLM API calls. It delegates to external systems (Claude Code, Ruflo MCP server) for actual LLM interactions."
   },
 
   "chatPatterns": {
@@ -115,21 +115,21 @@
     "analysis": "This package does NOT implement direct chat completion patterns. Instead, it orchestrates agents through:",
     "delegationPatterns": [
       {
-        "pattern": "Claude Flow MCP Server Integration",
-        "description": "Spawns agents via MCP protocol calls to external Claude Flow server",
-        "implementation": "ClaudeFlowOrchestrator.executeClaudeFlowCommand()",
-        "example": "await this.executeClaudeFlowCommand('agent_spawn', { type, capabilities })"
+        "pattern": "Ruflo MCP Server Integration",
+        "description": "Spawns agents via MCP protocol calls to external Ruflo server",
+        "implementation": "RufloOrchestrator.executeRufloCommand()",
+        "example": "await this.executeRufloCommand('agent_spawn', { type, capabilities })"
       },
       {
         "pattern": "Hook-Based Coordination",
         "description": "Uses pre-task, post-task, session-restore hooks for coordination",
         "implementation": "executeHook() method with bash command execution",
-        "example": "npx claude-flow@alpha hooks pre-task --description"
+        "example": "npx ruflo@latest hooks pre-task --description"
       },
       {
         "pattern": "Simulated Execution",
-        "description": "Simulates Claude Flow operations internally for testing",
-        "implementation": "simulateClaudeFlowExecution()",
+        "description": "Simulates Ruflo operations internally for testing",
+        "implementation": "simulateRufloExecution()",
         "status": "Placeholder for actual MCP protocol integration"
       }
     ]
@@ -282,7 +282,7 @@
       "library": "eventemitter3@^5.0.1",
       "usage": [
         "AIIntegrationHive extends EventEmitter",
-        "ClaudeFlowOrchestrator extends EventEmitter",
+        "RufloOrchestrator extends EventEmitter",
         "SwarmIntelligence extends EventEmitter",
         "NeuralModels extends EventEmitter"
       ],
@@ -324,11 +324,11 @@
         "Session ID generation: swarm-{timestamp}-{random}",
         "Session directory creation for persistence",
         "Session metadata tracking (createdAt, config, agents)",
-        "Session restore hooks via Claude Flow",
+        "Session restore hooks via Ruflo",
         "Cross-session memory persistence"
       ],
       "paths": [
-        "ClaudeFlowOrchestrator manages session lifecycle",
+        "RufloOrchestrator manages session lifecycle",
         "MemoryManager handles cross-session persistence",
         "SessionMemory provides per-session context"
       ]
@@ -667,7 +667,7 @@
         "purpose": "Enable direct chat with specialized agents via LLM"
       },
       {
-        "component": "ClaudeFlowOrchestrator",
+        "component": "RufloOrchestrator",
         "newMethod": "async executeWithLLM(task, provider, model)",
         "purpose": "Alternative to MCP-based execution using direct LLM calls"
       },

@@ -2,8 +2,8 @@
 
 ## ✅ What Was Fixed
 
-The `@wundr.io/computer-setup` package now properly installs Claude Code and Claude Flow for **any
-user**, not just the Wundr development environment.
+The `@wundr.io/computer-setup` package now properly installs Claude Code and Ruflo for **any user**,
+not just the Wundr development environment.
 
 ### Key Improvements
 
@@ -67,7 +67,7 @@ source ~/.zshrc  # or source ~/.bashrc
 ### Expected Output
 
 ```
-🤖 Installing Claude Code & Claude Flow ecosystem...
+🤖 Installing Claude Code & Ruflo ecosystem...
 📦 Installing Claude Code CLI...
 Installing @anthropic-ai/claude-code globally...
 ✅ Claude Code CLI installed successfully
@@ -77,14 +77,14 @@ Installing @anthropic-ai/claude-code globally...
 ✅ Added Claude alias to .zshrc
 📁 Setting up Claude directory structure...
 🔧 Installing MCP servers...
-✓ Installed claude-flow
+✓ Installed ruflo
 ✓ Installed firecrawl
 ⚙️ Configuring Claude settings with advanced hooks...
 🤖 Setting up 54+ specialized agents...
 📋 Copying bundled agent .md files...
 ✅ Installed 65 agent definition files
 📝 Setting up global CLAUDE.md generator...
-✅ Claude Code & Claude Flow ecosystem installed successfully!
+✅ Claude Code & Ruflo ecosystem installed successfully!
 ```
 
 ## ✅ Post-Installation Verification
@@ -98,7 +98,7 @@ Run the verification script:
 ### Expected Verification Output
 
 ```
-🔍 Verifying Claude Code & Claude Flow Installation...
+🔍 Verifying Claude Code & Ruflo Installation...
 
 📦 Checking Claude CLI...
 ✓ Claude CLI installed: 2.0.1 (Claude Code)
@@ -119,16 +119,16 @@ Run the verification script:
 
 ⚙️ Checking Claude settings...
 ✓ settings.json exists
-✓   Claude Flow MCP configured
+✓   Ruflo MCP configured
 
-🌊 Checking Claude Flow...
-✓ Claude Flow available: 2.0.0-alpha
+🌊 Checking Ruflo...
+✓ Ruflo available: 2.0.0-alpha
 
 📊 Verification Summary
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✓ All checks passed!
 
-🎉 Claude Code & Claude Flow are fully installed and configured.
+🎉 Claude Code & Ruflo are fully installed and configured.
 ```
 
 ## 🔧 What Gets Installed
@@ -171,7 +171,7 @@ which claude
 
 ### 3. MCP Servers (Configured in settings.json)
 
-- **claude-flow**: Orchestration and multi-agent coordination
+- **ruflo**: Orchestration and multi-agent coordination
 - **firecrawl**: Web scraping capabilities
 - **playwright**: Browser automation
 - **browser**: Browser MCP integration
@@ -243,11 +243,11 @@ pnpm --filter @wundr.io/computer-setup run setup --profile fullstack
 cat ~/.claude/settings.json | jq '.mcpServers'
 ```
 
-**Test Claude Flow directly:**
+**Test Ruflo directly:**
 
 ```bash
-npx claude-flow@alpha --version
-npx claude-flow@alpha mcp start
+npx ruflo@latest --version
+npx ruflo@latest mcp start
 ```
 
 ### Issue: Sudo prompt fails
@@ -270,7 +270,7 @@ After installation, verify:
 - [ ] `~/.claude/` directory exists
 - [ ] `find ~/.claude/agents -name "*.md" | wc -l` shows 60+
 - [ ] `cat ~/.claude/settings.json | jq '.mcpServers'` shows MCP configs
-- [ ] `npx claude-flow@alpha --version` works
+- [ ] `npx ruflo@latest --version` works
 - [ ] Terminal restart or `source ~/.zshrc` loads aliases
 - [ ] Can run `claude` from any directory
 
@@ -322,7 +322,7 @@ claude --version
 You should now have:
 
 - ✅ Claude Code CLI working globally
-- ✅ Claude Flow configured with MCP
+- ✅ Ruflo configured with MCP
 - ✅ 65 specialized agents installed
 - ✅ All development tools set up
 - ✅ Quality enforcement hooks

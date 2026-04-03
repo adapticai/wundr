@@ -260,16 +260,16 @@ if [[ "$FILE_NAME" == *".test."* ]] || [[ "$FILE_NAME" == *".spec."* ]] || [[ "$
 fi
 
 # -----------------------------------------------------------------------------
-# CLAUDE-FLOW MEMORY INTEGRATION
+# RUFLO MEMORY INTEGRATION
 # -----------------------------------------------------------------------------
 
 if [ -n "$MEMORY_KEY" ]; then
     echo ""
     echo "--- Memory Integration ---"
 
-    if command -v npx &> /dev/null && npx claude-flow@alpha --version &> /dev/null 2>&1; then
-        echo "Storing edit in Claude-Flow memory..."
-        npx claude-flow@alpha hooks post-edit --file "$FILE_PATH" --memory-key "$MEMORY_KEY" 2>/dev/null || echo "[INFO] Memory store skipped"
+    if command -v npx &> /dev/null && npx ruflo@latest --version &> /dev/null 2>&1; then
+        echo "Storing edit in Ruflo memory..."
+        npx ruflo@latest hooks post-edit --file "$FILE_PATH" --memory-key "$MEMORY_KEY" 2>/dev/null || echo "[INFO] Memory store skipped"
     fi
 fi
 

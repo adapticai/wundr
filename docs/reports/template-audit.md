@@ -244,7 +244,7 @@ All JSON examples in documentation are valid.
 | URL                                    | Source                    | Status   |
 | -------------------------------------- | ------------------------- | -------- |
 | https://docs.anthropic.com/claude-code | README.md, SETUP_GUIDE.md | External |
-| https://github.com/ruvnet/claude-flow  | README.md, SETUP_GUIDE.md | External |
+| https://github.com/ruvnet/ruflo        | README.md, SETUP_GUIDE.md | External |
 | https://github.com/ruvnet/wundr        | README.md                 | External |
 
 ---

@@ -72,9 +72,9 @@ validate_environment() {
         cd "$PROJECT_ROOT" && npm install
     fi
 
-    # Check claude-flow
-    if ! npx claude-flow@alpha --version &> /dev/null; then
-        error "claude-flow is not available"
+    # Check ruflo
+    if ! npx ruflo@latest --version &> /dev/null; then
+        error "ruflo is not available"
         exit 1
     fi
 
@@ -157,7 +157,7 @@ optimize_topology() {
     log "Selected topology: $topology (max agents: $max_agents)"
 
     # Initialize swarm with optimized topology
-    npx claude-flow@alpha hooks swarm-init \
+    npx ruflo@latest hooks swarm-init \
         --topology "$topology" \
         --max-agents "$max_agents" \
         --session-id "$SESSION_ID" 2>&1 | tee -a "$LOG_FILE" || {
@@ -205,7 +205,7 @@ prepare_worktree() {
 restore_session() {
     log "Restoring session context..."
 
-    npx claude-flow@alpha hooks session-restore \
+    npx ruflo@latest hooks session-restore \
         --session-id "$SESSION_ID" \
         --restore-memory true \
         --restore-metrics true 2>&1 | tee -a "$LOG_FILE" || {
@@ -224,7 +224,7 @@ prepare_memory() {
     local memory_key="swarm/${SESSION_ID}/${TASK_ID}"
 
     # Store task context
-    npx claude-flow@alpha hooks memory-store \
+    npx ruflo@latest hooks memory-store \
         --key "$memory_key/task" \
         --value "{\"description\":\"$TASK_DESCRIPTION\",\"agent\":\"$AGENT_TYPE\",\"complexity\":\"$COMPLEXITY\",\"started\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" \
         2>&1 | tee -a "$LOG_FILE" || {
@@ -232,7 +232,7 @@ prepare_memory() {
     }
 
     # Retrieve relevant patterns
-    npx claude-flow@alpha hooks neural-patterns \
+    npx ruflo@latest hooks neural-patterns \
         --pattern-type "task" \
         --filter "$AGENT_TYPE" 2>&1 | tee -a "$LOG_FILE" || {
         warn "Failed to retrieve neural patterns"

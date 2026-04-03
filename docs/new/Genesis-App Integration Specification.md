@@ -112,7 +112,7 @@ platform**:
 │  │                                 ▼                                      │ │
 │  │  ┌─────────────────────────────────────────────────────────────────┐  │ │
 │  │  │              VP Daemon Core (Session Manager)                    │  │ │
-│  │  │  • Session Spawning (Claude Code / Claude Flow)                 │  │ │
+│  │  │  • Session Spawning (Claude Code / Ruflo)                 │  │ │
 │  │  │  • Memory Architecture (Scratchpad → Episodic → Semantic)       │  │ │
 │  │  │  • Integration Orchestration                                    │  │ │
 │  │  └─────────────────────────────────────────────────────────────────┘  │ │
@@ -120,7 +120,7 @@ platform**:
 │                                    │                                         │
 │                                    ▼                                         │
 │  ┌────────────────────────────────────────────────────────────────────────┐ │
-│  │                    CLAUDE CODE / CLAUDE FLOW SESSIONS                   │ │
+│  │                    CLAUDE CODE / RUFLO SESSIONS                   │ │
 │  └────────────────────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -2555,7 +2555,7 @@ const metrics = {
 ### 10.1 Overview
 
 This module defines the complete file pipeline enabling files uploaded to Genesis-App to flow
-through to VP-Daemons and ultimately be processed within Claude Code / Claude Flow sessions.
+through to VP-Daemons and ultimately be processed within Claude Code / Ruflo sessions.
 
 **Supported File Types**: | Category | Extensions | Processing |
 |----------|------------|------------| | Documents | `.pdf`, `.docx`, `.doc`, `.odt` | Text
@@ -2664,7 +2664,7 @@ Text | `.txt`, `.md`, `.rtf` | Direct text |
 │  │                             │  Session Spawn with File Context        │   │
 │  │                             ▼                                          │   │
 │  │  ┌──────────────────────────────────────────────────────────────────┐  │   │
-│  │  │                CLAUDE CODE / CLAUDE FLOW SESSION                  │  │   │
+│  │  │                CLAUDE CODE / RUFLO SESSION                  │  │   │
 │  │  │                                                                   │  │   │
 │  │  │  Session receives files via:                                     │  │   │
 │  │  │                                                                   │  │   │
@@ -3994,7 +3994,7 @@ with formulas | | **Document Creation** | VP HR generates an offer letter from t
 ├─────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                  │
 │  ┌─────────────────────────────────────────────────────────────────────────┐   │
-│  │                CLAUDE CODE / CLAUDE FLOW SESSION                         │   │
+│  │                CLAUDE CODE / RUFLO SESSION                         │   │
 │  │                                                                          │   │
 │  │  Session generates files via:                                           │   │
 │  │  • Write tool → creates files in working directory                      │   │

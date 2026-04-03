@@ -42,7 +42,7 @@ and focuses on coordination via external MCP servers.
       │           - Adaptive
       │
 ┌─────▼──────────────────────────────────────────────────────────┐
-│              External MCP Server (Claude Flow)                  │
+│              External MCP Server (Ruflo)                  │
 │         ACTUAL LLM CALLS HAPPEN HERE (not in package)          │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -76,7 +76,7 @@ and focuses on coordination via external MCP servers.
 ├── src/
 │   ├── core/
 │   │   ├── AIIntegrationHive.ts        # Main orchestration hub
-│   │   ├── ClaudeFlowOrchestrator.ts   # 54 agents, MCP server integration
+│   │   ├── RufloOrchestrator.ts   # 54 agents, MCP server integration
 │   │   ├── SwarmIntelligence.ts        # 5 topologies, consensus algorithms
 │   │   ├── NeuralTrainingPipeline.ts   # Model training coordination
 │   │   ├── MCPToolsRegistry.ts         # 26 MCP tools
@@ -112,7 +112,7 @@ This package uses **DELEGATION** instead of **DIRECT INTEGRATION**:
 
 ```typescript
 // What the package does NOW:
-await this.executeClaudeFlowCommand('agent_spawn', { type: 'coder' });
+await this.executeRufloCommand('agent_spawn', { type: 'coder' });
 // ↓ Delegates to external MCP server via bash commands
 // ↓ MCP server makes actual LLM calls
 

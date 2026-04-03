@@ -84,8 +84,8 @@ memoryBankPath: '.claude/memory/sessions/${SESSION_ID}/'
 # Via Task tool
 Task("engineering-manager: Implement user authentication feature with OAuth2")
 
-# Via claude-flow
-npx claude-flow agent_spawn { type: "session-engineering-manager" }
+# Via ruflo
+npx ruflo agent_spawn { type: "session-engineering-manager" }
 ```
 
 ### Session Memory

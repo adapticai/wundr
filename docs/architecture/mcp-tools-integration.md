@@ -2,8 +2,8 @@
 
 ## Overview
 
-This document defines the integration architecture for five specialized MCP tools with Claude Flow
-and the Wundr ecosystem:
+This document defines the integration architecture for five specialized MCP tools with Ruflo and the
+Wundr ecosystem:
 
 1. **Firecrawl MCP** - Advanced web scraping and crawling
 2. **Context7 MCP** - Intelligent context management
@@ -17,7 +17,7 @@ and the Wundr ecosystem:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Claude Flow Orchestrator                 │
+│                    Ruflo Orchestrator                 │
 ├─────────────────────────────────────────────────────────────┤
 │                MCP Tools Integration Layer                  │
 ├─────────────────────────────────────────────────────────────┤
@@ -62,8 +62,8 @@ and the Wundr ecosystem:
 npm install @firecrawl/mcp-server
 claude mcp add firecrawl npx @firecrawl/mcp-server
 
-# Configure with Claude Flow
-npx claude-flow mcp register firecrawl \
+# Configure with Ruflo
+npx ruflo mcp register firecrawl \
   --capabilities "web-scraping,content-extraction,site-mapping" \
   --priority "high" \
   --memory-profile "large"
@@ -96,7 +96,7 @@ npx claude-flow mcp register firecrawl \
     }
   },
   "integration": {
-    "claude_flow": {
+    "ruflo": {
       "agent_types": ["researcher", "data-collector", "content-analyzer"],
       "memory_integration": true,
       "batch_operations": true
@@ -142,7 +142,7 @@ npm install @context7/mcp-server
 claude mcp add context7 npx @context7/mcp-server
 
 # Initialize context store
-npx claude-flow mcp init context7 \
+npx ruflo mcp init context7 \
   --storage-backend "sqlite" \
   --index-strategy "vector-hybrid" \
   --memory-limit "2GB"
@@ -176,7 +176,7 @@ npx claude-flow mcp init context7 \
     "overlap": 200
   },
   "integration": {
-    "claude_flow": {
+    "ruflo": {
       "memory_bridge": true,
       "swarm_context": true,
       "persistent_sessions": true
@@ -225,8 +225,8 @@ npm install @playwright/mcp-server
 npx playwright install chromium firefox webkit
 claude mcp add playwright npx @playwright/mcp-server
 
-# Configure with Claude Flow
-npx claude-flow mcp register playwright \
+# Configure with Ruflo
+npx ruflo mcp register playwright \
   --browser-pool-size "3" \
   --headless-default "true" \
   --screenshot-quality "high"
@@ -268,7 +268,7 @@ npx claude-flow mcp register playwright \
     "trace_on_failure": true
   },
   "integration": {
-    "claude_flow": {
+    "ruflo": {
       "agent_types": ["tester", "automator", "validator"],
       "parallel_execution": true,
       "result_storage": "context7"
@@ -392,7 +392,7 @@ echo "Install manually in Chrome: chrome://extensions/ -> Load unpacked"
     ]
   },
   "integration": {
-    "claude_flow": {
+    "ruflo": {
       "real_browser": true,
       "extension_bridge": true,
       "dev_tools_access": true
@@ -444,7 +444,7 @@ npm install @mit/sequential-thinking-mcp
 claude mcp add sequential-thinking npx @mit/sequential-thinking-mcp
 
 # Initialize thinking models
-npx claude-flow mcp init sequential-thinking \
+npx ruflo mcp init sequential-thinking \
   --reasoning-model "step-by-step" \
   --memory-integration "context7" \
   --validation-mode "strict"
@@ -484,7 +484,7 @@ npx claude-flow mcp init sequential-thinking \
     }
   },
   "integration": {
-    "claude_flow": {
+    "ruflo": {
       "reasoning_agent": true,
       "context_awareness": true,
       "multi_step_tasks": true
@@ -630,8 +630,8 @@ claude mcp add playwright npx @playwright/mcp-server
 claude mcp add browser-mcp npx @browser-mcp/server
 claude mcp add sequential-thinking npx @mit/sequential-thinking-mcp
 
-# Initialize Claude Flow integrations
-npx claude-flow mcp register-all --config-dir ~/.claude/mcp-configs
+# Initialize Ruflo integrations
+npx ruflo mcp register-all --config-dir ~/.claude/mcp-configs
 
 echo "MCP Tools setup complete!"
 ```

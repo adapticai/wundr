@@ -38,7 +38,7 @@ leverages:
 | **Context Engineering**      | Basic CLAUDE.md          | Dynamic JIT context compilation                         | Critical |
 | **Tool Loading**             | Static MCP server config | Just-In-Time tool retrieval via RAG                     | Critical |
 | **Memory Architecture**      | Generic memory templates | MemGPT-inspired tiered memory (scratchpad + persistent) | High     |
-| **Orchestration Framework**  | claude-flow swarm        | LangGraph state machines + CrewAI teams                 | High     |
+| **Orchestration Framework**  | ruflo swarm              | LangGraph state machines + CrewAI teams                 | High     |
 | **Structured Outputs**       | Zod validation           | Pydantic/Instructor with retry loops                    | High     |
 | **Configuration Management** | Basic YAML configs       | Hydra-style hierarchical composition                    | Medium   |
 | **Prompt Templating**        | Static markdown          | Jinja2 dynamic prompts with macros                      | Medium   |
@@ -1808,7 +1808,7 @@ interface EnhancedProjectOptions extends ProjectInitOptions {
 
   // Orchestration
   orchestration: {
-    framework: 'claude-flow' | 'langgraph' | 'crewai' | 'autogen' | 'hybrid';
+    framework: 'ruflo' | 'langgraph' | 'crewai' | 'autogen' | 'hybrid';
     prebuiltWorkflows: string[];
   };
 

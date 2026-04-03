@@ -33,7 +33,7 @@ interface SystemAnalysis {
   hasGit: boolean;
   hasDocker: boolean;
   hasClaude: boolean;
-  hasClaudeFlow: boolean;
+  hasRuflo: boolean;
   hasVSCode: boolean;
   existingTools: string[];
   missingTools: string[];
@@ -195,8 +195,7 @@ export class QuickstartInstaller {
         name: 'Claude Code + Flow (Full)',
         command: () => this.installClaudeFull(),
         dependencies: ['node-full'],
-        skipIf: () =>
-          !!this.analysis?.hasClaude && !!this.analysis?.hasClaudeFlow,
+        skipIf: () => !!this.analysis?.hasClaude && !!this.analysis?.hasRuflo,
         parallel: true,
         estimatedTime: 50,
       },
@@ -233,7 +232,7 @@ export class QuickstartInstaller {
         hasGit: await this.checkCommand('git'),
         hasDocker: await this.checkCommand('docker'),
         hasClaude: await this.checkCommand('claude'),
-        hasClaudeFlow: await this.checkCommand('claude-flow'),
+        hasRuflo: await this.checkCommand('ruflo'),
         hasVSCode:
           (await this.checkCommand('code')) ||
           (await this.checkPath('/Applications/Visual Studio Code.app')),
@@ -249,7 +248,7 @@ export class QuickstartInstaller {
         { name: 'git', exists: analysis.hasGit },
         { name: 'docker', exists: analysis.hasDocker },
         { name: 'claude', exists: analysis.hasClaude },
-        { name: 'claude-flow', exists: analysis.hasClaudeFlow },
+        { name: 'ruflo', exists: analysis.hasRuflo },
         { name: 'vscode', exists: analysis.hasVSCode },
       ];
 
@@ -423,8 +422,8 @@ export class QuickstartInstaller {
       // Create minimal Claude configuration
       await this.createClaudeConfig();
 
-      // Setup basic Claude Flow configuration (not full 54 agents)
-      await this.createClaudeFlowConfig();
+      // Setup basic Ruflo configuration (not full 54 agents)
+      await this.createRufloConfig();
 
       // Create project template
       await this.createProjectTemplate();
@@ -615,7 +614,9 @@ export class QuickstartInstaller {
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : String(error);
-        logger.warn(`Failed to install VS Code extension ${ext}: ${errorMessage}`);
+        logger.warn(
+          `Failed to install VS Code extension ${ext}: ${errorMessage}`
+        );
       }
     }
   }
@@ -636,11 +637,11 @@ export class QuickstartInstaller {
     await this.installClaudeCore();
 
     try {
-      await this.executeCommand('npm install -g claude-flow@alpha');
+      await this.executeCommand('npm install -g ruflo@latest');
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
-      logger.warn(`Claude Flow installation failed: ${errorMessage}`);
+      logger.warn(`Ruflo installation failed: ${errorMessage}`);
     }
   }
 
@@ -689,7 +690,7 @@ export class QuickstartInstaller {
       '',
       '# Claude Aliases',
       'alias cl="claude"',
-      'alias clf="claude-flow"',
+      'alias clf="ruflo"',
       '',
     ].join('\n');
 
@@ -794,9 +795,9 @@ export class QuickstartInstaller {
     );
   }
 
-  private async createClaudeFlowConfig(): Promise<void> {
-    const claudeFlowDir = join(this.homePath, '.claude-flow');
-    await fs.mkdir(claudeFlowDir, { recursive: true });
+  private async createRufloConfig(): Promise<void> {
+    const rufloDir = join(this.homePath, '.ruflo');
+    await fs.mkdir(rufloDir, { recursive: true });
 
     const config = {
       version: '2.0.0-alpha',
@@ -831,13 +832,13 @@ export class QuickstartInstaller {
       },
       logging: {
         level: 'info',
-        file: 'claude-flow.log',
+        file: 'ruflo.log',
         console: true,
       },
     };
 
     await fs.writeFile(
-      join(claudeFlowDir, 'global-config.json'),
+      join(rufloDir, 'global-config.json'),
       JSON.stringify(config, null, 2)
     );
   }
@@ -859,7 +860,7 @@ export class QuickstartInstaller {
       '- VS Code with essential extensions',
       '- Docker for containerization',
       '- Claude Code for AI assistance',
-      '- Claude Flow for agent orchestration (basic setup)',
+      '- Ruflo for agent orchestration (basic setup)',
       '',
       '### Quick Commands',
       '```bash',
@@ -870,7 +871,7 @@ export class QuickstartInstaller {
       'claude',
       '',
       '# Agent coordination (basic)',
-      'claude-flow status',
+      'ruflo status',
       '```',
       '',
       '### Next Steps',

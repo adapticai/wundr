@@ -65,17 +65,17 @@ All swarm coordinators leverage the following MCP tools:
 
 ### Core Coordination Tools
 
-- `mcp__claude-flow__swarm_init` - Initialize swarm topology
-- `mcp__claude-flow__agent_spawn` - Create specialized worker agents
-- `mcp__claude-flow__task_orchestrate` - Coordinate complex workflows
-- `mcp__claude-flow__swarm_monitor` - Real-time performance monitoring
+- `mcp__ruflo__swarm_init` - Initialize swarm topology
+- `mcp__ruflo__agent_spawn` - Create specialized worker agents
+- `mcp__ruflo__task_orchestrate` - Coordinate complex workflows
+- `mcp__ruflo__swarm_monitor` - Real-time performance monitoring
 
 ### Advanced Features
 
-- `mcp__claude-flow__neural_patterns` - Pattern recognition and learning
-- `mcp__claude-flow__daa_consensus` - Distributed decision making
-- `mcp__claude-flow__topology_optimize` - Dynamic topology optimization
-- `mcp__claude-flow__performance_report` - Comprehensive analytics
+- `mcp__ruflo__neural_patterns` - Pattern recognition and learning
+- `mcp__ruflo__daa_consensus` - Distributed decision making
+- `mcp__ruflo__topology_optimize` - Dynamic topology optimization
+- `mcp__ruflo__performance_report` - Comprehensive analytics
 
 ## Usage Examples
 
@@ -83,7 +83,7 @@ All swarm coordinators leverage the following MCP tools:
 
 ```bash
 # Initialize hierarchical swarm for development project
-claude-flow agent spawn hierarchical-coordinator "Build authentication microservice"
+ruflo agent spawn hierarchical-coordinator "Build authentication microservice"
 
 # Agents will automatically:
 # 1. Decompose project into tasks
@@ -96,7 +96,7 @@ claude-flow agent spawn hierarchical-coordinator "Build authentication microserv
 
 ```bash
 # Initialize mesh network for distributed processing
-claude-flow agent spawn mesh-coordinator "Process user analytics data"
+ruflo agent spawn mesh-coordinator "Process user analytics data"
 
 # Network will automatically:
 # 1. Establish peer-to-peer connections
@@ -109,7 +109,7 @@ claude-flow agent spawn mesh-coordinator "Process user analytics data"
 
 ```bash
 # Initialize adaptive swarm for production optimization
-claude-flow agent spawn adaptive-coordinator "Optimize system performance"
+ruflo agent spawn adaptive-coordinator "Optimize system performance"
 
 # System will automatically:
 # 1. Analyze current workload patterns
@@ -192,14 +192,14 @@ Real-time visibility into:
 - **Resource Exhaustion**: Monitor and scale agent pools proactively
 - **Learning Issues**: Validate training data quality and model convergence
 
-## Integration with Claude-Flow
+## Integration with Ruflo
 
-These agents integrate seamlessly with the broader claude-flow ecosystem:
+These agents integrate seamlessly with the broader ruflo ecosystem:
 
-- **Memory System**: All coordination state persisted in claude-flow memory bank
+- **Memory System**: All coordination state persisted in ruflo memory bank
 - **Terminal Management**: Agents can spawn and manage multiple terminal sessions
-- **MCP Integration**: Full access to claude-flow's MCP tool ecosystem
-- **Event System**: Real-time coordination through claude-flow event bus
-- **Configuration**: Managed through claude-flow configuration system
+- **MCP Integration**: Full access to ruflo's MCP tool ecosystem
+- **Event System**: Real-time coordination through ruflo event bus
+- **Configuration**: Managed through ruflo configuration system
 
-For implementation details, see individual agent files and the claude-flow documentation.
+For implementation details, see individual agent files and the ruflo documentation.

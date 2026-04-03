@@ -126,8 +126,8 @@ git worktree list
 ```bash
 # Agent hooks: Pre-task setup
 cd "${WORKTREE_PATH}"
-npx claude-flow@alpha hooks pre-task --description "Implement ${TASK_ID}"
-npx claude-flow@alpha hooks session-restore --session-id "worktree-${WORKTREE_NAME}"
+npx ruflo@latest hooks pre-task --description "Implement ${TASK_ID}"
+npx ruflo@latest hooks session-restore --session-id "worktree-${WORKTREE_NAME}"
 
 # Agent performs work in isolated worktree
 # All file operations happen in WORKTREE_PATH, not main repo
@@ -136,9 +136,9 @@ npm run build
 npm run test
 
 # Agent hooks: Track progress
-npx claude-flow@alpha hooks post-edit --file "${WORKTREE_PATH}/src/auth.ts" \
+npx ruflo@latest hooks post-edit --file "${WORKTREE_PATH}/src/auth.ts" \
   --memory-key "worktree/${AGENT_TYPE}/${TASK_ID}/implementation"
-npx claude-flow@alpha hooks notify --message "Authentication module implemented"
+npx ruflo@latest hooks notify --message "Authentication module implemented"
 
 # Commit changes in worktree
 git add .
@@ -152,8 +152,8 @@ Task: ${TASK_ID}
 Co-Authored-By: Claude <noreply@anthropic.com>"
 
 # Agent hooks: Post-task cleanup
-npx claude-flow@alpha hooks post-task --task-id "${TASK_ID}"
-npx claude-flow@alpha hooks session-end --export-metrics true
+npx ruflo@latest hooks post-task --task-id "${TASK_ID}"
+npx ruflo@latest hooks session-end --export-metrics true
 ```
 
 #### 3. Integration & Merge Phase
@@ -291,7 +291,7 @@ cd "/Users/iroselli/wundr/../worktrees/agent-reviewer-${TIMESTAMP}"
    ```bash
    # ✅ Store worktree info for debugging
    git worktree list > /tmp/active-worktrees.txt
-   npx claude-flow@alpha hooks notify --message "Created worktree: ${WORKTREE_NAME}"
+   npx ruflo@latest hooks notify --message "Created worktree: ${WORKTREE_NAME}"
    ```
 
 #### ❌ DON'T:
@@ -378,18 +378,18 @@ git worktree add -b "worktree/sparc/tester-${TS}" \
 
 # Architect: Design system
 cd "/Users/iroselli/wundr/../worktrees/sparc-architect-${TS}"
-npx claude-flow sparc run architect "${TASK}"
+npx ruflo sparc run architect "${TASK}"
 git commit -am "docs: Architecture design for auth module"
 
 # Coder: Implement (based on architecture)
 cd "/Users/iroselli/wundr/../worktrees/sparc-coder-${TS}"
 git merge "worktree/sparc/architect-${TS}"  # Get architecture docs
-npx claude-flow sparc run coder "${TASK}"
+npx ruflo sparc run coder "${TASK}"
 git commit -am "feat: Implement authentication module"
 
 # Tester: Create tests (parallel to implementation)
 cd "/Users/iroselli/wundr/../worktrees/sparc-tester-${TS}"
-npx claude-flow sparc run tester "${TASK}"
+npx ruflo sparc run tester "${TASK}"
 git commit -am "test: Add auth module test suite"
 
 # Integration: Merge all changes
@@ -653,18 +653,18 @@ BRANCH_NAME="worktree/${AGENT_TYPE}/${TASK_ID}"
 
 # 1. Initialize swarm and worktree
 cd /Users/iroselli/wundr
-npx claude-flow@alpha hooks pre-task --description "${TASK_DESC}"
+npx ruflo@latest hooks pre-task --description "${TASK_DESC}"
 git worktree add -b "${BRANCH_NAME}" "${WORKTREE_PATH}" master
 
 # 2. Agent execution in worktree
 cd "${WORKTREE_PATH}"
-npx claude-flow@alpha hooks session-restore --session-id "worktree-${WORKTREE_NAME}"
+npx ruflo@latest hooks session-restore --session-id "worktree-${WORKTREE_NAME}"
 
 # Agent work happens here
 # ... implementation ...
 
 # 3. Track progress
-npx claude-flow@alpha hooks post-edit \
+npx ruflo@latest hooks post-edit \
   --file "${WORKTREE_PATH}/src/payment.ts" \
   --memory-key "worktree/${AGENT_TYPE}/${TASK_ID}/implementation"
 
@@ -680,8 +680,8 @@ Task: ${TASK_ID}
 Co-Authored-By: Claude <noreply@anthropic.com>"
 
 # 5. Notify completion
-npx claude-flow@alpha hooks notify --message "Payment module complete in ${WORKTREE_NAME}"
-npx claude-flow@alpha hooks post-task --task-id "${TASK_ID}"
+npx ruflo@latest hooks notify --message "Payment module complete in ${WORKTREE_NAME}"
+npx ruflo@latest hooks post-task --task-id "${TASK_ID}"
 
 # 6. Integration
 cd /Users/iroselli/wundr
@@ -689,7 +689,7 @@ npm run test  # Verify tests pass
 git merge --no-ff "${BRANCH_NAME}"
 
 # 7. Cleanup
-npx claude-flow@alpha hooks session-end --export-metrics true
+npx ruflo@latest hooks session-end --export-metrics true
 git worktree remove "${WORKTREE_PATH}"
 git branch -d "${BRANCH_NAME}"
 

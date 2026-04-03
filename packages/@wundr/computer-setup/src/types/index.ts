@@ -75,7 +75,7 @@ export interface GitConfiguration {
 
 export interface AIToolsConfiguration {
   claudeCode: boolean;
-  claudeFlow: boolean;
+  ruflo: boolean;
   mcpTools: string[];
   swarmAgents: string[];
   memoryAllocation: string;
