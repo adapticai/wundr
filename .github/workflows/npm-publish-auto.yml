@@ -167,8 +167,10 @@ jobs:
           path: |
             packages/*/dist
             packages/@wundr/*/dist
+            packages/@wundr/neolith/packages/@neolith/*/dist
             packages/*/package.json
             packages/@wundr/*/package.json
+            packages/@wundr/neolith/packages/@neolith/*/package.json
           retention-days: 1
 
   publish-packages:
@@ -198,7 +200,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
-          path: .
+          path: packages
 
       - name: 🔍 Find package directory
         id: find-package
@@ -223,12 +225,18 @@ jobs:
           echo "name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
           echo "Found package at: $PKG_DIR"
 
+      - name: 📝 Set publish version
+        run: |
+          cd "${{ steps.find-package.outputs.dir }}"
+          npm pkg set version="${{ needs.prepare-release.outputs.version }}"
+
       - name: 📡 Publish to NPM
         run: |
           cd "${{ steps.find-package.outputs.dir }}"
 
           PACKAGE_NAME="${{ steps.find-package.outputs.name }}"
-          echo "Publishing $PACKAGE_NAME from $(pwd)"
+          VERSION="${{ needs.prepare-release.outputs.version }}"
+          echo "Publishing $PACKAGE_NAME@$VERSION from $(pwd)"
 
           # Show what will be published
           npm pack --dry-run
@@ -237,7 +245,6 @@ jobs:
           npm publish --access public --tag dev
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        continue-on-error: true
 
       - name: ✅ Verify publication
         run: |
