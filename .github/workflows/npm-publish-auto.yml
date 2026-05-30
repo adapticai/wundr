@@ -241,8 +241,20 @@ jobs:
           # Show what will be published
           npm pack --dry-run
 
-          # Publish with dev tag for auto-publishes
-          npm publish --access public --tag dev --ignore-scripts
+          # Publish with dev tag, retrying transient registry errors (E409)
+          published=false
+          for attempt in 1 2 3; do
+            if npm publish --access public --tag dev --ignore-scripts; then
+              published=true
+              break
+            fi
+            echo "Publish attempt $attempt failed; retrying in 20s..."
+            sleep 20
+          done
+          if [ "$published" != "true" ]; then
+            echo "Publish failed after 3 attempts"
+            exit 1
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
