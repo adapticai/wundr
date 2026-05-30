@@ -389,12 +389,15 @@ export class NodeInstaller implements BaseInstaller {
     const npmGlobalDir = path.join(homeDir, '.npm-global');
 
     try {
-      // Create npm-global directory structure
-      await fs.ensureDir(path.join(npmGlobalDir, 'lib'));
-      await fs.ensureDir(path.join(npmGlobalDir, 'bin'));
-
-      // Set npm prefix before any global installs
-      await execa('npm', ['config', 'set', 'prefix', npmGlobalDir]);
+      // A custom global `prefix` in ~/.npmrc breaks npm/npx under NVM (it
+      // conflicts with the active Node version's own prefix). Never set one — and
+      // repair machines that already have the broken prefix.
+      void npmGlobalDir;
+      try {
+        await execa('npm', ['config', 'delete', 'prefix']);
+      } catch {
+        // No prefix configured — nothing to repair.
+      }
 
       // Configure npm settings
       if (profile.name) {

@@ -10,6 +10,7 @@ import {
   isMaestroManaged,
   writeJsonWithBackup,
 } from '../lib/claude-config';
+import { runProcess, runShellScript } from '../lib/headless';
 import { Logger } from '../utils/logger';
 
 import type { DeveloperProfile, SetupPlatform, SetupStep } from '../types';
@@ -391,18 +392,38 @@ export class ClaudeInstaller implements BaseInstaller {
     // Remove any old alias blocks from shell configs before clean install
     await this.removeOldShellAliases();
 
-    // Install @anthropic-ai/claude-code globally via npm
-    logger.info('Installing @anthropic-ai/claude-code globally...');
+    // If Claude is already installed, ensure it is on the native installer and return.
     try {
-      execSync('npm install -g @anthropic-ai/claude-code', {
-        stdio: 'inherit',
+      execSync('claude --version', { stdio: 'pipe' });
+      logger.info('Claude CLI already installed');
+      try {
+        // Migrate to the native installer; older CLIs lack this command — ignore.
+        execSync('claude install', { stdio: 'pipe', timeout: 300000 });
+      } catch {
+        // Older CLI without `claude install`; nothing to migrate.
+      }
+      return;
+    } catch {
+      // Not installed yet — fall through to a fresh native install.
+    }
+
+    // Install via the native installer (headless-safe), falling back to npm.
+    logger.info('Installing Claude Code CLI via native installer...');
+    try {
+      await runShellScript('curl -fsSL https://claude.ai/install.sh | bash', {
+        timeout: 300000,
       });
       logger.info('Claude Code CLI installed successfully');
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
-      logger.error('Failed to install Claude Code CLI:', errorMessage);
-      throw error;
+      logger.warn(
+        `Native Claude CLI install failed, falling back to npm: ${errorMessage}`
+      );
+      await runProcess('npm', ['install', '-g', '@anthropic-ai/claude-code'], {
+        timeout: 300000,
+      });
+      logger.info('Claude Code CLI installed successfully (npm fallback)');
     }
   }
 
@@ -541,28 +562,55 @@ export class ClaudeInstaller implements BaseInstaller {
   private async installPlugins(): Promise<void> {
     logger.info('Installing Claude Code plugins...');
 
+    // Plugins require the Claude CLI — skip cleanly if it is not on PATH.
+    try {
+      execSync('which claude', { stdio: 'pipe' });
+    } catch {
+      logger.info('Claude CLI not found on PATH, skipping plugin install');
+      return;
+    }
+
+    // Ensure the official plugin marketplace is registered (idempotent).
+    try {
+      execSync(
+        'claude plugin marketplace add anthropics/claude-plugins-official',
+        { stdio: 'pipe', timeout: 60000 }
+      );
+      logger.info('Added claude-plugins-official marketplace');
+    } catch (error: unknown) {
+      const errorObj = error as { stderr?: Buffer; message?: string };
+      const stderr = errorObj.stderr?.toString() || '';
+      if (stderr.includes('already exists')) {
+        logger.debug('Plugin marketplace already added, skipping');
+      } else {
+        logger.warn(
+          `Failed to add plugin marketplace: ${errorObj.message || ''}`
+        );
+      }
+    }
+
+    // Canonical plugin list — mirrors the maestro framework's enabledPlugins.
     const plugins = [
-      'agent-sdk-dev',
-      'claude-code-setup',
-      'claude-md-management',
+      'frontend-design',
+      'superpowers',
+      'context7',
       'code-review',
       'code-simplifier',
-      'commit-commands',
-      'context7',
       'feature-dev',
-      'frontend-design',
-      'github',
-      'greptile',
-      'hookify',
-      'linear',
       'playwright',
-      'pr-review-toolkit',
       'ralph-loop',
-      'security-guidance',
-      'serena',
+      'claude-md-management',
+      'commit-commands',
       'skill-creator',
-      'superpowers',
-      'typescript-lsp',
+      'pr-review-toolkit',
+      'claude-code-setup',
+      'agent-sdk-dev',
+      'plugin-dev',
+      'hookify',
+      'huggingface-skills',
+      'mcp-server-dev',
+      'explanatory-output-style',
+      'learning-output-style',
     ];
 
     for (const plugin of plugins) {
@@ -573,11 +621,16 @@ export class ClaudeInstaller implements BaseInstaller {
         });
         logger.info(`Installed plugin: ${plugin}`);
       } catch (error: unknown) {
-        const errorObj = error as { stderr?: Buffer; message?: string };
-        const stderr = errorObj.stderr?.toString() || '';
+        const errorObj = error as {
+          stderr?: Buffer;
+          stdout?: Buffer;
+          message?: string;
+        };
+        const output = `${errorObj.stderr?.toString() || ''}${errorObj.stdout?.toString() || ''}`;
         if (
-          stderr.includes('already installed') ||
-          stderr.includes('already exists')
+          output.includes('already') ||
+          output.includes('installed') ||
+          output.includes('exists')
         ) {
           logger.debug(`Plugin ${plugin} already installed, skipping`);
         } else {

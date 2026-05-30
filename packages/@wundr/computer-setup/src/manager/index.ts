@@ -412,6 +412,20 @@ export class ComputerSetupManager extends EventEmitter {
       );
     }
 
+    // Remote access (Tailscale + SSH + power mgmt + desktop sharing) — a standard
+    // macOS phase, enabled by default. The installer auto-detects host vs master
+    // mode and degrades gracefully when headless; its step is required:false so it
+    // can never abort the core setup.
+    if (
+      options.platform.os === 'darwin' &&
+      profile.remoteAccess?.enabled !== false
+    ) {
+      const remoteAccess = this.installerRegistry.get('remote-access');
+      if (remoteAccess) {
+        steps.push(...remoteAccess.getSteps(profile, options.platform));
+      }
+    }
+
     // Sort steps by dependencies
     return this.sortStepsByDependencies(steps);
   }

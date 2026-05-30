@@ -50,8 +50,16 @@ export function createComputerSetupCommand(): Command {
       '--no-remote-access',
       'Skip remote-access provisioning (Tailscale, SSH, power management, desktop sharing)'
     )
-    .action(async options => {
-      await runComputerSetup(options);
+    .action(async (options, command) => {
+      // `--dry-run`, `--verbose` and `--interactive` are declared as GLOBAL
+      // options on the root program, so they land in the parent's opts, not the
+      // sub-command's. optsWithGlobals() merges both so flags like --dry-run
+      // actually take effect here.
+      const merged =
+        typeof command?.optsWithGlobals === 'function'
+          ? { ...command.optsWithGlobals(), ...options }
+          : options;
+      await runComputerSetup(merged);
     });
 
   // Subcommands
@@ -96,6 +104,17 @@ export async function runComputerSetup(options: any): Promise<void> {
 
     spinner.stop();
 
+    // A run is non-interactive when there is no console, in CI, or when the
+    // caller asked for it (--yes / --non-interactive / a non-interactive mode).
+    // In that case we never prompt — for a profile OR for confirmation — and
+    // fall back to the default profile.
+    const nonInteractive =
+      Boolean(options.yes) ||
+      Boolean(options.nonInteractive) ||
+      options.mode !== 'interactive' ||
+      !process.stdin.isTTY ||
+      Boolean(process.env.CI);
+
     // Get or create profile
     let profile;
     if (options.profile) {
@@ -107,7 +126,7 @@ export async function runComputerSetup(options: any): Promise<void> {
         );
         profile = await manager.getDefaultProfile();
       }
-    } else if (options.mode === 'interactive' || options.interactive) {
+    } else if (!nonInteractive) {
       profile = await createInteractiveProfile();
     } else {
       profile = await manager.getDefaultProfile();
@@ -145,16 +164,8 @@ export async function runComputerSetup(options: any): Promise<void> {
       );
     }
 
-    // A confirmation prompt must never block an unattended run. Skip it on
-    // non-TTY/CI machines, in non-interactive modes, or when --yes is passed.
-    const nonInteractive =
-      Boolean(options.yes) ||
-      Boolean(options.nonInteractive) ||
-      options.mode !== 'interactive' ||
-      !process.stdin.isTTY ||
-      Boolean(process.env.CI);
-
-    // Confirm before proceeding (only in a real interactive session).
+    // Confirm before proceeding (only in a real interactive session — the
+    // `nonInteractive` flag computed above already accounts for TTY/CI/--yes).
     if (!options.dryRun && !nonInteractive) {
       const { proceed } = await inquirer.prompt([
         {
