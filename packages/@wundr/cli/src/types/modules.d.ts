@@ -95,24 +95,8 @@ declare module '@wundr.io/computer-setup' {
     [key: string]: any;
   }
 
-  export class RealSetupOrchestrator extends EventEmitter {
-    constructor(platform: SetupPlatform);
-    runSetup(profile: DeveloperProfile, options?: any): Promise<SetupResult>;
-    orchestrate(
-      profileName: string,
-      options?: any,
-      progressCallback?: (progress: SetupProgress) => void
-    ): Promise<SetupResult>;
-    canResume(): Promise<boolean>;
-    resume(
-      progressCallback?: (progress: SetupProgress) => void
-    ): Promise<SetupResult>;
-    getAvailableProfiles(): SetupProfile[];
-    getProgress(): SetupProgress;
-    cancel(): void;
-    onProgress(callback: (progress: SetupProgress) => void): void;
-  }
-
+  // ComputerSetupManager is the single setup orchestrator. (RealSetupOrchestrator
+  // and SetupOrchestrator were retired during the orchestrator consolidation.)
   export class ComputerSetupManager extends EventEmitter {
     static getInstance(): ComputerSetupManager;
     initialize(): Promise<void>;
@@ -123,11 +107,6 @@ declare module '@wundr.io/computer-setup' {
     getAvailableProfiles(): Promise<DeveloperProfile[]>;
     setup(options: any): Promise<SetupResult>;
     on(event: string, callback: Function): this;
-  }
-
-  export class SetupOrchestrator extends EventEmitter {
-    constructor(platform: SetupPlatform);
-    runSetup(profile: DeveloperProfile, options?: any): Promise<SetupResult>;
   }
 }
 

@@ -54,6 +54,5 @@ export {
 } from './security-setup';
 export type { SecuritySetupResult } from './security-setup';
 
-// Legacy exports for compatibility
+// The single setup orchestrator.
 export { ComputerSetupManager } from './manager';
-export { SetupOrchestrator } from './orchestrator';

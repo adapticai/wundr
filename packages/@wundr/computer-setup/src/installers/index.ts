@@ -419,4 +419,4 @@ export * from './linux-installer';
 export * from './windows-installer';
 export * from './orchestrator-daemon-installer';
 export * from './resource-manager-installer';
-export { default as RealSetupOrchestrator } from './real-setup-orchestrator';
+export * from './remote-access-installer';

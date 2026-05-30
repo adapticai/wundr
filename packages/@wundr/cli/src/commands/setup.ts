@@ -1,36 +1,29 @@
 /**
  * Simple Setup Commands - Main setup entry points
- * Provides the primary wundr setup commands that integrate with computer-setup
+ *
+ * `wundr setup` (and its sub-commands) delegate to the SAME code path as
+ * `wundr computer-setup` (runComputerSetup -> ComputerSetupManager), so there is
+ * a single orchestrator engine across the whole CLI. The old RealSetupOrchestrator
+ * has been retired.
  */
 
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import ora from 'ora';
 
-import { RealSetupOrchestrator } from '@wundr.io/computer-setup';
-import { logger } from '../utils/logger';
+import { runComputerSetup } from './computer-setup';
 
-import type {
-  SetupPlatform,
-  SetupProgress,
-  SetupResult,
-} from '@wundr.io/computer-setup';
 import type { PluginManager } from '../plugins/plugin-manager';
 import type { ConfigManager } from '../utils/config-manager';
 
 import type { Command } from 'commander';
 
 export class SetupCommands {
-  private orchestrator: RealSetupOrchestrator;
-  private platform: SetupPlatform;
-
   constructor(
     private program: Command,
     private configManager: ConfigManager,
     private pluginManager: PluginManager
   ) {
-    this.platform = this.detectPlatform();
-    this.orchestrator = new RealSetupOrchestrator(this.platform);
     this.registerCommands();
   }
 
@@ -49,6 +42,7 @@ export class SetupCommands {
         'Show what would be installed without making changes'
       )
       .option('--interactive', 'Run in interactive mode')
+      .option('--no-remote-access', 'Skip remote-access provisioning')
       .action(async options => {
         await this.runSetup(options);
       });
@@ -58,33 +52,14 @@ export class SetupCommands {
       .command('setup:profile')
       .description('Set up using a specific developer profile');
 
-    setupProfile
-      .command('frontend')
-      .description('Set up frontend development environment')
-      .action(async () => {
-        await this.runSetup({ profile: 'frontend' });
-      });
-
-    setupProfile
-      .command('backend')
-      .description('Set up backend development environment')
-      .action(async () => {
-        await this.runSetup({ profile: 'backend' });
-      });
-
-    setupProfile
-      .command('fullstack')
-      .description('Set up full-stack development environment')
-      .action(async () => {
-        await this.runSetup({ profile: 'fullstack' });
-      });
-
-    setupProfile
-      .command('devops')
-      .description('Set up DevOps engineering environment')
-      .action(async () => {
-        await this.runSetup({ profile: 'devops' });
-      });
+    for (const profile of ['frontend', 'backend', 'fullstack', 'devops']) {
+      setupProfile
+        .command(profile)
+        .description(`Set up ${profile} development environment`)
+        .action(async () => {
+          await this.runSetup({ profile });
+        });
+    }
 
     // Validate setup (wundr setup:validate)
     this.program
@@ -96,12 +71,14 @@ export class SetupCommands {
         await this.validateSetup(options);
       });
 
-    // Resume setup (wundr setup:resume)
+    // Resume setup (wundr setup:resume) — re-runs idempotently, skipping
+    // already-installed tools (the setup flow is now idempotent).
     this.program
       .command('setup:resume')
-      .description('Resume interrupted setup from saved state')
-      .action(async () => {
-        await this.resumeSetup();
+      .description('Re-run setup, skipping tools that are already installed')
+      .option('-p, --profile <profile>', 'Profile to resume', 'fullstack')
+      .action(async options => {
+        await this.runSetup({ ...options, skipExisting: true });
       });
 
     // Personalize setup (wundr setup:personalize)
@@ -114,144 +91,15 @@ export class SetupCommands {
   }
 
   private async runSetup(options: any): Promise<void> {
-    console.log(chalk.cyan('\n🚀 Wundr Development Environment Setup'));
-    console.log(chalk.gray('Setting up your development machine...\n'));
-
-    try {
-      // Check for resumable setup
-      const canResume = await this.orchestrator.canResume();
-      if (canResume && !options.dryRun) {
-        const { resume } = await inquirer.prompt([
-          {
-            type: 'confirm',
-            name: 'resume',
-            message: 'Found incomplete setup. Resume from where you left off?',
-            default: true,
-          },
-        ]);
-
-        if (resume) {
-          return await this.resumeSetup();
-        }
-      }
-
-      // Get profile
-      let profileName = options.profile;
-      if (options.interactive && !profileName) {
-        profileName = await this.selectProfile();
-      }
-
-      // Validate profile
-      const availableProfiles = this.orchestrator.getAvailableProfiles();
-
-      // Try different matching strategies
-      let profile = availableProfiles.find(
-        p => p.name.toLowerCase() === profileName.toLowerCase()
-      );
-
-      if (!profile) {
-        // Try partial match
-        profile = availableProfiles.find(
-          p =>
-            p.name.toLowerCase().includes(profileName.toLowerCase()) ||
-            profileName
-              .toLowerCase()
-              .includes(p.name.toLowerCase().split(' ')[0])
-        );
-      }
-
-      // Map common aliases
-      if (!profile) {
-        const aliases: Record<string, string> = {
-          fullstack: 'Full Stack Developer',
-          'full-stack': 'Full Stack Developer',
-          frontend: 'Frontend Developer',
-          backend: 'Backend Developer',
-          devops: 'DevOps Engineer',
-        };
-
-        const mappedName = aliases[profileName.toLowerCase()];
-        if (mappedName) {
-          profile = availableProfiles.find(p => p.name === mappedName);
-        }
-      }
-
-      if (!profile) {
-        console.error(chalk.red(`❌ Unknown profile: ${profileName}`));
-        console.log(chalk.cyan('\n📋 Available profiles:'));
-        availableProfiles.forEach(p =>
-          console.log(
-            `  • ${chalk.white(p.name)}: ${chalk.gray(p.description)}`
-          )
-        );
-        return;
-      }
-
-      console.log(
-        chalk.cyan(`\n📋 Selected Profile: ${chalk.white(profile.name)}`)
-      );
-      console.log(chalk.gray(`${profile.description}`));
-      console.log(
-        chalk.gray(`Estimated time: ${profile.estimatedTimeMinutes} minutes\n`)
-      );
-
-      if (options.dryRun) {
-        console.log(
-          chalk.yellow('🔍 DRY RUN - Showing what would be installed:\n')
-        );
-        console.log(chalk.cyan('Required tools:'));
-        profile.requiredTools.forEach(tool => console.log(`  ✓ ${tool}`));
-        if (profile.optionalTools.length > 0) {
-          console.log(chalk.cyan('\nOptional tools:'));
-          profile.optionalTools.forEach(tool => console.log(`  • ${tool}`));
-        }
-        return;
-      }
-
-      // Progress tracking
-      const progressCallback = (progress: SetupProgress) => {
-        process.stdout.clearLine(0);
-        process.stdout.cursorTo(0);
-        const progressBar = this.createProgressBar(progress.percentage);
-        process.stdout.write(
-          `${progressBar} ${progress.percentage.toFixed(1)}% - ${progress.currentStep}`
-        );
-      };
-
-      console.log(chalk.cyan('🚀 Starting setup...\n'));
-
-      const result: SetupResult = await this.orchestrator.orchestrate(
-        profileName,
-        {
-          dryRun: options.dryRun,
-          skipExisting: true,
-          parallel: false,
-          generateReport: true,
-        },
-        progressCallback
-      );
-
-      console.log('\n'); // New line after progress
-
-      if (result.success) {
-        console.log(chalk.green('\n✅ Setup completed successfully!'));
-        console.log(
-          chalk.gray(`Duration: ${Math.round(result.duration / 1000)}s\n`)
-        );
-
-        this.showSetupSummary(result);
-        this.showNextSteps();
-      } else {
-        console.log(chalk.red('\n❌ Setup failed!'));
-        this.showErrors(result);
-        console.log(chalk.cyan('\n💡 Resume with: wundr setup:resume'));
-        process.exit(1);
-      }
-    } catch (error) {
-      console.error(chalk.red('\n❌ Setup failed:'), (error as Error).message);
-      console.log(chalk.cyan('\n💡 Resume with: wundr setup:resume'));
-      process.exit(1);
-    }
+    // Single source of truth: the same handler that backs `wundr computer-setup`.
+    await runComputerSetup({
+      profile: options.profile,
+      mode: options.interactive ? 'interactive' : 'automated',
+      dryRun: Boolean(options.dryRun),
+      interactive: Boolean(options.interactive),
+      skipExisting: Boolean(options.skipExisting),
+      remoteAccess: options.remoteAccess,
+    });
   }
 
   private async validateSetup(options: any): Promise<void> {
@@ -259,7 +107,6 @@ export class SetupCommands {
 
     const spinner = ora('Running validation checks...').start();
 
-    // Basic validation checks
     const checks = [
       { name: 'Node.js', test: () => this.checkCommand('node --version') },
       { name: 'Git', test: () => this.checkCommand('git --version') },
@@ -271,23 +118,17 @@ export class SetupCommands {
       name: string;
       status: 'pass' | 'fail';
       version?: string;
-      error?: string;
     }> = [];
 
     for (const check of checks) {
       try {
-        const result = await check.test();
         results.push({
           name: check.name,
           status: 'pass',
-          version: result,
+          version: await check.test(),
         });
-      } catch (error) {
-        results.push({
-          name: check.name,
-          status: 'fail',
-          error: (error as Error).message,
-        });
+      } catch {
+        results.push({ name: check.name, status: 'fail' });
       }
     }
 
@@ -298,7 +139,7 @@ export class SetupCommands {
       const icon = result.status === 'pass' ? '✅' : '❌';
       const status =
         result.status === 'pass'
-          ? chalk.green(`${result.version || 'installed'}`)
+          ? chalk.green(result.version || 'installed')
           : chalk.red('not found');
       console.log(`${icon} ${result.name}: ${status}`);
     });
@@ -306,7 +147,6 @@ export class SetupCommands {
     const failed = results.filter(r => r.status === 'fail');
     if (failed.length > 0) {
       console.log(chalk.yellow(`\n⚠️  ${failed.length} issues found`));
-
       if (options.fix) {
         console.log(chalk.cyan('\n🔧 Attempting to fix issues...'));
         await this.runSetup({ profile: options.profile || 'fullstack' });
@@ -317,37 +157,6 @@ export class SetupCommands {
       }
     } else {
       console.log(chalk.green('\n✅ All checks passed! Environment is ready.'));
-    }
-  }
-
-  private async resumeSetup(): Promise<void> {
-    console.log(chalk.cyan('\n🔄 Resuming setup...\n'));
-
-    const progressCallback = (progress: SetupProgress) => {
-      process.stdout.clearLine(0);
-      process.stdout.cursorTo(0);
-      const progressBar = this.createProgressBar(progress.percentage);
-      process.stdout.write(
-        `${progressBar} ${progress.percentage.toFixed(1)}% - ${progress.currentStep}`
-      );
-    };
-
-    try {
-      const result = await this.orchestrator.resume(progressCallback);
-      console.log('\n');
-
-      if (result.success) {
-        console.log(chalk.green('✅ Setup completed successfully!'));
-        this.showSetupSummary(result);
-        this.showNextSteps();
-      } else {
-        console.log(chalk.red('❌ Resume failed!'));
-        this.showErrors(result);
-        process.exit(1);
-      }
-    } catch (error) {
-      console.error(chalk.red('❌ Resume failed:'), (error as Error).message);
-      process.exit(1);
     }
   }
 
@@ -368,132 +177,20 @@ export class SetupCommands {
         validate: (input: string) =>
           /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input) || 'Valid email required',
       },
-      {
-        type: 'list',
-        name: 'shell',
-        message: 'Preferred shell:',
-        choices: ['zsh', 'bash', 'fish'],
-        default: 'zsh',
-      },
-      {
-        type: 'confirm',
-        name: 'aliases',
-        message: 'Install helpful shell aliases?',
-        default: true,
-      },
     ]);
 
     console.log(chalk.cyan('\n⚙️  Configuring personal settings...'));
-
-    // Configure Git
     try {
       await this.runCommand(`git config --global user.name "${answers.name}"`);
       await this.runCommand(
         `git config --global user.email "${answers.email}"`
       );
       console.log(chalk.green('✅ Git configured'));
-    } catch (error) {
+    } catch {
       console.log(chalk.yellow('⚠️  Could not configure Git'));
     }
 
     console.log(chalk.green('\n✅ Personalization complete!'));
-  }
-
-  private async selectProfile(): Promise<string> {
-    const profiles = this.orchestrator.getAvailableProfiles();
-
-    const { selectedProfile } = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'selectedProfile',
-        message: 'Select your development profile:',
-        choices: profiles.map(p => ({
-          name: `${p.name} - ${p.description}`,
-          value: p.name.toLowerCase().replace(/\s+/g, ''),
-          short: p.name,
-        })),
-      },
-    ]);
-
-    return selectedProfile;
-  }
-
-  private createProgressBar(percentage: number): string {
-    const width = 20;
-    const filled = Math.round((percentage / 100) * width);
-    const empty = width - filled;
-    return (
-      chalk.cyan('[') +
-      chalk.green('='.repeat(filled)) +
-      chalk.gray('-'.repeat(empty)) +
-      chalk.cyan(']')
-    );
-  }
-
-  private showSetupSummary(result: SetupResult): void {
-    if (result.completedSteps.length > 0) {
-      console.log(
-        chalk.cyan(`🎯 Completed (${result.completedSteps.length}):`)
-      );
-      result.completedSteps
-        .slice(0, 5)
-        .forEach(step => console.log(`  ✅ ${step.replace('install-', '')}`));
-      if (result.completedSteps.length > 5) {
-        console.log(`  ... and ${result.completedSteps.length - 5} more`);
-      }
-    }
-
-    if (result.skippedSteps.length > 0) {
-      console.log(
-        chalk.yellow(`\n⏭️  Skipped (${result.skippedSteps.length}):`)
-      );
-      result.skippedSteps
-        .slice(0, 3)
-        .forEach(step =>
-          console.log(
-            `  ⏭️  ${step.replace('install-', '')} (already installed)`
-          )
-        );
-    }
-  }
-
-  private showErrors(result: SetupResult): void {
-    if (result.failedSteps.length > 0) {
-      console.log(chalk.red(`❌ Failed (${result.failedSteps.length}):`));
-      result.failedSteps.forEach(step =>
-        console.log(`  ❌ ${step.replace('install-', '')}`)
-      );
-    }
-
-    if (result.errors.length > 0) {
-      console.log(chalk.red('\n🔍 Errors:'));
-      result.errors
-        .slice(0, 3)
-        .forEach(error => console.log(`  • ${error.message}`));
-    }
-  }
-
-  private showNextSteps(): void {
-    console.log(chalk.cyan('\n📝 Next Steps:'));
-    const steps = [
-      'Restart your terminal to apply changes',
-      'Validate setup: wundr setup:validate',
-      'Personalize: wundr setup:personalize',
-      'Start coding! 🚀',
-    ];
-
-    steps.forEach((step, i) => {
-      console.log(`  ${i + 1}. ${step}`);
-    });
-    console.log();
-  }
-
-  private detectPlatform(): SetupPlatform {
-    return {
-      os: process.platform as 'darwin' | 'linux' | 'win32',
-      arch: process.arch as 'x64' | 'arm64',
-      version: process.version || 'unknown',
-    };
   }
 
   private async checkCommand(command: string): Promise<string> {

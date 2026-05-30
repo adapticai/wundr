@@ -87,7 +87,7 @@ export function createComputerSetupCommand(): Command {
   return command;
 }
 
-async function runComputerSetup(options: any): Promise<void> {
+export async function runComputerSetup(options: any): Promise<void> {
   const spinner = ora('Initializing computer setup...').start();
 
   try {
