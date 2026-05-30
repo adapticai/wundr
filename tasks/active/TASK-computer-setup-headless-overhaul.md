@@ -97,11 +97,10 @@ stuck on Xcode during `computer-setup`. **Source of truth:** 7-agent audit (see
 
 ## Status
 
-DONE & pushed: P1 (hang fix), P3 (maestro de-confliction), P4 (remote-setup), P6 (maestro repo),
-plus the P2 safety subset (backstop timeout + skip-logic fix) and the P5 subset
-(`dev-computer-setup.sh`; `macos.sh` fixed in P1). See
-`tasks/reviews/REVIEW-computer-setup-audit.md` for commit-by-commit detail.
+DONE & pushed: P1 (hang fix), P2 (FULL 3→1 orchestrator consolidation + safety subset), P3 (maestro
+de-confliction), P4 (remote-setup), P5 subset (`dev-computer-setup.sh`; `macos.sh` fixed in P1), P6
+(maestro repo). See `tasks/reviews/REVIEW-computer-setup-audit.md` for commit-by-commit detail.
 
-DEFERRED (recommended follow-up PR): the full 3→1 orchestrator consolidation and the
-`packages/setup-toolkit` deletion — no longer urgent for safety because the backstop timeout makes
-every orchestrator hang-proof.
+DEFERRED (needs its own PR): `packages/setup-toolkit` deletion — dead code (no hang risk); a clean
+removal forces a monorepo-wide `pnpm-lock.yaml` regeneration (pnpm v10 rewrites the whole, stale
+lockfile, ~41k lines) that is out of scope for this branch.

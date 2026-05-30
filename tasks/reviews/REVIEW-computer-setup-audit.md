@@ -15,27 +15,26 @@ NONINTERACTIVE/timeout; the CLI confirm prompt wasn't TTY-gated; sudo `execSync`
 
 ## What was delivered (all verified: tsc clean, 20/20 unit tests, builds pass)
 
-| Phase                                                | Outcome                                                                                                                                                                                                                                                                                               | Commit            |
-| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
-| **P1** Headless-first Xcode + non-interactive safety | `lib/headless.ts` (softwareupdate-based CLT install, bounded, GUI fallback only on TTY; `isInteractive`/`nonInteractiveEnv`/`runProcess`). Refactored mac/git/node/homebrew installers; TTY-gated CLI prompts + `--yes/--non-interactive`; fixed `macos.sh`. Fixed the broken jest ESM `test` script. | `de722312`        |
-| **P3** Maestro de-confliction                        | `lib/claude-config.ts` (detect-maestro-and-defer, v2 schema, deep-merge, backup). `claude-installer` no longer clobbers `~/.claude/settings.json`; defers to maestro when present, else merges+backs up.                                                                                              | `2f179aec`        |
-| **P4** Remote-setup incorporation                    | `RemoteAccessInstaller` (TS port of `setup_remote_mac.sh`): Tailscale + SSH + host pmset (real backup) + desktop-sharing, auto host/master mode, `sudo -n` (never prompts), TCC degrades gracefully. `RemoteAccessConfig` type, registry wiring, `--no-remote-access`.                                | `128567e8`        |
-| **P2 (safety subset)**                               | Backstop step timeout (`max(estTime*4, 45min)`) + fixed inverted `--skip-existing` logic on the live `ComputerSetupManager`.                                                                                                                                                                          | `c0423afb`        |
-| **P5 (subset)**                                      | `dev-computer-setup.sh` hardened (`set -euo pipefail`, TTY-gated prompt). `macos.sh` fixed in P1.                                                                                                                                                                                                     | `c0423afb`        |
-| **P6** Maestro repo                                  | runbook xcode `-p` guard + defer-to-computer-setup note; `init-agent.sh` TTY-gated `read` + ERR trap.                                                                                                                                                                                                 | maestro `9c140a7` |
+| Phase                                                | Outcome                                                                                                                                                                                                                                                                                                                                     | Commit            |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| **P1** Headless-first Xcode + non-interactive safety | `lib/headless.ts` (softwareupdate-based CLT install, bounded, GUI fallback only on TTY; `isInteractive`/`nonInteractiveEnv`/`runProcess`). Refactored mac/git/node/homebrew installers; TTY-gated CLI prompts + `--yes/--non-interactive`; fixed `macos.sh`. Fixed the broken jest ESM `test` script.                                       | `de722312`        |
+| **P3** Maestro de-confliction                        | `lib/claude-config.ts` (detect-maestro-and-defer, v2 schema, deep-merge, backup). `claude-installer` no longer clobbers `~/.claude/settings.json`; defers to maestro when present, else merges+backs up.                                                                                                                                    | `2f179aec`        |
+| **P4** Remote-setup incorporation                    | `RemoteAccessInstaller` (TS port of `setup_remote_mac.sh`): Tailscale + SSH + host pmset (real backup) + desktop-sharing, auto host/master mode, `sudo -n` (never prompts), TCC degrades gracefully. `RemoteAccessConfig` type, registry wiring, `--no-remote-access`.                                                                      | `128567e8`        |
+| **P2 (safety subset)**                               | Backstop step timeout (`max(estTime*4, 45min)`) + fixed inverted `--skip-existing` logic on the live `ComputerSetupManager`.                                                                                                                                                                                                                | `c0423afb`        |
+| **P2 (full consolidation)**                          | Single orchestrator: `wundr setup` now delegates to the same `runComputerSetup`/`ComputerSetupManager` path as `wundr computer-setup`. Deleted `RealSetupOrchestrator`, `UnifiedOrchestrator`, `ComputerSetupCommands`, dead `core/*` (kept `platform-detector`), `orchestrator/SetupOrchestrator`, and the unwired `dev.ts`. −6,492 lines. | `13aac5ad`        |
+| **P5 (subset)**                                      | `dev-computer-setup.sh` hardened (`set -euo pipefail`, TTY-gated prompt). `macos.sh` fixed in P1.                                                                                                                                                                                                                                           | `c0423afb`        |
+| **P6** Maestro repo                                  | runbook xcode `-p` guard + defer-to-computer-setup note; `init-agent.sh` TTY-gated `read` + ERR trap.                                                                                                                                                                                                                                       | maestro `9c140a7` |
 
-## Deferred (recommended as a dedicated follow-up PR)
+## Deferred (needs its own PR)
 
-- **P2 full orchestrator consolidation (3 → 1):** retire `ComputerSetupManager`
-  - `RealSetupOrchestrator`, wire `UnifiedOrchestrator` (register real installers via
-    `InstallerAdapter`, reconcile the two ProfileManagers/4 topo-sorts, repoint both `wundr setup`
-    and `wundr computer-setup`). Large, touches the live command; **not urgent now** because the
-    backstop timeout (P2 subset) already makes every orchestrator hang-proof. Best done in isolation
-    with its own verification.
 - **`packages/setup-toolkit` deletion:** dead duplicate (`@wundr.io/setup-toolkit-simple`, imported
-  nowhere) containing a 3rd bare `xcode-select --install`. Safe to delete
-  - drop the dep in legacy `packages/cli/package.json`; deferred to avoid a lockfile/build rabbit
-    hole mid-session. It is dead code, so it cannot cause the reported hang.
+  nowhere, not in turbo, depended on only by the also-legacy `packages/cli`) containing a 3rd bare
+  `xcode-select --install`. It is **dead code, so it cannot cause the reported hang.** A clean
+  deletion requires removing the dep from `packages/cli/package.json` AND regenerating
+  `pnpm-lock.yaml` — but `pnpm install` under pnpm v10 rewrites the _entire_ lockfile (~41k lines
+  changed: the committed lockfile is stale vs the current pnpm version). That monorepo-wide lockfile
+  refresh is out of scope here and belongs in its own dedicated PR. The deletion was attempted and
+  reverted to keep this branch surgical.
 - `macos.sh`/`linux.sh` → thin wrappers over the TS CLI (currently fixed in place).
 
 ## Known pre-existing issues (not introduced here)
