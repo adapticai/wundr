@@ -4,6 +4,12 @@ import * as fsSync from 'fs';
 import { homedir } from 'os';
 import * as path from 'path';
 
+import {
+  buildClaudeSettingsV2,
+  deepMerge,
+  isMaestroManaged,
+  writeJsonWithBackup,
+} from '../lib/claude-config';
 import { Logger } from '../utils/logger';
 
 import type { DeveloperProfile, SetupPlatform, SetupStep } from '../types';
@@ -584,160 +590,39 @@ export class ClaudeInstaller implements BaseInstaller {
   }
 
   private async configureClaudeSettings(): Promise<void> {
-    logger.info('Configuring Claude settings with advanced hooks...');
+    const settingsPath = path.join(this.claudeDir, 'settings.json');
 
-    const settings = {
-      claudeCodeOptions: {
-        enabledMcpjsonServers: this.mcpServers,
-        gitAutoCompact: true,
-        gitStatusIgnorePattern: '\\.ruflo/|\\.roo/|node_modules/|dist/|build/',
-        contextCompactionThreshold: 100000,
-        enableHooks: true,
-        enableAgentCoordination: true,
-        enableNeuralTraining: true,
-        enablePerformanceTracking: true,
-      },
-      hooks: {
-        preToolUse: [
-          {
-            pattern: '.*',
-            command: 'npx ruflo@latest hooks pre-task --description "${tool}"',
-            description: 'Initialize task tracking',
-          },
-          {
-            pattern: 'Write|Edit|MultiEdit',
-            command:
-              'npx ruflo@latest hooks validate-write --file "${file_path}"',
-            description: 'Validate file write safety',
-          },
-        ],
-        postToolUse: [
-          {
-            pattern: 'Write|Edit|MultiEdit',
-            command: 'npx prettier --write "${file_path}" 2>/dev/null || true',
-            description: 'Auto-format code',
-          },
-          {
-            pattern: '.*',
-            command:
-              'npx ruflo@latest hooks post-edit --file "${file_path}" --memory-key "swarm/${agent}/${step}"',
-            description: 'Update memory and patterns',
-          },
-        ],
-        sessionStart: [
-          {
-            command:
-              'npx ruflo@latest hooks session-start --profile "${profile}"',
-            description: 'Initialize session with profile',
-          },
-        ],
-        sessionEnd: [
-          {
-            command: 'npx ruflo@latest hooks session-end --export-metrics true',
-            description: 'Export session metrics',
-          },
-        ],
-        preCompactGuidance: [
-          {
-            command:
-              'npx ruflo@latest hooks compact-guidance --preserve-critical true',
-            description: 'Guide context compaction',
-          },
-        ],
-      },
-      permissions: {
-        allowCommands: [
-          'npm run build',
-          'npm run test',
-          'npm run lint',
-          'npm run typecheck',
-          'npx ruflo.*',
-          'git status',
-          'git diff',
-          'git add',
-          'git commit',
-          'docker.*',
-          'node.*',
-          'npx.*',
-        ],
-        denyCommands: [
-          'rm -rf /',
-          'sudo rm -rf',
-          ':(){ :|:& };:',
-          'mkfs.*',
-          'dd if=/dev/zero',
-        ],
-      },
-      mcpServers: {
-        ruflo: {
-          command: 'npx',
-          args: ['ruflo@latest', 'mcp', 'start'],
-          env: {
-            RUFLO_MEMORY_BACKEND: 'sqlite',
-            RUFLO_MEMORY_PATH: '~/.claude/.ruflo/memory.db',
-            RUFLO_ENABLE_NEURAL: 'true',
-            RUFLO_ENABLE_METRICS: 'true',
-          },
-        },
-        firecrawl: {
-          command: 'npx',
-          args: ['@firecrawl/mcp-server'],
-          env: {
-            FIRECRAWL_API_KEY: '${FIRECRAWL_API_KEY}',
-          },
-        },
-        context7: {
-          command: 'npx',
-          args: ['@context7/mcp-server'],
-          env: {
-            CONTEXT7_API_KEY: '${CONTEXT7_API_KEY}',
-          },
-        },
-        playwright: {
-          command: 'npx',
-          args: ['@playwright/mcp-server'],
-          env: {
-            PLAYWRIGHT_BROWSERS_PATH: '~/.cache/ms-playwright',
-          },
-        },
-        browser: {
-          command: 'npx',
-          args: ['@browser/mcp-server'],
-          env: {
-            BROWSER_CHROME_PATH:
-              '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-          },
-        },
-        sequentialthinking: {
-          command: 'node',
-          args: [
-            '~/.npm-global/lib/node_modules/@modelcontextprotocol/server-sequentialthinking/dist/index.js',
-          ],
-        },
-        railway: {
-          command: 'npx',
-          args: ['@railway/mcp-server'],
-          env: {
-            RAILWAY_API_TOKEN: '${RAILWAY_API_TOKEN}',
-            RAILWAY_PROJECT_ID: '${RAILWAY_PROJECT_ID}',
-          },
-          description: 'Railway deployment platform monitoring and management',
-        },
-        netlify: {
-          command: 'npx',
-          args: ['@netlify/mcp'],
-          env: {
-            NETLIFY_ACCESS_TOKEN: '${NETLIFY_ACCESS_TOKEN}',
-            NETLIFY_SITE_ID: '${NETLIFY_SITE_ID}',
-          },
-          description: 'Netlify deployment and build monitoring',
-        },
-      },
-    };
-    await fs.writeFile(
-      path.join(this.claudeDir, 'settings.json'),
-      JSON.stringify(settings, null, 2)
+    // Maestro owns the global Claude config on agent machines — never clobber it.
+    if (await isMaestroManaged(this.homeDir)) {
+      logger.info(
+        'Maestro detected: it owns ~/.claude/settings.json. Skipping the global ' +
+          'settings write (deferring hooks/permissions/plugins to maestro). MCP ' +
+          'servers are still registered additively via `claude mcp add`.'
+      );
+      return;
+    }
+
+    logger.info(
+      'Configuring Claude Code settings (v2 schema, merge-preserving)...'
     );
+
+    // Valid Claude Code v2 settings. This replaces the previous malformed schema
+    // (claudeCodeOptions / hooks.preToolUse / permissions.allowCommands) that the
+    // current CLI ignored. MCP servers are registered separately by the
+    // `claude mcp add` step, not embedded here, so we never compete for this file.
+    const defaults = buildClaudeSettingsV2();
+
+    let existing: Record<string, unknown> = {};
+    try {
+      existing = JSON.parse(await fs.readFile(settingsPath, 'utf8'));
+    } catch {
+      // No existing settings.json — write fresh defaults.
+    }
+
+    // Existing on-disk values win (preserve any user customisation); the defaults
+    // only fill gaps. A timestamped backup is always kept before writing.
+    const merged = deepMerge(defaults, existing);
+    await writeJsonWithBackup(settingsPath, merged);
   }
 
   private async setupAgents(): Promise<void> {
