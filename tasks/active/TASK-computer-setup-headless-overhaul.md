@@ -94,3 +94,14 @@ stuck on Xcode during `computer-setup`. **Source of truth:** 7-agent audit (see
 ## Verification protocol per phase
 
 `pnpm --filter @wundr.io/computer-setup build` · `… typecheck` (tsc) · `… lint` · `CI=1` dry-run.
+
+## Status
+
+DONE & pushed: P1 (hang fix), P3 (maestro de-confliction), P4 (remote-setup), P6 (maestro repo),
+plus the P2 safety subset (backstop timeout + skip-logic fix) and the P5 subset
+(`dev-computer-setup.sh`; `macos.sh` fixed in P1). See
+`tasks/reviews/REVIEW-computer-setup-audit.md` for commit-by-commit detail.
+
+DEFERRED (recommended follow-up PR): the full 3→1 orchestrator consolidation and the
+`packages/setup-toolkit` deletion — no longer urgent for safety because the backstop timeout makes
+every orchestrator hang-proof.
