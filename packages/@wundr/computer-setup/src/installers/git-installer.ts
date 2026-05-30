@@ -8,6 +8,7 @@ import { execa } from 'execa';
 import * as fs from 'fs-extra';
 import which from 'which';
 
+import { installXcodeCommandLineTools as ensureXcodeCommandLineTools } from '../lib/headless';
 import { Logger } from '../utils/logger';
 
 import type { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
@@ -173,25 +174,30 @@ export class GitInstaller implements BaseInstaller {
 
   private async installOnMac(): Promise<void> {
     try {
-      // Check if Homebrew is available
+      // Prefer Homebrew when available.
       await which('brew');
-      await execa('brew', ['install', 'git']);
+      await execa('brew', ['install', 'git'], {
+        timeout: 5 * 60 * 1000,
+        stdin: 'ignore',
+      });
+      return;
     } catch {
-      // Xcode command line tools should provide git
-      try {
-        await execa('xcode-select', ['--install']);
-        this.logger.info(
-          'Xcode Command Line Tools installation initiated. Please complete the installation and run setup again.'
-        );
-      } catch (xcodeError: unknown) {
-        this.logger.error(
-          'Failed to install Xcode Command Line Tools',
-          xcodeError
-        );
-        throw new Error(
-          'Git installation failed. Please install Xcode Command Line Tools or Homebrew.'
-        );
-      }
+      // Homebrew unavailable or `brew install git` failed — fall through to the
+      // Xcode Command Line Tools, which ship git.
+    }
+
+    // Headless-safe CLT install (softwareupdate-based, bounded). This replaces
+    // the old bare `xcode-select --install` GUI trigger that hung fresh Macs.
+    try {
+      await ensureXcodeCommandLineTools({ logger: this.logger });
+    } catch (xcodeError: unknown) {
+      this.logger.error(
+        'Failed to install Xcode Command Line Tools',
+        xcodeError
+      );
+      throw new Error(
+        'Git installation failed. Install Homebrew or the Xcode Command Line Tools, then re-run setup.'
+      );
     }
   }
 

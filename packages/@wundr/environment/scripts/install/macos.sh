@@ -39,25 +39,47 @@ if [[ "$OSTYPE" != "darwin"* ]]; then
     error "This script is for macOS only"
 fi
 
-# Install Xcode Command Line Tools
+# Install Xcode Command Line Tools (headless-safe: never blocks on a prompt)
 install_xcode_tools() {
     log "Installing Xcode Command Line Tools..."
-    
-    if xcode-select --version &>/dev/null; then
+
+    if xcode-select -p &>/dev/null; then
         log "Xcode Command Line Tools already installed"
         return 0
     fi
-    
-    xcode-select --install || true
-    
-    # Wait for installation
-    log "Please complete the Xcode Command Line Tools installation when prompted"
-    read -p "Press Enter after installation completes..."
-    
-    if xcode-select --version &>/dev/null; then
+
+    # Non-interactive install via softwareupdate (no GUI dialog, no clicks).
+    local sentinel="/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
+    touch "$sentinel"
+    local label
+    label="$(softwareupdate --list 2>/dev/null \
+        | grep -E 'Command Line Tools' \
+        | sed -E 's/^[^C]*//' \
+        | sort -V \
+        | tail -n1)"
+    if [ -n "$label" ]; then
+        log "Installing \"$label\" via softwareupdate..."
+        softwareupdate --install "$label" --verbose || true
+    elif [ -t 0 ]; then
+        # Interactive console available: fall back to the GUI installer, then
+        # poll (bounded) for completion instead of waiting on a key press.
+        log "Falling back to the GUI installer (console attached)..."
+        xcode-select --install || true
+        local waited=0
+        while ! xcode-select -p &>/dev/null; do
+            sleep 5
+            waited=$((waited + 5))
+            if [ "$waited" -ge 1800 ]; then
+                break
+            fi
+        done
+    fi
+    rm -f "$sentinel"
+
+    if xcode-select -p &>/dev/null; then
         log "Xcode Command Line Tools installed successfully"
     else
-        error "Failed to install Xcode Command Line Tools"
+        error "Failed to install Xcode Command Line Tools (run 'xcode-select --install' manually, then re-run)"
     fi
 }
 
@@ -199,20 +221,27 @@ install_claude_code() {
 # Configure git
 configure_git() {
     log "Configuring Git..."
-    
-    if [[ -z "${SETUP_FULL_NAME:-}" ]]; then
+
+    # Only prompt when an interactive console is attached; otherwise require the
+    # SETUP_FULL_NAME / SETUP_EMAIL env vars so unattended runs never block.
+    if [[ -z "${SETUP_FULL_NAME:-}" && -t 0 ]]; then
         read -p "Enter your full name for Git: " SETUP_FULL_NAME
     fi
-    
-    if [[ -z "${SETUP_EMAIL:-}" ]]; then
+
+    if [[ -z "${SETUP_EMAIL:-}" && -t 0 ]]; then
         read -p "Enter your email for Git: " SETUP_EMAIL
     fi
-    
-    git config --global user.name "$SETUP_FULL_NAME"
-    git config --global user.email "$SETUP_EMAIL"
+
+    if [[ -z "${SETUP_FULL_NAME:-}" || -z "${SETUP_EMAIL:-}" ]]; then
+        warning "Skipping git identity config (set SETUP_FULL_NAME and SETUP_EMAIL to configure non-interactively)"
+    else
+        git config --global user.name "$SETUP_FULL_NAME"
+        git config --global user.email "$SETUP_EMAIL"
+    fi
+
     git config --global init.defaultBranch main
     git config --global pull.rebase false
-    
+
     log "Git configured"
 }
 

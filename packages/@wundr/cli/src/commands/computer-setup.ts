@@ -38,6 +38,14 @@ export function createComputerSetupCommand(): Command {
     .option('--parallel', 'Install tools in parallel where possible')
     .option('--verbose', 'Show detailed output')
     .option('--report', 'Generate a detailed setup report')
+    .option(
+      '-y, --yes',
+      'Skip confirmation prompts (assume yes) — implied on non-TTY/CI runs'
+    )
+    .option(
+      '--non-interactive',
+      'Run fully unattended with no prompts (for headless / MDM provisioning)'
+    )
     .action(async options => {
       await runComputerSetup(options);
     });
@@ -125,8 +133,17 @@ async function runComputerSetup(options: any): Promise<void> {
       );
     }
 
-    // Confirm before proceeding
-    if (options.mode === 'interactive' && !options.dryRun) {
+    // A confirmation prompt must never block an unattended run. Skip it on
+    // non-TTY/CI machines, in non-interactive modes, or when --yes is passed.
+    const nonInteractive =
+      Boolean(options.yes) ||
+      Boolean(options.nonInteractive) ||
+      options.mode !== 'interactive' ||
+      !process.stdin.isTTY ||
+      Boolean(process.env.CI);
+
+    // Confirm before proceeding (only in a real interactive session).
+    if (!options.dryRun && !nonInteractive) {
       const { proceed } = await inquirer.prompt([
         {
           type: 'confirm',

@@ -8,6 +8,7 @@ import { execa } from 'execa';
 import * as fs from 'fs-extra';
 import which from 'which';
 
+import { runShellScript } from '../lib/headless';
 import { Logger } from '../utils/logger';
 
 import type { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
@@ -193,10 +194,10 @@ export class NodeInstaller implements BaseInstaller {
     }
 
     try {
-      // Install NVM
+      // Install NVM (non-interactive, detached stdin, bounded timeout).
       const installScript =
         'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash';
-      await execa('bash', ['-c', installScript], { stdio: 'inherit' });
+      await runShellScript(installScript, { timeout: 5 * 60 * 1000 });
 
       // Setup environment for current session
       process.env.NVM_DIR = nvmDir;
@@ -307,11 +308,10 @@ export class NodeInstaller implements BaseInstaller {
     }
 
     try {
-      // Use the official pnpm installation script
-      await execa('bash', [
-        '-c',
-        'curl -fsSL https://get.pnpm.io/install.sh | sh -',
-      ]);
+      // Use the official pnpm installation script (non-interactive, bounded).
+      await runShellScript('curl -fsSL https://get.pnpm.io/install.sh | sh -', {
+        timeout: 5 * 60 * 1000,
+      });
 
       // Setup environment
       const pnpmHome = path.join(os.homedir(), '.local', 'share', 'pnpm');

@@ -8,6 +8,7 @@ import * as path from 'path';
 import { execa } from 'execa';
 import which from 'which';
 
+import { runShellScript } from '../lib/headless';
 import { Logger } from '../utils/logger';
 
 import type { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
@@ -132,9 +133,11 @@ export class HomebrewInstaller implements BaseInstaller {
       'https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh';
 
     try {
-      // Download and run the Homebrew installation script
-      await execa('/bin/bash', ['-c', `curl -fsSL ${installScript} | bash`], {
-        stdio: 'inherit',
+      // Download and run the Homebrew installer. NONINTERACTIVE=1 (set by
+      // runShellScript) suppresses the "Press RETURN" prompt; stdin is detached
+      // and a hard timeout prevents an indefinite hang on a headless machine.
+      await runShellScript(`curl -fsSL ${installScript} | bash`, {
+        timeout: 15 * 60 * 1000,
       });
 
       // Setup PATH for current session
@@ -184,10 +187,17 @@ export class HomebrewInstaller implements BaseInstaller {
   private async updateHomebrew(): Promise<void> {
     try {
       logger.info('Updating Homebrew...');
-      await execa('brew', ['update'], { stdio: 'inherit' });
+      await execa('brew', ['update'], {
+        stdin: 'ignore',
+        timeout: 10 * 60 * 1000,
+        env: { ...process.env, HOMEBREW_NO_AUTO_UPDATE: '1' },
+      });
 
       logger.info('Upgrading installed packages...');
-      await execa('brew', ['upgrade'], { stdio: 'inherit' });
+      await execa('brew', ['upgrade'], {
+        stdin: 'ignore',
+        timeout: 15 * 60 * 1000,
+      });
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);

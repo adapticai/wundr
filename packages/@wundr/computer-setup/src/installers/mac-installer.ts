@@ -8,6 +8,12 @@ import { execa } from 'execa';
 import * as fs from 'fs-extra';
 import which from 'which';
 
+import {
+  installXcodeCommandLineTools as ensureXcodeCommandLineTools,
+  isInteractive,
+  nonInteractiveEnv,
+  runShellScript,
+} from '../lib/headless';
 import { Logger } from '../utils/logger';
 
 import type { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
@@ -158,54 +164,39 @@ export class MacInstaller implements BaseInstaller {
   }
 
   private async installXcodeCommandLineTools(): Promise<void> {
-    try {
-      // Check if already installed
-      await execa('xcode-select', ['-p']);
-      this.logger.info('Xcode Command Line Tools already installed');
-    } catch {
-      // Install Command Line Tools
-      this.logger.info('Installing Xcode Command Line Tools...');
-      await execa('xcode-select', ['--install']);
-
-      // Wait for installation to complete
-      this.logger.info(
-        'Please complete the Xcode Command Line Tools installation in the popup dialog.'
-      );
-      this.logger.info(
-        'The setup will continue once installation is complete...'
-      );
-
-      // Poll until installation is complete
-      let installed = false;
-      while (!installed) {
-        try {
-          await execa('xcode-select', ['-p']);
-          installed = true;
-        } catch {
-          await new Promise(resolve => setTimeout(resolve, 5000));
-        }
-      }
-    }
+    // Headless-safe install: softwareupdate-based, bounded timeout, GUI fallback
+    // only when a real console is attached. See lib/headless.ts.
+    await ensureXcodeCommandLineTools({ logger: this.logger });
   }
 
   private async installHomebrew(): Promise<void> {
     try {
       await which('brew');
       this.logger.info('Homebrew already installed');
+      return;
     } catch {
-      this.logger.info('Installing Homebrew...');
-      const installScript =
-        '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"';
-      await execa('bash', ['-c', installScript]);
-
-      // Add Homebrew to PATH for Apple Silicon Macs
-      const homebrewPath =
-        process.arch === 'arm64' ? '/opt/homebrew/bin' : '/usr/local/bin';
-      const currentPath = process.env.PATH || '';
-      if (!currentPath.includes(homebrewPath)) {
-        process.env.PATH = `${homebrewPath}:${currentPath}`;
-      }
+      // not installed yet
     }
+
+    this.logger.info('Installing Homebrew...');
+    // NONINTERACTIVE=1 (set by nonInteractiveEnv) prevents the "Press RETURN"
+    // prompt; stdin is detached and a hard timeout prevents an indefinite hang.
+    await runShellScript(
+      '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"',
+      { timeout: 15 * 60 * 1000 }
+    );
+
+    // Put brew on PATH for the remainder of this process so the very next
+    // `brew install` resolves on a fresh Apple Silicon machine.
+    const brewPrefix = (await fs.pathExists('/opt/homebrew/bin/brew'))
+      ? '/opt/homebrew'
+      : '/usr/local';
+    const brewBin = `${brewPrefix}/bin`;
+    if (!(process.env.PATH || '').includes(brewBin)) {
+      process.env.PATH = `${brewBin}:${brewPrefix}/sbin:${process.env.PATH || ''}`;
+    }
+    process.env.HOMEBREW_PREFIX = brewPrefix;
+    process.env.HOMEBREW_NO_ANALYTICS = '1';
   }
 
   private async installEssentialPackages(
@@ -235,10 +226,21 @@ export class MacInstaller implements BaseInstaller {
       essentialPackages.push('fish');
     }
 
-    // Install packages
+    // Install packages (idempotent + bounded so a stalled formula can't hang).
     for (const pkg of essentialPackages) {
       try {
-        await execa('brew', ['install', pkg]);
+        const existing = await execa('brew', ['list', '--formula', pkg], {
+          timeout: 30_000,
+          reject: false,
+        });
+        if (existing.exitCode === 0) {
+          continue;
+        }
+        await execa('brew', ['install', pkg], {
+          timeout: 5 * 60 * 1000,
+          stdin: 'ignore',
+          env: nonInteractiveEnv(),
+        });
       } catch (error: unknown) {
         const errorMessage =
           error instanceof Error ? error.message : String(error);
@@ -429,7 +431,7 @@ export class MacInstaller implements BaseInstaller {
 
     for (const cmd of commands) {
       try {
-        await execa('bash', ['-c', cmd]);
+        await execa('bash', ['-c', cmd], { timeout: 30_000, stdin: 'ignore' });
       } catch (error: unknown) {
         const errorMessage =
           error instanceof Error ? error.message : String(error);
@@ -437,9 +439,14 @@ export class MacInstaller implements BaseInstaller {
       }
     }
 
-    // Restart affected services
-    await execa('killall', ['Finder']);
-    await execa('killall', ['Dock']);
+    // Restart affected services (best-effort; not running on a headless machine).
+    for (const service of ['Finder', 'Dock']) {
+      try {
+        await execa('killall', [service], { timeout: 10_000 });
+      } catch {
+        // Service not running (e.g. headless) — safe to ignore.
+      }
+    }
   }
 
   private async configureShell(profile: DeveloperProfile): Promise<void> {
@@ -462,12 +469,14 @@ export class MacInstaller implements BaseInstaller {
     const homeDir = os.homedir();
     const zshrcPath = path.join(homeDir, '.zshrc');
 
-    // Install Oh My Zsh if not present
+    // Install Oh My Zsh if not present (non-interactive: RUNZSH/CHSH/KEEP_ZSHRC
+    // set by nonInteractiveEnv so it neither launches zsh nor overwrites .zshrc).
     const ohmyzshDir = path.join(homeDir, '.oh-my-zsh');
     if (!(await fs.pathExists(ohmyzshDir))) {
-      const installScript =
-        'sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"';
-      await execa('bash', ['-c', installScript]);
+      await runShellScript(
+        'sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"',
+        { timeout: 10 * 60 * 1000 }
+      );
     }
 
     // Configure .zshrc
@@ -506,10 +515,14 @@ function cleanup() {
 }
 `;
 
-    await fs.writeFile(zshrcPath, zshrcContent.trim());
+    await this.writeManagedBlock(
+      zshrcPath,
+      'wundr-computer-setup',
+      zshrcContent
+    );
 
-    // Set zsh as default shell
-    await execa('chsh', ['-s', '/bin/zsh']);
+    // Set zsh as default shell (only when interactive: chsh prompts for a password).
+    await this.setDefaultShell('/bin/zsh');
   }
 
   private async configureFish(_profile: DeveloperProfile): Promise<void> {
@@ -537,10 +550,19 @@ function cleanup
 end
 `;
 
-    await fs.writeFile(configPath, fishConfig.trim());
+    await this.writeManagedBlock(
+      configPath,
+      'wundr-computer-setup',
+      fishConfig
+    );
 
-    // Set fish as default shell
-    await execa('chsh', ['-s', '/opt/homebrew/bin/fish']);
+    // Set fish as default shell (only when interactive + the binary exists).
+    const fishPath = (await fs.pathExists('/opt/homebrew/bin/fish'))
+      ? '/opt/homebrew/bin/fish'
+      : '/usr/local/bin/fish';
+    if (await fs.pathExists(fishPath)) {
+      await this.setDefaultShell(fishPath);
+    }
   }
 
   private async configureBash(_profile: DeveloperProfile): Promise<void> {
@@ -570,7 +592,11 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
 `;
 
-    await fs.writeFile(bashrcPath, bashrcContent.trim());
+    await this.writeManagedBlock(
+      bashrcPath,
+      'wundr-computer-setup',
+      bashrcContent
+    );
 
     // Source in .bash_profile
     const bashProfilePath = path.join(os.homedir(), '.bash_profile');
@@ -580,7 +606,11 @@ if [ -f ~/.bashrc ]; then
 fi
 `;
 
-    await fs.writeFile(bashProfilePath, bashProfileContent.trim());
+    await this.writeManagedBlock(
+      bashProfilePath,
+      'wundr-computer-setup-bashrc',
+      bashProfileContent
+    );
   }
 
   private async setupDotfiles(_profile: DeveloperProfile): Promise<void> {
@@ -614,6 +644,62 @@ node_modules/
       'core.excludesfile',
       gitignoreGlobal,
     ]);
+  }
+
+  /**
+   * Idempotently write a marker-delimited block into a shell rc file. Existing
+   * user content is preserved; re-running setup replaces only the managed block
+   * (never the whole file), so dotfiles are never clobbered or duplicated.
+   */
+  private async writeManagedBlock(
+    filePath: string,
+    marker: string,
+    body: string
+  ): Promise<void> {
+    const begin = `# >>> ${marker} >>>`;
+    const end = `# <<< ${marker} <<<`;
+    const block = `${begin}\n${body.trim()}\n${end}\n`;
+
+    let existing = '';
+    if (await fs.pathExists(filePath)) {
+      existing = await fs.readFile(filePath, 'utf8');
+    }
+
+    if (existing.includes(begin) && existing.includes(end)) {
+      const escape = (value: string): string =>
+        value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const pattern = new RegExp(
+        `${escape(begin)}[\\s\\S]*?${escape(end)}\\n?`
+      );
+      await fs.writeFile(filePath, existing.replace(pattern, block));
+      return;
+    }
+
+    const separator =
+      existing.length > 0 && !existing.endsWith('\n') ? '\n' : '';
+    await fs.writeFile(filePath, `${existing}${separator}${block}`);
+  }
+
+  /**
+   * Set the login shell, but only when a real console is attached — `chsh`
+   * prompts for the user's password and would otherwise hang an unattended run.
+   */
+  private async setDefaultShell(shellPath: string): Promise<void> {
+    if (!isInteractive()) {
+      this.logger.info(
+        `Skipping default-shell change to ${shellPath} (no interactive console; chsh would prompt for a password).`
+      );
+      return;
+    }
+    try {
+      await execa('chsh', ['-s', shellPath], { timeout: 30_000 });
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      this.logger.warn(
+        `Could not set ${shellPath} as the default shell: ${errorMessage}`
+      );
+    }
   }
 
   // Validation methods
