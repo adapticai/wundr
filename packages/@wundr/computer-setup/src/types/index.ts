@@ -53,6 +53,32 @@ export interface DeveloperProfile {
     monitoring?: MonitoringTools;
     communication?: CommunicationTools;
   };
+  /** Remote-access provisioning (Tailscale, SSH, power management, desktop sharing). */
+  remoteAccess?: RemoteAccessConfig;
+}
+
+/**
+ * Remote-access provisioning options. Remote access runs as a standard phase of
+ * setup; `host` mode (headless mini accepting connections) and `master` mode
+ * (laptop connecting out) are auto-detected when `mode` is omitted.
+ */
+export interface RemoteAccessConfig {
+  /** Defaults to true. Set false (or pass `--no-remote-access`) to skip. */
+  enabled?: boolean;
+  /** Auto-detected from the environment when omitted. */
+  mode?: 'host' | 'master';
+  /** Desktop-sharing stack used in host mode (interactive grant required). */
+  stack?: 'parsec' | 'rustdesk';
+  /** Tailscale auth key for unattended join (else read from TAILSCALE_AUTH_KEY). */
+  tailscaleAuthKey?: string;
+  /** Tailscale ACL tags, e.g. "tag:remote,tag:studio". */
+  tailscaleTags?: string;
+  /** Device hostname for Tailscale (defaults to the system hostname). */
+  deviceName?: string;
+  /** host mode: prevent system sleep (default true). */
+  preventSleep?: boolean;
+  /** host mode: display-sleep timeout in minutes (default 10). */
+  displaySleepMinutes?: number;
 }
 
 export interface ProfilePreferences {

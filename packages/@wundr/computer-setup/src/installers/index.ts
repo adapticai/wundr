@@ -10,6 +10,7 @@ import { MacInstaller } from './mac-installer';
 import { NodeInstaller } from './node-installer';
 import { PythonInstaller } from './python-installer';
 import { OrchestratorDaemonInstaller } from './orchestrator-daemon-installer';
+import { RemoteAccessInstaller } from './remote-access-installer';
 import { ResourceManagerInstaller } from './resource-manager-installer';
 import { WindowsInstaller } from './windows-installer';
 
@@ -72,6 +73,12 @@ export class InstallerRegistry {
     // Resource Manager (session pooling, worktree isolation, daemon services)
     if (['darwin', 'linux'].includes(this.platform.os)) {
       this.register('resource-manager', new ResourceManagerInstaller());
+    }
+
+    // Remote access (Tailscale + SSH + power mgmt + desktop sharing) — macOS only.
+    // Runs as a standard, non-required phase; gated by profile.remoteAccess.enabled.
+    if (this.platform.os === 'darwin') {
+      this.register('remote-access', new RemoteAccessInstaller());
     }
   }
 

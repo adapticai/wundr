@@ -46,6 +46,10 @@ export function createComputerSetupCommand(): Command {
       '--non-interactive',
       'Run fully unattended with no prompts (for headless / MDM provisioning)'
     )
+    .option(
+      '--no-remote-access',
+      'Skip remote-access provisioning (Tailscale, SSH, power management, desktop sharing)'
+    )
     .action(async options => {
       await runComputerSetup(options);
     });
@@ -107,6 +111,14 @@ async function runComputerSetup(options: any): Promise<void> {
       profile = await createInteractiveProfile();
     } else {
       profile = await manager.getDefaultProfile();
+    }
+
+    // commander sets options.remoteAccess === false for --no-remote-access.
+    if (profile && options.remoteAccess === false) {
+      profile.remoteAccess = {
+        ...(profile.remoteAccess ?? {}),
+        enabled: false,
+      };
     }
 
     // Detect platform
