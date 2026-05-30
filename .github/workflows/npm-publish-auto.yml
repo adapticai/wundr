@@ -242,7 +242,7 @@ jobs:
           npm pack --dry-run
 
           # Publish with dev tag for auto-publishes
-          npm publish --access public --tag dev
+          npm publish --access public --tag dev --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
