@@ -483,6 +483,35 @@ export class ComputerSetupManager extends EventEmitter {
   }
 
   /**
+   * Race a step's installer against a backstop timeout so a regressed/blocking
+   * installer can never hang the entire setup. Rejects with a clear error on
+   * timeout (the caller treats it like any other step failure).
+   */
+  private async withBackstopTimeout<T>(
+    work: Promise<T>,
+    timeoutMs: number,
+    label: string
+  ): Promise<T> {
+    let timer: NodeJS.Timeout | undefined;
+    const timeout = new Promise<never>((_resolve, reject) => {
+      timer = setTimeout(() => {
+        reject(
+          new Error(
+            `Step "${label}" exceeded its ${Math.round(
+              timeoutMs / 60000
+            )} min backstop timeout and was aborted.`
+          )
+        );
+      }, timeoutMs);
+    });
+    try {
+      return await Promise.race([work, timeout]);
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  }
+
+  /**
    * Execute a single setup step
    */
   private async executeStep(
@@ -492,18 +521,26 @@ export class ComputerSetupManager extends EventEmitter {
     logger.info(`Executing step: ${step.name}`);
     this.progress.logs.push(`Starting: ${step.name}`);
 
-    // Validate prerequisites
-    if (step.validator) {
-      const isValid = await step.validator();
-      if (!isValid && options.skipExisting) {
+    // Skip when the validator reports the tool is ALREADY present and the caller
+    // asked to skip existing installs. (Previously inverted: it skipped tools
+    // that were NOT installed and re-ran already-installed ones.)
+    if (step.validator && options.skipExisting) {
+      const alreadyInstalled = await step.validator();
+      if (alreadyInstalled) {
         logger.info(`Skipping ${step.name} - already configured`);
         return;
       }
     }
 
-    // Execute installation
+    // Execute installation behind a generous backstop timeout so a regressed
+    // installer can never hang the whole run forever (defense in depth: each
+    // installer already enforces its own finer-grained timeouts).
+    const backstopMs = Math.max(
+      (step.estimatedTime || 300) * 1000 * 4,
+      45 * 60 * 1000
+    );
     try {
-      await step.installer();
+      await this.withBackstopTimeout(step.installer(), backstopMs, step.name);
       this.progress.logs.push(`Completed: ${step.name}`);
       logger.info(`Step completed: ${step.name}`);
     } catch (error) {

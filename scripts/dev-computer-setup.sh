@@ -3,6 +3,8 @@
 # Dev Computer Setup Runner
 # Run computer setup in dry-run mode for testing
 
+set -euo pipefail
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -27,7 +29,7 @@ INTERACTIVE=""
 while [[ $# -gt 0 ]]; do
     case $1 in
         --profile)
-            PROFILE="--profile $2"
+            PROFILE="--profile ${2:?--profile requires a value}"
             shift 2
             ;;
         --no-dry-run)
@@ -77,13 +79,18 @@ if [ -z "$PROFILE" ] && [ -z "$INTERACTIVE" ]; then
     echo "  ./scripts/dev-computer-setup.sh --no-dry-run --profile backend"
     echo ""
     
-    # Ask if they want interactive mode
-    read -p "Run interactive setup? (y/n): " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        INTERACTIVE="--interactive"
+    # Ask if they want interactive mode — only when a console is attached, so
+    # CI / piped runs never block on (or silently no-op from) the prompt.
+    if [ -t 0 ]; then
+        read -p "Run interactive setup? (y/n): " -n 1 -r
+        echo
+        if [[ ${REPLY:-} =~ ^[Yy]$ ]]; then
+            INTERACTIVE="--interactive"
+        else
+            exit 0
+        fi
     else
-        exit 0
+        echo -e "${YELLOW}No TTY detected — proceeding with the default profile.${NC}"
     fi
 fi
 
