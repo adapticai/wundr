@@ -209,6 +209,17 @@ jobs:
         # their own tsc step if the client is genuinely missing.
         run: pnpm --filter @neolith/database exec prisma generate || echo "::warning::prisma generate failed (affects only neolith packages)"
 
+      - name: 🏗️ Pre-build @wundr.io/computer-setup (workspace links intact)
+        # Build computer-setup and its workspace deps BEFORE the artifact
+        # download converts workspace:* deps to fixed versions (which drops
+        # them from pnpm's `...` closure). The CLI resolves computer-setup's
+        # real types via tsconfig paths -> ../computer-setup/dist, so that dist
+        # must exist; the build artifact does not carry it. Runs with the
+        # workspace symlinks still intact so the closure resolves. The download
+        # below only overwrites package.json (no computer-setup dist in it), so
+        # this emitted dist survives. Non-blocking for jobs that don't need it.
+        run: pnpm --filter "@wundr.io/computer-setup..." run build || echo "::warning::computer-setup pre-build skipped"
+
       - name: 📥 Download build artifacts
         uses: actions/download-artifact@v4
         with:
@@ -264,6 +275,14 @@ jobs:
           PACKAGE_NAME="${{ steps.find-package.outputs.name }}"
           VERSION="${{ needs.prepare-release.outputs.version }}"
           echo "Publishing $PACKAGE_NAME@$VERSION from $(pwd)"
+
+          # Idempotent: skip if this exact version is already on the registry.
+          # A prior partial run can leave some packages ahead of others, and
+          # republishing an existing version returns 403/409. Treat as success.
+          if npm view "$PACKAGE_NAME@$VERSION" version >/dev/null 2>&1; then
+            echo "✅ $PACKAGE_NAME@$VERSION already published; skipping."
+            exit 0
+          fi
 
           # Show what will be published
           npm pack --dry-run
