@@ -23,6 +23,8 @@
     "noPropertyAccessFromIndexSignature": false,
     "baseUrl": ".",
     "paths": {
+      "@wundr.io/computer-setup": ["../computer-setup/dist/index"],
+      "@wundr.io/computer-setup/*": ["../computer-setup/dist/*"],
       "@wundr.io/governance": ["../governance/dist/index"],
       "@wundr.io/governance/*": ["../governance/dist/*"],
       "@wundr.io/guardian-dashboard": ["../guardian-dashboard/dist/index"],
