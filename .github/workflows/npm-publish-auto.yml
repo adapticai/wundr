@@ -201,6 +201,14 @@ jobs:
         # tsconfig options (downlevelIteration / moduleResolution / baseUrl).
         run: pnpm install --frozen-lockfile --ignore-scripts
 
+      - name: 🔧 Generate Prisma client
+        # @neolith/database ships a generated Prisma client (its postinstall
+        # `prisma generate` is skipped by --ignore-scripts above). Required so
+        # it and its dependents (e.g. @neolith/core) type-check and emit dist.
+        # Non-blocking: only neolith packages need it, and they fail loudly at
+        # their own tsc step if the client is genuinely missing.
+        run: pnpm --filter @neolith/database exec prisma generate || echo "::warning::prisma generate failed (affects only neolith packages)"
+
       - name: 📥 Download build artifacts
         uses: actions/download-artifact@v4
         with:
