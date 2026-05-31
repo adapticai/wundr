@@ -1,4 +1,4 @@
-name: 📦 Auto Publish to NPM
+name: 📦 Auto Publish to NPM (stable latest)
 
 on:
   push:
@@ -90,16 +90,14 @@ jobs:
       - name: 📋 Determine version
         id: version
         run: |
-          # Get current version and add commit SHA for uniqueness
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          COMMIT_SHA=$(git rev-parse --short HEAD)
-          DATE_STAMP=$(date +%Y%m%d%H%M%S)
-
-          # Create pre-release version: 1.0.0-dev.20231121123045.abc123
-          NEW_VERSION="$CURRENT_VERSION-dev.$DATE_STAMP.$COMMIT_SHA"
+          # Auto-increment the patch from the current published `latest` of the
+          # flagship package, so every merge publishes a fresh, monotonic stable
+          # version with no commit-back and no version collisions.
+          CURRENT_LATEST=$(npm view @wundr.io/cli version 2>/dev/null || node -p "require('./package.json').version")
+          NEW_VERSION=$(npx --yes semver -i patch "$CURRENT_LATEST")
 
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "Publishing version: $NEW_VERSION"
+          echo "Publishing stable version: $NEW_VERSION (next patch after latest $CURRENT_LATEST)"
 
       - name: 📦 List publishable packages
         id: packages
@@ -244,7 +242,7 @@ jobs:
           # Publish with dev tag, retrying transient registry errors (E409)
           published=false
           for attempt in 1 2 3; do
-            if npm publish --access public --tag dev --ignore-scripts; then
+            if npm publish --access public --ignore-scripts; then
               published=true
               break
             fi
