@@ -243,6 +243,14 @@ jobs:
           cd "${{ steps.find-package.outputs.dir }}"
           npm pkg set version="${{ needs.prepare-release.outputs.version }}"
 
+      - name: 🏗️ Pre-build neolith database dependency
+        # @neolith/database is not carried in the build artifact (its tsc needs
+        # the generated Prisma client) and the version-bumped package.json drops
+        # it from the workspace `...` closure (version mismatch). Build it
+        # explicitly by name so dependents like @neolith/core resolve its
+        # emitted types via the node_modules symlink. No-op for non-neolith pkgs.
+        run: pnpm --filter @neolith/database run build || echo "::warning::neolith database pre-build skipped"
+
       - name: 🏗️ Build package (emit dist)
         # Emit compiled dist for this package and its workspace deps. Runs after
         # `pnpm install` above so `tsc` resolves to the workspace's typescript
