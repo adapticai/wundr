@@ -228,6 +228,12 @@ jobs:
           cd "${{ steps.find-package.outputs.dir }}"
           npm pkg set version="${{ needs.prepare-release.outputs.version }}"
 
+      - name: 🏗️ Build package (emit dist)
+        # Emit compiled dist for this package and its workspace deps. The CI
+        # `turbo build` only runs `tsc --noEmit` (typecheck), so dist was never
+        # produced; build the package's own emitting `tsc` here before publish.
+        run: pnpm --filter "${{ matrix.package }}..." run build
+
       - name: 📡 Publish to NPM
         run: |
           cd "${{ steps.find-package.outputs.dir }}"
