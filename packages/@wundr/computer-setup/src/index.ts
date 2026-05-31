@@ -57,9 +57,11 @@ export type { SecuritySetupResult } from './security-setup';
 // The single setup orchestrator.
 export { ComputerSetupManager } from './manager';
 
-// NOTE: privilege helpers (isRoot / dropPrivilegesIfRoot, in ./lib/privileges)
-// are intentionally NOT re-exported here. This package's barrel cannot reliably
-// surface named re-exports to consumers under classic `node` module resolution
-// (a long-standing version-collision quirk with the published copy), so the CLI
-// carries its own root-drop guard. The helpers remain internal — used by the
-// manager and the installer root guards.
+// Privilege helpers — used by the CLI to drop root (sudo) before any install,
+// and by the manager / installer guards internally.
+export {
+  isRoot,
+  resolveInvokingUser,
+  dropPrivilegesIfRoot,
+} from './lib/privileges';
+export type { InvokingUser } from './lib/privileges';

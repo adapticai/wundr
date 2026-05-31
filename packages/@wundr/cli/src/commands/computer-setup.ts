@@ -3,9 +3,10 @@
  * Integrates new-starter functionality into the unified wundr CLI
  */
 
-import { execFileSync } from 'child_process';
-
-import { ComputerSetupManager } from '@wundr.io/computer-setup';
+import {
+  ComputerSetupManager,
+  dropPrivilegesIfRoot,
+} from '@wundr.io/computer-setup';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import * as fs from 'fs/promises';
@@ -15,102 +16,6 @@ import ora from 'ora';
 import * as path from 'path';
 // import { getLogger } from '@wundr/core';
 const logger = { info: console.log, error: console.error, warn: console.warn };
-
-/**
- * Drop root privileges before computer-setup touches anything.
- *
- * computer-setup configures the *invoking user's* environment (Homebrew, nvm,
- * npm globals, shell profiles) and must never run as root: Homebrew refuses
- * EUID 0 outright ("Don't run this as root!"), and anything that did run would
- * scatter root-owned files through /var/root and the user's home.
- *
- * When launched via `sudo`, drop back to the invoking user ($SUDO_USER); when
- * run as a bare root login with no recoverable user, exit with guidance. No-op
- * when already non-root.
- *
- * This lives in the CLI (rather than importing from @wundr.io/computer-setup)
- * because that package's barrel cannot reliably re-export named symbols under
- * classic `node` module resolution. The logic is mirrored by an internal copy
- * the manager/installers use as defense in depth.
- */
-function dropRootOrExit(): void {
-  const isRoot = (process.getuid?.() ?? -1) === 0;
-  if (!isRoot) return;
-
-  const sudoUser = process.env.SUDO_USER;
-  const refuse = (): never => {
-    console.error(
-      chalk.red('\n✖ computer-setup must not be run as root.\n') +
-        chalk.white(
-          'Homebrew and other per-user tools refuse to run as root, and a root run\n' +
-            'would create root-owned files under /var/root and in your home directory.\n'
-        ) +
-        chalk.cyan(
-          '\nRe-run as a normal admin user WITHOUT sudo:\n    wundr computer-setup ...\n'
-        ) +
-        chalk.gray(
-          "(It uses 'sudo' only for the few steps that genuinely need elevation.)\n"
-        )
-    );
-    process.exit(1);
-  };
-
-  if (!sudoUser || sudoUser === 'root') refuse();
-
-  try {
-    const uid = Number(
-      execFileSync('id', ['-u', sudoUser as string], {
-        encoding: 'utf8',
-      }).trim()
-    );
-    const gid = Number(
-      execFileSync('id', ['-g', sudoUser as string], {
-        encoding: 'utf8',
-      }).trim()
-    );
-    if (!Number.isInteger(uid) || !Number.isInteger(gid)) refuse();
-
-    let home = '';
-    if (process.platform === 'darwin') {
-      try {
-        const out = execFileSync(
-          'dscl',
-          ['.', '-read', `/Users/${sudoUser}`, 'NFSHomeDirectory'],
-          { encoding: 'utf8' }
-        );
-        home = (out.match(/NFSHomeDirectory:\s*(\S+)/)?.[1] ?? '').trim();
-      } catch {
-        /* fall through to default below */
-      }
-    }
-    if (!home) {
-      home =
-        process.platform === 'darwin'
-          ? `/Users/${sudoUser}`
-          : `/home/${sudoUser}`;
-    }
-
-    // Order matters: shed supplementary groups and the gid BEFORE the uid.
-    try {
-      process.setgroups?.([gid]);
-    } catch {
-      /* best-effort */
-    }
-    process.setgid?.(gid);
-    process.setuid?.(uid);
-    process.env.HOME = home;
-    process.env.USER = sudoUser as string;
-    process.env.LOGNAME = sudoUser as string;
-    console.log(
-      chalk.gray(
-        `Detected root (via sudo); dropped privileges to ${sudoUser}. ` +
-          'User-level installs will run as that user, not root.'
-      )
-    );
-  } catch {
-    refuse();
-  }
-}
 
 // const logger = getLogger('cli:computer-setup');
 
@@ -194,10 +99,17 @@ export function createComputerSetupCommand(): Command {
 }
 
 export async function runComputerSetup(options: any): Promise<void> {
-  // Never run as root: drop to the invoking sudo user, or exit with guidance.
-  // Done before ANY file I/O (manager construction/init, profile reads) so
-  // nothing is ever created root-owned.
-  dropRootOrExit();
+  // Never run as root: computer-setup configures the invoking user's own
+  // environment (Homebrew, nvm, npm, shell profiles); Homebrew refuses EUID 0
+  // and a root run litters the user's home with root-owned files. If launched
+  // via sudo, drop back to the invoking user; if run as a bare root login,
+  // exit with guidance. Done before ANY file I/O (manager init, profile reads).
+  try {
+    dropPrivilegesIfRoot({ info: (m: string) => console.log(chalk.gray(m)) });
+  } catch (err) {
+    console.error(chalk.red(`\n✖ ${(err as Error).message}\n`));
+    process.exit(1);
+  }
 
   const spinner = ora('Initializing computer setup...').start();
 

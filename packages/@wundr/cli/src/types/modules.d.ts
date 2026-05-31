@@ -7,108 +7,14 @@
  * When the real packages are built and resolvable, TypeScript will prefer
  * their actual declarations over these ambient ones.
  */
-
 // ---------------------------------------------------------------------------
 // @wundr.io/computer-setup
 // ---------------------------------------------------------------------------
-
-declare module '@wundr.io/computer-setup' {
-  import { EventEmitter } from 'events';
-
-  export interface DeveloperProfile {
-    name: string;
-    email?: string;
-    role: string;
-    team?: string;
-    company?: string;
-    preferences?: ProfilePreferences;
-    languages?: Record<string, boolean>;
-    frameworks?: Record<string, boolean>;
-    tools: {
-      packageManagers?: Record<string, boolean>;
-      containers?: Record<string, boolean>;
-      editors?: Record<string, boolean>;
-      databases?: Record<string, boolean>;
-      cloud?: Record<string, boolean>;
-      ci?: Record<string, boolean>;
-      languages?: Record<string, boolean>;
-      cloudCLIs?: Record<string, boolean>;
-      monitoring?: Record<string, boolean>;
-      communication?: Record<string, boolean>;
-    };
-  }
-
-  export interface ProfilePreferences {
-    shell: 'bash' | 'zsh' | 'fish';
-    editor: 'vscode' | 'vim' | 'neovim' | 'sublime' | 'intellij';
-    theme: 'dark' | 'light' | 'auto';
-    gitConfig: {
-      userName: string;
-      userEmail: string;
-      signCommits: boolean;
-      gpgKey?: string;
-      sshKey?: string;
-      defaultBranch: string;
-      aliases: Record<string, string>;
-    };
-    aiTools: {
-      claudeCode: boolean;
-      ruflo: boolean;
-      mcpTools: string[];
-      swarmAgents: string[];
-    };
-  }
-
-  export interface SetupPlatform {
-    os: 'darwin' | 'linux' | 'win32';
-    arch: 'x64' | 'arm64';
-    distro?: string;
-    version?: string;
-    node?: string;
-    shell?: string;
-  }
-
-  export interface SetupResult {
-    success: boolean;
-    completedSteps: string[];
-    failedSteps: string[];
-    skippedSteps: string[];
-    warnings: string[];
-    errors: Error[];
-    duration: number;
-    report?: any;
-  }
-
-  export interface SetupProgress {
-    totalSteps: number;
-    completedSteps: number;
-    currentStep: string;
-    percentage: number;
-    estimatedTimeRemaining: number;
-    logs: string[];
-  }
-
-  export interface SetupProfile {
-    name: string;
-    description: string;
-    estimatedTimeMinutes: number;
-    [key: string]: any;
-  }
-
-  // ComputerSetupManager is the single setup orchestrator. (RealSetupOrchestrator
-  // and SetupOrchestrator were retired during the orchestrator consolidation.)
-  export class ComputerSetupManager extends EventEmitter {
-    static getInstance(): ComputerSetupManager;
-    initialize(): Promise<void>;
-    validateSetup(profile?: any): Promise<boolean>;
-    cleanup(): Promise<void>;
-    getProfile(name: string): Promise<DeveloperProfile>;
-    getDefaultProfile(): Promise<DeveloperProfile>;
-    getAvailableProfiles(): Promise<DeveloperProfile[]>;
-    setup(options: any): Promise<SetupResult>;
-    on(event: string, callback: Function): this;
-  }
-}
+// (No ambient stub.) The CLI uses @wundr.io/computer-setup’s real, complete
+// declarations. A `declare module` stub here would SHADOW the package’s actual
+// dist types (TypeScript does NOT 'prefer' real types over an ambient module),
+// exposing only the manually-listed symbols and breaking every other named
+// import with TS2305. The workspace build always builds computer-setup first.
 
 // ---------------------------------------------------------------------------
 // @wundr.io/core (supplement missing RAG exports)
