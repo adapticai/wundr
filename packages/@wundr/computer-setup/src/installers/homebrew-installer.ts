@@ -9,6 +9,7 @@ import { execa } from 'execa';
 import which from 'which';
 
 import { runShellScript } from '../lib/headless';
+import { isRoot } from '../lib/privileges';
 import { Logger } from '../utils/logger';
 
 import type { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
@@ -129,6 +130,14 @@ export class HomebrewInstaller implements BaseInstaller {
   }
 
   private async installHomebrew(platform: SetupPlatform): Promise<void> {
+    // Defense in depth: Homebrew refuses EUID 0. The CLI/manager drops root
+    // before any installer runs, but guard here too for direct invocation.
+    if (isRoot()) {
+      throw new Error(
+        'Homebrew cannot be installed as root. Run setup as a normal admin user.'
+      );
+    }
+
     const installScript =
       'https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh';
 

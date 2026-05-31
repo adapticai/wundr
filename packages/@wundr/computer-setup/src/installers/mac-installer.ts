@@ -14,6 +14,7 @@ import {
   nonInteractiveEnv,
   runShellScript,
 } from '../lib/headless';
+import { isRoot } from '../lib/privileges';
 import { Logger } from '../utils/logger';
 
 import type { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
@@ -170,6 +171,16 @@ export class MacInstaller implements BaseInstaller {
   }
 
   private async installHomebrew(): Promise<void> {
+    // Defense in depth: the CLI/manager drops root before we get here, but if
+    // this installer is driven directly we must refuse rather than let
+    // Homebrew's install.sh abort with the raw "Don't run this as root!".
+    if (isRoot()) {
+      throw new Error(
+        'Homebrew cannot be installed as root. Re-run computer-setup as a ' +
+          'normal admin user (without sudo).'
+      );
+    }
+
     try {
       await which('brew');
       this.logger.info('Homebrew already installed');
@@ -179,10 +190,12 @@ export class MacInstaller implements BaseInstaller {
     }
 
     this.logger.info('Installing Homebrew...');
-    // NONINTERACTIVE=1 (set by nonInteractiveEnv) prevents the "Press RETURN"
-    // prompt; stdin is detached and a hard timeout prevents an indefinite hang.
+    // runShellScript wraps this in a single `bash -c`. On a headless run
+    // NONINTERACTIVE=1 (set by nonInteractiveEnv) suppresses the "Press RETURN"
+    // prompt and a hard timeout prevents an indefinite hang; an interactive run
+    // keeps stdin attached so Homebrew can prompt for the sudo password.
     await runShellScript(
-      '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"',
+      'curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | bash',
       { timeout: 15 * 60 * 1000 }
     );
 

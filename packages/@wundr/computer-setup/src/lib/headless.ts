@@ -62,6 +62,11 @@ export function isHeadless(): boolean {
   return !isInteractive();
 }
 
+// Privilege helpers (isRoot / resolveInvokingUser / dropPrivilegesIfRoot) live
+// in ./privileges — a dependency-light module imported directly by consumers
+// and re-exported from the package barrel. They are intentionally NOT
+// re-exported here to keep them out of this module's (execa/fs-extra) graph.
+
 /**
  * `process.env` augmented with the flags that make common bootstrap installers
  * (Homebrew, Oh My Zsh, apt, ...) run without any prompts.
@@ -69,20 +74,30 @@ export function isHeadless(): boolean {
 export function nonInteractiveEnv(
   extra: Record<string, string> = {}
 ): NodeJS.ProcessEnv {
-  return {
+  const env: NodeJS.ProcessEnv = {
     ...process.env,
-    NONINTERACTIVE: '1',
-    CI: process.env.CI ?? '1',
     HOMEBREW_NO_ANALYTICS: '1',
     HOMEBREW_NO_AUTO_UPDATE: '1',
     HOMEBREW_NO_INSTALL_CLEANUP: '1',
-    DEBIAN_FRONTEND: 'noninteractive',
-    // Oh My Zsh installer flags: don't chsh, keep existing .zshrc, don't launch zsh.
+    // Oh My Zsh installer flags: don't chsh, keep existing .zshrc, don't launch
+    // zsh. Safe to set even on an interactive run.
     RUNZSH: 'no',
     CHSH: 'no',
     KEEP_ZSHRC: 'yes',
-    ...extra,
   };
+
+  // Only force fully non-interactive bootstrap behaviour when there is no
+  // console to answer prompts. On an interactive run we deliberately leave
+  // NONINTERACTIVE unset so installers like Homebrew can prompt for the sudo
+  // password they need — under NONINTERACTIVE, Homebrew instead *aborts* unless
+  // passwordless sudo is already configured.
+  if (isHeadless()) {
+    env.NONINTERACTIVE = '1';
+    env.DEBIAN_FRONTEND = 'noninteractive';
+    if (env.CI === undefined) env.CI = '1';
+  }
+
+  return { ...env, ...extra };
 }
 
 export type RunProcessOptions = ExecaOptions;
@@ -114,7 +129,11 @@ export function runShellScript(
   options: RunProcessOptions = {}
 ) {
   return execa('bash', ['-c', script], {
-    stdin: 'ignore',
+    // Interactive runs keep stdin attached so bootstrap installers (Homebrew,
+    // nvm, ...) can prompt — e.g. for the sudo password Homebrew requires.
+    // Headless runs detach stdin so nothing can block on a prompt; the bounded
+    // timeout still guarantees no indefinite hang either way.
+    stdin: isInteractive() ? 'inherit' : 'ignore',
     timeout: DEFAULT_PROCESS_TIMEOUT_MS,
     env: nonInteractiveEnv(),
     ...options,

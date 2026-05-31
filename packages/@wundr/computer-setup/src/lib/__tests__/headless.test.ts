@@ -68,10 +68,30 @@ describe('headless detection', () => {
 });
 
 describe('nonInteractiveEnv', () => {
-  it('sets the flags that suppress installer prompts', () => {
+  const originalOverride = process.env.WUNDR_NONINTERACTIVE;
+
+  beforeEach(() => {
+    // NONINTERACTIVE/CI are now emitted only in a headless context (so an
+    // interactive run can still answer Homebrew's sudo prompt). Force headless
+    // for these assertions.
+    process.env.WUNDR_NONINTERACTIVE = '1';
+  });
+  afterEach(() => {
+    if (originalOverride === undefined) delete process.env.WUNDR_NONINTERACTIVE;
+    else process.env.WUNDR_NONINTERACTIVE = originalOverride;
+  });
+
+  it('sets the flags that suppress installer prompts when headless', () => {
     const env = nonInteractiveEnv();
     expect(env.NONINTERACTIVE).toBe('1');
     expect(env.HOMEBREW_NO_ANALYTICS).toBe('1');
+    expect(env.RUNZSH).toBe('no');
+    expect(env.CHSH).toBe('no');
+    expect(env.KEEP_ZSHRC).toBe('yes');
+  });
+
+  it('always sets the prompt-free installer flags (interactive or not)', () => {
+    const env = nonInteractiveEnv();
     expect(env.RUNZSH).toBe('no');
     expect(env.CHSH).toBe('no');
     expect(env.KEEP_ZSHRC).toBe('yes');

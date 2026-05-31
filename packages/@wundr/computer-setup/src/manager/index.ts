@@ -11,6 +11,7 @@ import * as fs from 'fs-extra';
 
 import { ConfiguratorService } from '../configurators';
 import { InstallerRegistry } from '../installers';
+import { dropPrivilegesIfRoot } from '../lib/privileges';
 import { ProfileManager } from '../profiles';
 import { getLogger } from '../utils/logger';
 import { SetupValidator } from '../validators';
@@ -248,6 +249,12 @@ export class ComputerSetupManager extends EventEmitter {
     };
 
     try {
+      // Never run installers as root: drop to the invoking sudo user (or throw
+      // if run as a bare root login). Idempotent — a no-op when the CLI already
+      // dropped, and the single safety net for programmatic callers. Must run
+      // before any profile/step I/O so nothing lands as root-owned.
+      dropPrivilegesIfRoot(logger);
+
       logger.info('Starting computer setup', {
         profile: options.profile.name,
         platform: options.platform.os,
