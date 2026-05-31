@@ -194,6 +194,13 @@ jobs:
           cache: "pnpm"
           registry-url: "https://registry.npmjs.org"
 
+      - name: 🔧 Install dependencies
+        # Required so the per-package `tsc` below resolves the workspace's
+        # pinned typescript (node_modules/.bin/tsc) instead of the runner's
+        # pre-installed global TypeScript, which errors on deprecated
+        # tsconfig options (downlevelIteration / moduleResolution / baseUrl).
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
       - name: 📥 Download build artifacts
         uses: actions/download-artifact@v4
         with:
@@ -229,9 +236,9 @@ jobs:
           npm pkg set version="${{ needs.prepare-release.outputs.version }}"
 
       - name: 🏗️ Build package (emit dist)
-        # Emit compiled dist for this package and its workspace deps. The CI
-        # `turbo build` only runs `tsc --noEmit` (typecheck), so dist was never
-        # produced; build the package's own emitting `tsc` here before publish.
+        # Emit compiled dist for this package and its workspace deps. Runs after
+        # `pnpm install` above so `tsc` resolves to the workspace's typescript
+        # (5.9.3) rather than the runner's newer global tsc.
         run: pnpm --filter "${{ matrix.package }}..." run build
 
       - name: 📡 Publish to NPM
