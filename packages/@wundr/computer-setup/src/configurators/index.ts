@@ -167,11 +167,18 @@ export class ConfiguratorService {
   private async configureGitUser(config: GitConfiguration): Promise<void> {
     logger.info('Configuring Git user');
 
-    const commands = [
-      `git config --global user.name "${config.userName}"`,
-      `git config --global user.email "${config.userEmail}"`,
-      `git config --global init.defaultBranch "${config.defaultBranch || 'main'}"`,
-    ];
+    // Never clobber an existing git identity with an empty profile value
+    // (the default profile has no name/email).
+    const commands: string[] = [];
+    if (config.userName && config.userName.trim()) {
+      commands.push(`git config --global user.name "${config.userName}"`);
+    }
+    if (config.userEmail && config.userEmail.trim()) {
+      commands.push(`git config --global user.email "${config.userEmail}"`);
+    }
+    commands.push(
+      `git config --global init.defaultBranch "${config.defaultBranch || 'main'}"`
+    );
 
     for (const cmd of commands) {
       execSync(cmd);
