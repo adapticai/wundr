@@ -425,6 +425,38 @@ export class ClaudeInstaller implements BaseInstaller {
       });
       logger.info('Claude Code CLI installed successfully (npm fallback)');
     }
+
+    // The native installer drops `claude` in ~/.local/bin, which is NOT on this
+    // process's PATH — so the very next steps (Install MCP Servers, Install
+    // Plugins) would `which claude`, miss it, and silently skip. Add it now.
+    this.ensureClaudeOnPath();
+  }
+
+  /**
+   * Put the freshly-installed `claude` on this process's PATH so subsequent
+   * steps in the same run (MCP servers, plugins) can find it. The native
+   * installer uses ~/.local/bin; older layouts used ~/.claude/local.
+   */
+  private ensureClaudeOnPath(): void {
+    const home = this.homeDir;
+    const candidates = [
+      path.join(home, '.local', 'bin'),
+      path.join(home, '.claude', 'local'),
+    ];
+    for (const dir of candidates) {
+      try {
+        if (!fsSync.existsSync(path.join(dir, 'claude'))) continue;
+        const parts = (process.env.PATH || '').split(path.delimiter);
+        if (!parts.includes(dir)) {
+          process.env.PATH = `${dir}${path.delimiter}${process.env.PATH || ''}`;
+          logger.info(
+            `Added ${dir} to PATH so 'claude' resolves for MCP/plugins.`
+          );
+        }
+      } catch {
+        // best-effort
+      }
+    }
   }
 
   private async installChrome(): Promise<void> {
