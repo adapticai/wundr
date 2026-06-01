@@ -197,20 +197,155 @@ export class ConfiguratorService {
   private async configureGPGSigning(config: GitConfiguration): Promise<void> {
     logger.info('Configuring GPG signing');
 
-    if (!config.gpgKey) {
-      // Generate a new GPG key
-      logger.info('Generating new GPG key');
-      // This would involve interactive GPG key generation
-      // For now, we'll skip the actual generation
+    // 1. A specific key was supplied — just point git at it.
+    if (config.gpgKey) {
+      await this.applyGitSigningConfig(config.gpgKey);
       return;
     }
 
-    execSync(`git config --global user.signingkey ${config.gpgKey}`);
-    execSync('git config --global commit.gpgsign true');
+    // 2. We must generate one. GPG has to be installed first.
+    try {
+      await execa('gpg', ['--version'], { timeout: 10_000 });
+    } catch {
+      logger.warn(
+        'GPG (gnupg) is not installed — skipping commit signing. Install it ' +
+          '(`brew install gnupg`) and re-run, or configure signing later.'
+      );
+      return;
+    }
 
+    // 3. A key needs a real identity. Prefer the profile, fall back to whatever
+    //    git is already configured with; if neither has an email, skip cleanly
+    //    (the default profile ships with empty name/email).
+    let name = (config.userName || '').trim();
+    let email = (config.userEmail || '').trim();
+    if (!email) email = await this.gitConfigGet('user.email');
+    if (!name) name = await this.gitConfigGet('user.name');
+    if (!email) {
+      logger.warn(
+        'No git user.email is set — skipping GPG key generation (a signing key ' +
+          'needs an identity). Set your name/email (or use a profile that ' +
+          'includes them) and re-run.'
+      );
+      return;
+    }
+
+    // 4. Reuse an existing key for this email rather than piling up duplicates.
+    const existing = await this.findGpgKeyId(email);
+    if (existing) {
+      logger.info(`Using existing GPG key ${existing} for ${email}`);
+      await this.applyGitSigningConfig(existing);
+      return;
+    }
+
+    // 5. Generate a new key non-interactively (no passphrase, 2-year expiry).
+    logger.info(`Generating a new GPG signing key for ${email}...`);
+    const gpgScript = `%echo Generating a GPG signing key
+Key-Type: RSA
+Key-Length: 4096
+Subkey-Type: RSA
+Subkey-Length: 4096
+Name-Real: ${name || email}
+Name-Email: ${email}
+Expire-Date: 2y
+%no-protection
+%commit
+%echo done
+`;
+    const tempFile = path.join(os.tmpdir(), `wundr-gpg-${process.pid}.txt`);
+    try {
+      await fs.writeFile(tempFile, gpgScript);
+      await execa('gpg', ['--batch', '--generate-key', tempFile], {
+        timeout: 120_000,
+      });
+    } catch (error: unknown) {
+      logger.warn(
+        `GPG key generation failed (commit signing left disabled): ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+      return;
+    } finally {
+      try {
+        await fs.remove(tempFile);
+      } catch {
+        // best-effort cleanup
+      }
+    }
+
+    // 6. Only enable signing once we have a real key id — never sign with a
+    //    bogus key, or every `git commit` would fail.
+    const keyId = await this.findGpgKeyId(email);
+    if (!keyId) {
+      logger.warn(
+        'Generated a GPG key but could not determine its id — leaving commit ' +
+          'signing disabled to avoid breaking commits.'
+      );
+      return;
+    }
+    await this.applyGitSigningConfig(keyId);
+    logger.info(
+      `GPG signing configured (key ${keyId}). Add the public key to GitHub: ` +
+        `gpg --armor --export ${keyId}`
+    );
+  }
+
+  /** Read a global git config value, or '' if unset. */
+  private async gitConfigGet(key: string): Promise<string> {
+    try {
+      const { stdout } = await execa('git', ['config', '--global', key], {
+        reject: false,
+        timeout: 10_000,
+      });
+      return stdout.trim();
+    } catch {
+      return '';
+    }
+  }
+
+  /** Long key id of the first secret key matching an email, or null. */
+  private async findGpgKeyId(email: string): Promise<string | null> {
+    try {
+      const { stdout } = await execa(
+        'gpg',
+        [
+          '--list-secret-keys',
+          '--keyid-format',
+          'LONG',
+          '--with-colons',
+          email,
+        ],
+        { reject: false, timeout: 15_000 }
+      );
+      // Colon format: sec:...:...:...:<KEYID>:... (field 5 is the key id).
+      const sec = stdout.split('\n').find(line => line.startsWith('sec:'));
+      const keyId = sec?.split(':')[4]?.trim();
+      return keyId && keyId.length > 0 ? keyId : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Point git at a signing key and turn on commit/tag signing. */
+  private async applyGitSigningConfig(keyId: string): Promise<void> {
+    await execa('git', ['config', '--global', 'user.signingkey', keyId]);
+    await execa('git', ['config', '--global', 'commit.gpgsign', 'true']);
+    await execa('git', ['config', '--global', 'tag.gpgsign', 'true']);
+    // Pin gpg.program so git can sign even from a non-login shell.
+    try {
+      const { stdout } = await execa('which', ['gpg'], { timeout: 10_000 });
+      const gpgPath = stdout.trim();
+      if (gpgPath) {
+        await execa('git', ['config', '--global', 'gpg.program', gpgPath]);
+      }
+    } catch {
+      // gpg.program is optional
+    }
     this.recordConfigChange('~/.gitconfig', [
       'user.signingkey',
       'commit.gpgsign',
+      'tag.gpgsign',
+      'gpg.program',
     ]);
   }
 
