@@ -121,6 +121,18 @@ export class RemoteAccessInstaller implements BaseInstaller {
       );
     }
 
+    // Make sure the standard Homebrew bins are on PATH before any brew /
+    // tailscale call — when brew pre-exists, the bootstrap installer never
+    // exported them into this process.
+    this.ensureBrewOnPath();
+
+    // Prime sudo ONCE up front. The Tailscale and Parsec casks are pkg-based
+    // (brew shells out to `installer -pkg -target /` as root), and the host
+    // settings below need sudo too — caching it here means a single visible
+    // prompt covers every privileged step and brew won't prompt again
+    // mid-install. No-op when headless / non-interactive.
+    await this.primeSudo();
+
     await this.ensureTailscale();
     await this.tailscaleUp(cfg, interactive);
     await this.ensureSshKey();
@@ -128,10 +140,7 @@ export class RemoteAccessInstaller implements BaseInstaller {
     if (mode === 'host') {
       // A headless host must ACCEPT connections: enable the SSH server (Remote
       // Login) and native Screen Sharing / Remote Management, and stay awake.
-      // Prime sudo ONCE with a clear, visible prompt so all of these apply from
-      // a single password entry (avoids the per-command prompt + the latch that
-      // skipped everything after the first unanswered prompt).
-      await this.primeSudo();
+      // sudo was already primed above, so these apply from that one prompt.
       await this.enableRemoteLogin();
       await this.configurePowerManagement(cfg);
       await this.enableScreenSharing();
@@ -179,23 +188,75 @@ export class RemoteAccessInstaller implements BaseInstaller {
   private async primeSudo(): Promise<void> {
     if (this.sudoUnavailable || !isInteractive()) return;
     this.logger.warn(
-      'macOS password needed to enable Remote Login, Screen Sharing and power ' +
-        'settings — enter it at the prompt below (asked once for all of them).'
+      'macOS password needed to install Parsec/Tailscale and enable Remote ' +
+        'Login, Screen Sharing and power settings — type it at the prompt below ' +
+        '(asked once for all of them), or wait to skip the privileged steps.'
     );
+    // 60s is ample for a human at the keyboard but bounds the dead-air if no one
+    // is present (the latch then cleanly skips the privileged steps).
     const result = await execa('sudo', ['-v'], {
       stdin: 'inherit',
       stdout: 'inherit',
       stderr: 'inherit',
-      timeout: 120_000,
+      timeout: 60_000,
       reject: false,
     });
     if (result.exitCode !== 0) {
       this.sudoUnavailable = true;
       this.logger.warn(
-        'No sudo access granted — Remote Login / Screen Sharing / power settings ' +
-          'will be skipped. Re-run and enter your password, or apply them manually.'
+        `No sudo access granted (${
+          result.timedOut ? 'no password entered in time' : 'prompt cancelled'
+        }) — privileged steps (Parsec/Tailscale install, Remote Login, Screen ` +
+          'Sharing, power) will be skipped. Re-run and enter your password to finish.'
       );
     }
+  }
+
+  /** Prepend the standard Homebrew bin dirs to PATH if missing (pure env, no exec). */
+  private ensureBrewOnPath(): void {
+    const segments = (process.env.PATH ?? '').split(path.delimiter);
+    for (const dir of ['/opt/homebrew/bin', '/usr/local/bin']) {
+      if (!segments.includes(dir)) {
+        process.env.PATH = `${dir}${path.delimiter}${process.env.PATH ?? ''}`;
+        segments.unshift(dir);
+      }
+    }
+  }
+
+  /**
+   * Install a Homebrew cask, repairing the half-installed state where a
+   * Caskroom receipt exists but the app bundle is gone. tailscale-app and
+   * parsec are pkg-based casks: brew tracks only the receipt, not the .app, so
+   * a plain `brew install --cask` is a no-op (exits 0 in ~0.5s) when the app
+   * was removed. `reinstall --cask --force` re-runs the pkg installer and
+   * re-lays the bundle. So: repair when already listed, fresh-install when not.
+   * The default runProcess env keeps NONINTERACTIVE unset on interactive runs
+   * so brew can prompt for the admin password these pkg casks require.
+   */
+  private async installOrRepairCask(
+    token: string,
+    interactive: boolean
+  ): Promise<Awaited<ReturnType<typeof runProcess>>> {
+    const listed =
+      (
+        await runProcess('brew', ['list', '--cask', token], {
+          reject: false,
+          timeout: 30_000,
+        })
+      ).exitCode === 0;
+    const args = listed
+      ? ['reinstall', '--cask', '--force', token]
+      : ['install', '--cask', token];
+    this.logger.info(
+      `${listed ? 'Repairing' : 'Installing'} ${token} (\`brew ${args.join(
+        ' '
+      )}\`${interactive ? '; a macOS admin password prompt may appear' : ''})...`
+    );
+    return runProcess('brew', args, {
+      timeout: interactive ? 10 * 60 * 1000 : 3 * 60 * 1000,
+      reject: false,
+      stdin: interactive ? 'inherit' : 'ignore',
+    });
   }
 
   /** Read every host setting back and log a PASS/FAIL summary. Read-only. */
@@ -318,6 +379,15 @@ export class RemoteAccessInstaller implements BaseInstaller {
   ): Promise<void> {
     const stack = cfg.stack ?? 'parsec';
     const appName = stack === 'rustdesk' ? 'RustDesk' : 'Parsec';
+    // Don't write/log an auto-start agent for an app that didn't install — that
+    // produced a misleading "Installed auto-start LaunchAgent" line for an
+    // absent Parsec and added to the false-success confusion.
+    if (!(await fs.pathExists(`/Applications/${appName}.app`))) {
+      this.logger.warn(
+        `Skipping ${appName} auto-start agent — ${appName} is not installed.`
+      );
+      return;
+    }
     const label = `com.adaptic.${stack}`;
     const agentsDir = path.join(os.homedir(), 'Library', 'LaunchAgents');
     const plistPath = path.join(agentsDir, `${label}.plist`);
@@ -374,36 +444,62 @@ export class RemoteAccessInstaller implements BaseInstaller {
         'macOS requires a human to flip...'
     );
 
-    // Deep-links to the exact panes. System Settings is single-window, so open
+    // Bring System Settings to the foreground FIRST — a bare
+    // `open x-apple.systempreferences:` deep-link navigates the pane but does
+    // not reliably raise the window, so the panes were opening behind the
+    // terminal and the user never saw them.
+    await execa('open', ['-a', 'System Settings'], {
+      reject: false,
+      timeout: 10_000,
+    });
+    await new Promise(resolve => setTimeout(resolve, 700));
+
+    // Deep-links to the exact panes, using the modern `*.extension` anchors that
+    // resolve on macOS 13–15 (the legacy `com.apple.preference.security?...`
+    // anchors are fragile on Sequoia). System Settings is single-window, so open
     // them with a short stagger; the user can also use the Privacy sidebar.
     const panes: Array<[string, string]> = [
       [
         'Screen Recording',
-        'x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture',
+        'x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_ScreenCapture',
       ],
       [
         'Accessibility',
-        'x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility',
+        'x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_Accessibility',
       ],
       [
         'Full Disk Access',
-        'x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles',
+        'x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_AllFiles',
       ],
       [
         'Login Items / Automatic Login (Users & Groups)',
-        'x-apple.systempreferences:com.apple.Users-Groups-Settings.extension',
+        'x-apple.systempreferences:com.apple.LoginItems-Settings.extension',
       ],
     ];
     for (const [label, url] of panes) {
       try {
         await execa('open', [url], { reject: false, timeout: 10_000 });
-        this.logger.info(`  Opened: ${label}`);
+        // Honest wording: we requested the pane; whether it renders depends on
+        // the macOS version. Don't overstate that a pane definitely appeared.
+        this.logger.info(
+          `  Requested System Settings pane: ${label} (flip the switch if it appears)`
+        );
         // Brief stagger so the single Settings window settles on each pane.
         await new Promise(resolve => setTimeout(resolve, 1200));
       } catch {
         // best-effort
       }
     }
+
+    // Pull the Settings window forward in case the deep-links left it behind.
+    await execa(
+      'osascript',
+      ['-e', 'tell application "System Settings" to activate'],
+      {
+        reject: false,
+        timeout: 5_000,
+      }
+    );
 
     // Open the streaming app so the user can do first-run sign-in + Host setup.
     try {
@@ -468,23 +564,14 @@ export class RemoteAccessInstaller implements BaseInstaller {
     // password; on a headless run keep stdin detached and use a short timeout
     // (it can only succeed with passwordless sudo) and report clearly.
     const interactive = isInteractive();
-    this.logger.info(
-      interactive
-        ? 'Installing Tailscale (a macOS admin password prompt may appear)...'
-        : 'Installing Tailscale (headless)...'
-    );
     try {
-      // Canonical cask name is `tailscale-app` (the GUI app + network extension
-      // + the `tailscale` CLI wrapper). The bare `tailscale` is a CLI-only
-      // formula; `--cask tailscale` only works as an alias on some brew versions.
-      const result = await runProcess(
-        'brew',
-        ['install', '--cask', 'tailscale-app'],
-        {
-          timeout: interactive ? 10 * 60 * 1000 : 3 * 60 * 1000,
-          reject: false,
-          stdin: interactive ? 'inherit' : 'ignore',
-        }
+      // Canonical cask is `tailscale-app` (GUI app + network extension + the
+      // `tailscale` CLI wrapper); the bare `tailscale` is a CLI-only formula.
+      // It's a pkg cask, so a stale receipt with a missing app needs a forced
+      // reinstall — installOrRepairCask handles install-vs-repair.
+      const result = await this.installOrRepairCask(
+        'tailscale-app',
+        interactive
       );
       // Verify it actually landed — don't claim success on a swallowed failure.
       if (!(await tailscaleInstalled())) {
@@ -497,13 +584,23 @@ export class RemoteAccessInstaller implements BaseInstaller {
               .join(' ')
               .trim()}`;
         this.logger.warn(
-          `Tailscale did NOT install (${why}). Install it manually with ` +
-            '`brew install --cask tailscale`. If you launched setup with sudo, the ' +
+          `Tailscale did NOT install (${why}). Repair it manually with ` +
+            '`brew reinstall --cask --force tailscale-app`. If you launched setup with sudo, the ' +
             "network-extension approval can't surface — re-run `wundr computer-setup` WITHOUT sudo."
         );
         return;
       }
       this.logger.info('Tailscale installed.');
+      // Launch the app once so tailscaled / the network extension start and the
+      // macOS "allow network extension" approval prompt fires. This only works
+      // from the user's GUI session (i.e. NOT under sudo).
+      if (interactive) {
+        await execa('open', ['-a', 'Tailscale'], {
+          reject: false,
+          timeout: 15_000,
+        });
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      }
     } catch (error: unknown) {
       this.logger.warn(
         `Tailscale install failed: ${
@@ -517,10 +614,22 @@ export class RemoteAccessInstaller implements BaseInstaller {
     cfg: RemoteAccessConfig,
     interactive: boolean
   ): Promise<void> {
+    // Resolve the CLI. The cask installs a `tailscale` shim on PATH, but right
+    // after a fresh install it may not be on this process's PATH yet — fall
+    // back to the wrapper binary inside the app bundle.
+    let tailscaleBin = 'tailscale';
     try {
       await which('tailscale');
     } catch {
-      return;
+      const wrapper = '/Applications/Tailscale.app/Contents/MacOS/Tailscale';
+      if (await fs.pathExists(wrapper)) {
+        tailscaleBin = wrapper;
+      } else {
+        this.logger.warn(
+          'Tailscale CLI not found (the app may still be installing) — skipping `tailscale up`.'
+        );
+        return;
+      }
     }
 
     const authKey = cfg.tailscaleAuthKey ?? process.env.TAILSCALE_AUTH_KEY;
@@ -544,16 +653,29 @@ export class RemoteAccessInstaller implements BaseInstaller {
       return;
     }
 
-    if (!authKey) {
-      this.logger.info(
-        'No auth key provided — run `tailscale up` and authenticate in the browser to finish joining the tailnet.'
-      );
-      return;
-    }
-
     try {
-      await runProcess('tailscale', args, { timeout: 120_000, reject: false });
-      this.logger.info('Tailscale brought up.');
+      if (!authKey) {
+        // Interactive, no auth key: open the browser login + the app, then run
+        // `tailscale up` (args have no --authkey) so the user authenticates in
+        // the browser to finish joining the tailnet.
+        this.logger.info(
+          'Joining the tailnet — complete sign-in in the browser if prompted...'
+        );
+        await execa('open', ['https://login.tailscale.com/start'], {
+          reject: false,
+          timeout: 10_000,
+        });
+        await execa('open', ['-a', 'Tailscale'], {
+          reject: false,
+          timeout: 10_000,
+        });
+      }
+      await runProcess(tailscaleBin, args, {
+        timeout: 120_000,
+        reject: false,
+        stdin: interactive ? 'inherit' : 'ignore',
+      });
+      this.logger.info('Ran `tailscale up`.');
     } catch (error: unknown) {
       this.logger.warn(
         `tailscale up failed: ${
@@ -674,17 +796,9 @@ export class RemoteAccessInstaller implements BaseInstaller {
     if (await fs.pathExists(appPath)) {
       this.logger.info(`${appName} already installed.`);
     } else {
-      this.logger.info(
-        `Installing ${appName}${
-          interactive ? ' (a macOS admin password prompt may appear)' : ''
-        }...`
-      );
-      const result = await runProcess('brew', ['install', '--cask', stack], {
-        timeout: 10 * 60 * 1000,
-        reject: false,
-        // Interactive: let the cask prompt for the admin password it needs.
-        stdin: interactive ? 'inherit' : 'ignore',
-      });
+      // parsec/rustdesk are pkg casks too — a stale Caskroom receipt with a
+      // missing .app makes a plain `brew install` a no-op, so repair-or-install.
+      const result = await this.installOrRepairCask(stack, interactive);
       // Verify the app actually landed — brew can exit non-zero (or get killed
       // by the timeout) and we must NOT claim success when it didn't install.
       if (!(await fs.pathExists(appPath))) {
@@ -697,10 +811,10 @@ export class RemoteAccessInstaller implements BaseInstaller {
               .join(' ')
               .trim()}`;
         this.logger.warn(
-          `${appName} did NOT install (${why}). Install it manually with ` +
-            `\`brew install --cask ${stack}\`. If you launched setup with sudo, ` +
-            `the GUI installer can't surface — re-run \`wundr computer-setup\` ` +
-            `WITHOUT sudo.`
+          `${appName} did NOT install (${why}). Repair it manually with ` +
+            `\`brew reinstall --cask --force ${stack}\`. If you launched setup ` +
+            `with sudo, the GUI installer can't surface — re-run ` +
+            `\`wundr computer-setup\` WITHOUT sudo.`
         );
         return;
       }
