@@ -115,9 +115,10 @@ export class RemoteAccessInstaller implements BaseInstaller {
     if (mode === 'host') {
       // A headless host must ACCEPT connections: enable the SSH server (Remote
       // Login) and native Screen Sharing / Remote Management, and stay awake.
-      // All are scripted via passwordless `sudo -n`; if that's unavailable each
-      // is logged as a manual `sudo` command rather than prompting. (TCC grants
-      // for the screen stream are still a manual/MDM step — see logManualSteps.)
+      // On an interactive run sudo prompts once for the password and these
+      // actually get flipped; headless uses `sudo -n` and logs a manual command
+      // if it isn't available. (TCC grants for the screen stream still can't be
+      // scripted — we open the right panes for the user below.)
       await this.enableRemoteLogin();
       await this.configurePowerManagement(cfg);
       await this.enableScreenSharing();
@@ -127,7 +128,10 @@ export class RemoteAccessInstaller implements BaseInstaller {
 
     if (mode === 'host') {
       await this.installAutoStartAgent(cfg, interactive);
-      this.logManualSteps(cfg);
+      // Open the System Settings panes + the app so the user just flicks the
+      // remaining switches, rather than reading a checklist. Falls back to the
+      // text checklist when headless.
+      await this.openManualSettings(cfg);
     }
 
     this.logger.info('Remote access configuration complete.');
@@ -254,6 +258,67 @@ export class RemoteAccessInstaller implements BaseInstaller {
         }`
       );
     }
+  }
+
+  /**
+   * For the settings macOS won't let a script toggle, OPEN the relevant System
+   * Settings panes (and the streaming app) so the user just flicks the switches,
+   * then print the checklist. Headless: just print the checklist.
+   */
+  private async openManualSettings(cfg: RemoteAccessConfig): Promise<void> {
+    const stack = cfg.stack ?? 'parsec';
+    const appName = stack === 'rustdesk' ? 'RustDesk' : 'Parsec';
+
+    if (!isInteractive()) {
+      this.logManualSteps(cfg);
+      return;
+    }
+
+    this.logger.info(
+      `Opening the System Settings panes (and ${appName}) for the switches ` +
+        'macOS requires a human to flip...'
+    );
+
+    // Deep-links to the exact panes. System Settings is single-window, so open
+    // them with a short stagger; the user can also use the Privacy sidebar.
+    const panes: Array<[string, string]> = [
+      [
+        'Screen Recording',
+        'x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture',
+      ],
+      [
+        'Accessibility',
+        'x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility',
+      ],
+      [
+        'Full Disk Access',
+        'x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles',
+      ],
+      [
+        'Login Items / Automatic Login (Users & Groups)',
+        'x-apple.systempreferences:com.apple.Users-Groups-Settings.extension',
+      ],
+    ];
+    for (const [label, url] of panes) {
+      try {
+        await execa('open', [url], { reject: false, timeout: 10_000 });
+        this.logger.info(`  Opened: ${label}`);
+        // Brief stagger so the single Settings window settles on each pane.
+        await new Promise(resolve => setTimeout(resolve, 1200));
+      } catch {
+        // best-effort
+      }
+    }
+
+    // Open the streaming app so the user can do first-run sign-in + Host setup.
+    try {
+      await execa('open', ['-a', appName], { reject: false, timeout: 10_000 });
+      this.logger.info(`  Opened: ${appName} (sign in + enable Host access)`);
+    } catch {
+      // app may not be installed yet
+    }
+
+    this.logManualSteps(cfg);
   }
 
   /**
@@ -519,17 +584,27 @@ export class RemoteAccessInstaller implements BaseInstaller {
   ): Promise<void> {
     if (this.sudoUnavailable) return;
 
-    const result = await execa('sudo', ['-n', command, ...args], {
-      stdin: 'ignore',
-      timeout: 30_000,
+    // Interactive: prompt for the password ONCE (sudo caches it for the rest of
+    // the run) so the switches actually get flipped. Headless: `sudo -n` (no
+    // prompt) and log+skip if no cached/passwordless sudo — never block.
+    const interactive = isInteractive();
+    const sudoArgs = interactive
+      ? [command, ...args]
+      : ['-n', command, ...args];
+    const result = await execa('sudo', sudoArgs, {
+      stdin: interactive ? 'inherit' : 'ignore',
+      timeout: interactive ? 120_000 : 30_000,
       reject: false,
     });
 
     if (result.exitCode !== 0) {
       this.sudoUnavailable = true;
       this.logger.warn(
-        `Skipping ${context}: passwordless sudo is unavailable. ` +
-          `Run \`sudo ${command} ${args.join(' ')}\` (and the related commands) manually, or provision with cached sudo.`
+        interactive
+          ? `Skipping ${context}: sudo was cancelled or failed. ` +
+              `Run \`sudo ${command} ${args.join(' ')}\` yourself to finish.`
+          : `Skipping ${context}: passwordless sudo is unavailable. ` +
+              `Run \`sudo ${command} ${args.join(' ')}\` (and the related commands) manually, or provision with cached sudo.`
       );
     }
   }
