@@ -159,9 +159,102 @@ export class MacInstaller implements BaseInstaller {
         validator: () => this.validateShellConfig(profile),
         installer: () => this.configureShell(profile),
       },
+      {
+        id: 'configure-dock',
+        name: 'Configure Dock',
+        description: 'Add installed dev apps to the Dock and remove clutter',
+        category: 'configuration',
+        required: false,
+        dependencies: ['install-applications', 'install-essential-packages'],
+        estimatedTime: 20,
+        installer: () => this.configureDock(),
+      },
     ];
 
     return steps;
+  }
+
+  /**
+   * Curate the macOS Dock with `dockutil`: add the dev apps we install (only
+   * those actually present) and remove default consumer clutter. Idempotent —
+   * each add is a remove-then-add, and removing an absent item is a no-op — so
+   * it's safe to run on every setup. Runs as the (already non-root) user; the
+   * Dock is per-user, so no sudo is needed.
+   */
+  private async configureDock(): Promise<void> {
+    // dockutil is installed in installEssentialPackages; bail clearly if not.
+    try {
+      await which('dockutil');
+    } catch {
+      this.logger.warn(
+        'dockutil not found — skipping Dock configuration. (Install it with ' +
+          '`brew install dockutil` and re-run.)'
+      );
+      return;
+    }
+
+    // Apps to ADD (path -> Dock label), only if the .app is actually installed.
+    const toAdd: Array<{ path: string; label: string }> = [
+      { path: '/Applications/Google Chrome.app', label: 'Google Chrome' },
+      {
+        path: '/Applications/Visual Studio Code.app',
+        label: 'Visual Studio Code',
+      },
+      { path: '/Applications/iTerm.app', label: 'iTerm' },
+      { path: '/Applications/Slack.app', label: 'Slack' },
+      { path: '/Applications/GitHub Desktop.app', label: 'GitHub Desktop' },
+      { path: '/Applications/Obsidian.app', label: 'Obsidian' },
+    ];
+
+    // Default Apple apps to REMOVE from the Dock (kept: Safari, Notes, System
+    // Settings, Finder, Launchpad, App Store, Photos).
+    const toRemove = [
+      'Maps',
+      'Contacts',
+      'Reminders',
+      'TV',
+      'Music',
+      'Podcasts',
+      'News',
+      'Stocks',
+      'Freeform',
+      'FaceTime',
+      'Mail',
+      'Messages',
+    ];
+
+    const dockutil = async (args: string[]): Promise<number> => {
+      const result = await execa('dockutil', args, {
+        timeout: 30_000,
+        reject: false,
+        stdin: 'ignore',
+      });
+      return result.exitCode ?? 1;
+    };
+
+    // Remove clutter (no-op if the item isn't there). --no-restart: batch first.
+    for (const label of toRemove) {
+      await dockutil(['--remove', label, '--no-restart']);
+    }
+
+    // Add our apps idempotently: remove any existing entry, then add fresh.
+    let added = 0;
+    for (const app of toAdd) {
+      if (!(await fs.pathExists(app.path))) continue;
+      await dockutil(['--remove', app.label, '--no-restart']);
+      const code = await dockutil(['--add', app.path, '--no-restart']);
+      if (code === 0) added++;
+    }
+
+    // Apply everything with a single Dock restart.
+    try {
+      await execa('killall', ['Dock'], { timeout: 10_000, reject: false });
+    } catch {
+      // Dock will pick up changes on next launch even if killall fails.
+    }
+    this.logger.info(
+      `Dock configured: added ${added} app(s), removed ${toRemove.length} default item(s).`
+    );
   }
 
   private async installXcodeCommandLineTools(): Promise<void> {
@@ -230,6 +323,7 @@ export class MacInstaller implements BaseInstaller {
       'gh', // GitHub CLI
       'git-delta',
       'mas', // Mac App Store CLI
+      'dockutil', // manage the Dock (add/remove items reliably)
     ];
 
     // Add shell-specific packages
