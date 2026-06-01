@@ -359,10 +359,9 @@ export class MacInstaller implements BaseInstaller {
         break;
     }
 
-    // Communication tools
-    if (profile.tools?.communication?.slack) {
-      casks.push('slack');
-    }
+    // Communication tools. Slack is installed unconditionally in the common
+    // block below (it was previously gated behind a profile flag that defaults
+    // to false, so it silently never installed); teams/discord/zoom stay opt-in.
     if (profile.tools?.communication?.teams) {
       casks.push('microsoft-teams');
     }
@@ -373,8 +372,11 @@ export class MacInstaller implements BaseInstaller {
       casks.push('zoom');
     }
 
-    // Common development tools
+    // Common applications — installed on EVERY run, regardless of role/profile.
     casks.push(
+      'slack', // team chat
+      'github', // GitHub Desktop
+      'google-chrome', // default browser for all roles
       'iterm2',
       'rectangle', // Window manager
       'raycast', // Spotlight replacement
@@ -382,7 +384,9 @@ export class MacInstaller implements BaseInstaller {
       'the-unarchiver'
     );
 
-    return { casks, masApps };
+    // De-duplicate — e.g. google-chrome is also added by the frontend/fullstack
+    // role block, and a profile could list an app twice.
+    return { casks: [...new Set(casks)], masApps };
   }
 
   private async configureMacOS(_profile: DeveloperProfile): Promise<void> {
