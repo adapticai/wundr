@@ -108,12 +108,150 @@ export class RemoteAccessInstaller implements BaseInstaller {
     await this.ensureSshKey();
 
     if (mode === 'host') {
+      // A headless host must ACCEPT connections: enable the SSH server (Remote
+      // Login) and native Screen Sharing / Remote Management, and stay awake.
+      // All are scripted via passwordless `sudo -n`; if that's unavailable each
+      // is logged as a manual `sudo` command rather than prompting. (TCC grants
+      // for the screen stream are still a manual/MDM step — see logManualSteps.)
+      await this.enableRemoteLogin();
       await this.configurePowerManagement(cfg);
+      await this.enableScreenSharing();
     }
 
     await this.configureDesktopSharing(cfg, mode, interactive);
 
+    if (mode === 'host') {
+      await this.installAutoStartAgent(cfg, interactive);
+      this.logManualSteps(cfg);
+    }
+
     this.logger.info('Remote access configuration complete.');
+  }
+
+  /** Enable the SSH server (Remote Login) so a headless host accepts SSH in. */
+  private async enableRemoteLogin(): Promise<void> {
+    await this.sudoNonInteractive(
+      'systemsetup',
+      ['-setremotelogin', 'on'],
+      'SSH Remote Login (System Settings > General > Sharing > Remote Login)'
+    );
+  }
+
+  /**
+   * Enable native macOS screen control so the host can be reached without
+   * Parsec/RustDesk. Uses two complementary mechanisms for cross-version
+   * reliability (both best-effort via `sudo -n`):
+   *  - `launchctl enable system/com.apple.screensharing` + load → plain Screen
+   *    Sharing (VNC), the lighter System Settings > Sharing toggle.
+   *  - ARD `kickstart -activate` → Remote Management, the path that reliably
+   *    works headlessly on modern macOS (also enables legacy VNC).
+   * NOTE: granting a remote viewer actual pixels still needs the TCC Screen
+   * Recording grant, which macOS will not let any script set — see
+   * {@link logManualSteps}.
+   */
+  private async enableScreenSharing(): Promise<void> {
+    await this.sudoNonInteractive(
+      'launchctl',
+      ['enable', 'system/com.apple.screensharing'],
+      'Screen Sharing (System Settings > General > Sharing > Screen Sharing)'
+    );
+    await this.sudoNonInteractive(
+      'launchctl',
+      [
+        'load',
+        '-w',
+        '/System/Library/LaunchDaemons/com.apple.screensharing.plist',
+      ],
+      'Screen Sharing (load daemon)'
+    );
+
+    const kickstart =
+      '/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart';
+    if (await fs.pathExists(kickstart)) {
+      await this.sudoNonInteractive(
+        kickstart,
+        [
+          '-activate',
+          '-configure',
+          '-access',
+          '-on',
+          '-restart',
+          '-agent',
+          '-privs',
+          '-all',
+        ],
+        'Remote Management / ARD (System Settings > General > Sharing > Remote Management)'
+      );
+    }
+  }
+
+  /**
+   * Install a per-user LaunchAgent that auto-starts the streaming app at login,
+   * so the host is reachable after an unattended reboot (once auto-login is set
+   * — see {@link logManualSteps}). Written to ~/Library/LaunchAgents (no sudo).
+   */
+  private async installAutoStartAgent(
+    cfg: RemoteAccessConfig,
+    interactive: boolean
+  ): Promise<void> {
+    const stack = cfg.stack ?? 'parsec';
+    const appName = stack === 'rustdesk' ? 'RustDesk' : 'Parsec';
+    const label = `com.adaptic.${stack}`;
+    const agentsDir = path.join(os.homedir(), 'Library', 'LaunchAgents');
+    const plistPath = path.join(agentsDir, `${label}.plist`);
+    const plist = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>${label}</string>
+  <key>ProgramArguments</key>
+  <array><string>/usr/bin/open</string><string>-a</string><string>${appName}</string></array>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+</dict>
+</plist>
+`;
+    try {
+      await fs.ensureDir(agentsDir);
+      await fs.writeFile(plistPath, plist);
+      // Best-effort load; only meaningful with a GUI session attached.
+      if (interactive) {
+        await execa('launchctl', ['load', '-w', plistPath], {
+          reject: false,
+          timeout: 15_000,
+        });
+      }
+      this.logger.info(
+        `Installed auto-start LaunchAgent for ${appName} at ${plistPath}.`
+      );
+    } catch (error: unknown) {
+      this.logger.warn(
+        `Could not install auto-start agent for ${appName}: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  }
+
+  /**
+   * Log the host-mode settings macOS deliberately will NOT let a script set;
+   * a human (or an MDM PPPC profile) must do these once per machine.
+   */
+  private logManualSteps(cfg: RemoteAccessConfig): void {
+    const stack = cfg.stack ?? 'parsec';
+    const appName = stack === 'rustdesk' ? 'RustDesk' : 'Parsec';
+    this.logger.warn(
+      'Manual macOS steps remaining (security-gated — do once per machine, or push an MDM PPPC profile):\n' +
+        `  1. Privacy & Security > Screen Recording AND Accessibility > enable ${appName} ` +
+        `(${appName}, being third-party, is black/uncontrollable without this; macOS cannot grant TCC by script). ` +
+        'Native Screen Sharing was enabled for you and is exempt from this grant.\n' +
+        `  2. Open ${appName} once and sign in, enabling Host / Unattended Access ` +
+        '(first-run GUI sign-in cannot be scripted).\n' +
+        '  3. Users & Groups > Login Options > Automatic login > your user ' +
+        '(so a GUI session exists after an unattended reboot — needs the cleartext password; not scriptable).\n' +
+        '  4. If Remote Login/systemsetup reported a Full Disk Access error: ' +
+        'Privacy & Security > Full Disk Access > enable your terminal/SSH client.'
+    );
   }
 
   private async ensureTailscale(): Promise<void> {
