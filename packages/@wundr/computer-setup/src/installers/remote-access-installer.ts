@@ -96,7 +96,12 @@ export class RemoteAccessInstaller implements BaseInstaller {
     }
 
     const interactive = isInteractive();
-    const mode = cfg.mode ?? (interactive ? 'master' : 'host');
+    // Default by HARDWARE, not interactivity: a Mac mini/Studio/iMac is a thing
+    // you connect TO (host); a MacBook connects OUT (master). The old
+    // interactive→master guess wrongly put a mini set up at its own keyboard
+    // into master mode, so none of the host provisioning ran. Override via
+    // profile.remoteAccess.mode.
+    const mode = cfg.mode ?? (await this.detectDefaultMode());
     this.logger.info(
       `Configuring remote access (mode: ${mode}, ${
         interactive ? 'interactive' : 'headless'
@@ -126,6 +131,24 @@ export class RemoteAccessInstaller implements BaseInstaller {
     }
 
     this.logger.info('Remote access configuration complete.');
+  }
+
+  /**
+   * Pick host vs master from the hardware: laptops connect OUT (master),
+   * desktops/minis are connected TO (host). Defaults to host on any error so a
+   * machine being provisioned for remote access gets the full host setup.
+   */
+  private async detectDefaultMode(): Promise<'host' | 'master'> {
+    try {
+      const { stdout } = await execa('sysctl', ['-n', 'hw.model'], {
+        timeout: 5_000,
+      });
+      return stdout.trim().toLowerCase().includes('macbook')
+        ? 'master'
+        : 'host';
+    } catch {
+      return 'host';
+    }
   }
 
   /** Enable the SSH server (Remote Login) so a headless host accepts SSH in. */
@@ -272,12 +295,35 @@ export class RemoteAccessInstaller implements BaseInstaller {
       return;
     }
 
-    this.logger.info('Installing Tailscale...');
+    // The Tailscale cask installs a system/network extension and so needs an
+    // admin password. With stdin detached the prompt can never be answered and
+    // the process blocks until timeout — exactly the "stuck for 10 minutes"
+    // symptom. On an interactive run, attach stdin so the user can type their
+    // password; on a headless run keep stdin detached and use a short timeout
+    // (it can only succeed with passwordless sudo) and report clearly.
+    const interactive = isInteractive();
+    this.logger.info(
+      interactive
+        ? 'Installing Tailscale (a macOS admin password prompt may appear)...'
+        : 'Installing Tailscale (headless)...'
+    );
     try {
-      await runProcess('brew', ['install', '--cask', 'tailscale'], {
-        timeout: 10 * 60 * 1000,
-        reject: false,
-      });
+      const result = await runProcess(
+        'brew',
+        ['install', '--cask', 'tailscale'],
+        {
+          timeout: interactive ? 10 * 60 * 1000 : 3 * 60 * 1000,
+          reject: false,
+          stdin: interactive ? 'inherit' : 'ignore',
+        }
+      );
+      if (result.timedOut) {
+        this.logger.warn(
+          'Tailscale install timed out (it needs admin rights for its network ' +
+            'extension). Install it manually with `brew install --cask tailscale`, ' +
+            'or configure passwordless sudo, then re-run.'
+        );
+      }
     } catch (error: unknown) {
       this.logger.warn(
         `Tailscale install failed: ${

@@ -102,6 +102,13 @@ export function dropPrivilegesIfRoot(
     );
   }
 
+  // Repair ownership of the invoking user's caches/config WHILE we are still
+  // root. Earlier `sudo wundr` runs (before this guard existed) wrote root-owned
+  // files into ~/.npm etc.; once we drop to the user, npm/pnpm/etc. would fail
+  // with EACCES on that root-owned cache. chowning it back is idempotent + safe
+  // (we're handing the user their own files).
+  repairInvokerOwnership(invoker, logger);
+
   // Order matters: shed supplementary groups and the gid BEFORE the uid — once
   // the uid is lowered the process can no longer change its group membership.
   try {
@@ -123,4 +130,37 @@ export function dropPrivilegesIfRoot(
       `(uid ${invoker.uid}). User-level installs run as ${invoker.user}, not root.`
   );
   return invoker;
+}
+
+/**
+ * chown the per-user dirs computer-setup writes back to the invoking user, so a
+ * prior root run's leftover root-owned files don't break npm/pnpm/git/Claude
+ * with EACCES. Must be called while still root. Best-effort per directory.
+ */
+function repairInvokerOwnership(
+  invoker: InvokingUser,
+  logger?: PrivilegeLogger
+): void {
+  // Limited to dirs this tool manages so a stray huge tree (e.g. ~/.cache) can't
+  // make the chown -R slow. ~/.npm is the one that actually breaks installs.
+  const relDirs = ['.npm', '.npm-global', '.claude', '.wundr', '.config/wundr'];
+  const own = `${invoker.uid}:${invoker.gid}`;
+  let repairedAny = false;
+  for (const rel of relDirs) {
+    try {
+      execFileSync('chown', ['-R', own, `${invoker.home}/${rel}`], {
+        stdio: 'ignore',
+        timeout: 60_000,
+      });
+      repairedAny = true;
+    } catch {
+      // dir absent or chown failed — ignore (best-effort)
+    }
+  }
+  if (repairedAny) {
+    logger?.info(
+      `Repaired ownership of ${invoker.user}'s caches (~/.npm, ~/.claude, ...) ` +
+        'in case a prior root run left root-owned files.'
+    );
+  }
 }
