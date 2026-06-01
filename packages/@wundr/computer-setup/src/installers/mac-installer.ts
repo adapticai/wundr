@@ -324,6 +324,7 @@ export class MacInstaller implements BaseInstaller {
       'git-delta',
       'mas', // Mac App Store CLI
       'dockutil', // manage the Dock (add/remove items reliably)
+      'gnupg', // gpg — required for commit signing (Configure GPG signing step)
     ];
 
     // Add shell-specific packages

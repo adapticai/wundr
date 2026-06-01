@@ -215,9 +215,16 @@ export async function runComputerSetup(options: any): Promise<void> {
       );
     });
 
-    // Run setup
-    spinner.text = 'Setting up your machine...';
-    spinner.start();
+    // Run setup. No persistent spinner during setup: progress is logged per
+    // step (above), and a live spinner overwrites/obscures interactive prompts —
+    // notably the sudo password prompt the remote-access step needs in order to
+    // actually flip Remote Login / Screen Sharing / power settings.
+    spinner.stop();
+    console.log(
+      chalk.cyan(
+        '\nSetting up your machine… (this can take a few minutes; you may be prompted for your macOS password)\n'
+      )
+    );
 
     const result = await manager.setup({
       profile,

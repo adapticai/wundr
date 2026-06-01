@@ -108,6 +108,19 @@ export class RemoteAccessInstaller implements BaseInstaller {
       })...`
     );
 
+    // Running under `sudo` is the #1 reason remote-access "looks done but isn't":
+    // GUI actions launched from a sudo session (opening Settings panes, launching
+    // Parsec, Tailscale's network-extension approval dialog) don't surface in the
+    // user's Aqua session. Tell the user plainly to re-run without sudo.
+    if (process.env.SUDO_USER) {
+      this.logger.warn(
+        'Detected a `sudo` launch. GUI steps below (opening System Settings panes, ' +
+          'launching Parsec, approving Tailscale’s network extension) often do ' +
+          'NOT appear from a sudo session, so remote access may not fully configure. ' +
+          'For best results re-run WITHOUT sudo:  wundr computer-setup'
+      );
+    }
+
     await this.ensureTailscale();
     await this.tailscaleUp(cfg, interactive);
     await this.ensureSshKey();
@@ -115,10 +128,10 @@ export class RemoteAccessInstaller implements BaseInstaller {
     if (mode === 'host') {
       // A headless host must ACCEPT connections: enable the SSH server (Remote
       // Login) and native Screen Sharing / Remote Management, and stay awake.
-      // On an interactive run sudo prompts once for the password and these
-      // actually get flipped; headless uses `sudo -n` and logs a manual command
-      // if it isn't available. (TCC grants for the screen stream still can't be
-      // scripted — we open the right panes for the user below.)
+      // Prime sudo ONCE with a clear, visible prompt so all of these apply from
+      // a single password entry (avoids the per-command prompt + the latch that
+      // skipped everything after the first unanswered prompt).
+      await this.primeSudo();
       await this.enableRemoteLogin();
       await this.configurePowerManagement(cfg);
       await this.enableScreenSharing();
@@ -132,6 +145,9 @@ export class RemoteAccessInstaller implements BaseInstaller {
       // remaining switches, rather than reading a checklist. Falls back to the
       // text checklist when headless.
       await this.openManualSettings(cfg);
+      // Read everything back and print a PASS/FAIL summary so it's never a
+      // mystery which host settings actually landed.
+      await this.reportRemoteAccessState(cfg);
     }
 
     this.logger.info('Remote access configuration complete.');
@@ -153,6 +169,85 @@ export class RemoteAccessInstaller implements BaseInstaller {
     } catch {
       return 'host';
     }
+  }
+
+  /**
+   * Prompt for the sudo password ONCE, up front and visibly, so the privileged
+   * host steps below all run from a single password entry (sudo caches it).
+   * No-op when headless or when sudo is already known to be unavailable.
+   */
+  private async primeSudo(): Promise<void> {
+    if (this.sudoUnavailable || !isInteractive()) return;
+    this.logger.warn(
+      'macOS password needed to enable Remote Login, Screen Sharing and power ' +
+        'settings — enter it at the prompt below (asked once for all of them).'
+    );
+    const result = await execa('sudo', ['-v'], {
+      stdin: 'inherit',
+      stdout: 'inherit',
+      stderr: 'inherit',
+      timeout: 120_000,
+      reject: false,
+    });
+    if (result.exitCode !== 0) {
+      this.sudoUnavailable = true;
+      this.logger.warn(
+        'No sudo access granted — Remote Login / Screen Sharing / power settings ' +
+          'will be skipped. Re-run and enter your password, or apply them manually.'
+      );
+    }
+  }
+
+  /** Read every host setting back and log a PASS/FAIL summary. Read-only. */
+  private async reportRemoteAccessState(
+    cfg: RemoteAccessConfig
+  ): Promise<void> {
+    const stack = cfg.stack ?? 'parsec';
+    const appName = stack === 'rustdesk' ? 'RustDesk' : 'Parsec';
+    const run = async (cmd: string, args: string[]): Promise<string> => {
+      try {
+        const r = await execa(cmd, args, { timeout: 15_000, reject: false });
+        return `${r.stdout ?? ''}\n${r.stderr ?? ''}`;
+      } catch {
+        return '';
+      }
+    };
+
+    const pmset = await run('pmset', ['-g']);
+    const has = (re: RegExp): boolean => re.test(pmset);
+    // systemsetup needs root; read via cached sudo (-n), don't prompt here.
+    const remoteLogin = await run('sudo', [
+      '-n',
+      'systemsetup',
+      '-getremotelogin',
+    ]);
+    const tailscaleApp = await fs.pathExists('/Applications/Tailscale.app');
+    const appInstalled = await fs.pathExists(`/Applications/${appName}.app`);
+    const agent = await fs.pathExists(
+      path.join(
+        os.homedir(),
+        'Library',
+        'LaunchAgents',
+        `com.adaptic.${stack}.plist`
+      )
+    );
+    const m = (ok: boolean): string => (ok ? 'OK ' : 'NO ');
+
+    this.logger.info(
+      'Remote-access state (read back):\n' +
+        `  ${m(/On/i.test(remoteLogin))} SSH Remote Login ${
+          /remote login/i.test(remoteLogin)
+            ? `(${remoteLogin.trim().split('\n')[0]})`
+            : '(could not read without sudo)'
+        }\n` +
+        `  ${m(tailscaleApp)} Tailscale installed\n` +
+        `  ${m(appInstalled)} ${appName} installed\n` +
+        `  ${m(has(/womp\s+1/))} Wake-on-LAN (womp)\n` +
+        `  ${m(has(/autorestart\s+1/))} Restart after power failure\n` +
+        `  ${m(has(/hibernatemode\s+0/))} Hibernation off\n` +
+        `  ${m(has(/\n\s*sleep\s+0/))} System sleep off\n` +
+        `  ${m(agent)} ${appName} auto-start LaunchAgent`
+    );
   }
 
   /** Enable the SSH server (Remote Login) so a headless host accepts SSH in. */
@@ -343,12 +438,18 @@ export class RemoteAccessInstaller implements BaseInstaller {
   }
 
   private async ensureTailscale(): Promise<void> {
-    try {
-      await which('tailscale');
+    // The cask installs Tailscale.app but does NOT put a `tailscale` CLI on
+    // PATH, so `which tailscale` would wrongly report "not installed". Check the
+    // app bundle (or a CLI that happens to be on PATH).
+    const tailscaleInstalled = async (): Promise<boolean> =>
+      (await fs.pathExists('/Applications/Tailscale.app')) ||
+      which('tailscale')
+        .then(() => true)
+        .catch(() => false);
+
+    if (await tailscaleInstalled()) {
       this.logger.info('Tailscale already installed');
       return;
-    } catch {
-      // not installed
     }
 
     try {
@@ -373,22 +474,36 @@ export class RemoteAccessInstaller implements BaseInstaller {
         : 'Installing Tailscale (headless)...'
     );
     try {
+      // Canonical cask name is `tailscale-app` (the GUI app + network extension
+      // + the `tailscale` CLI wrapper). The bare `tailscale` is a CLI-only
+      // formula; `--cask tailscale` only works as an alias on some brew versions.
       const result = await runProcess(
         'brew',
-        ['install', '--cask', 'tailscale'],
+        ['install', '--cask', 'tailscale-app'],
         {
           timeout: interactive ? 10 * 60 * 1000 : 3 * 60 * 1000,
           reject: false,
           stdin: interactive ? 'inherit' : 'ignore',
         }
       );
-      if (result.timedOut) {
+      // Verify it actually landed — don't claim success on a swallowed failure.
+      if (!(await tailscaleInstalled())) {
+        const why = result.timedOut
+          ? 'it timed out (the cask needs admin rights for its network extension)'
+          : `brew exited ${result.exitCode}: ${String(result.stderr || '')
+              .split('\n')
+              .filter(Boolean)
+              .slice(-2)
+              .join(' ')
+              .trim()}`;
         this.logger.warn(
-          'Tailscale install timed out (it needs admin rights for its network ' +
-            'extension). Install it manually with `brew install --cask tailscale`, ' +
-            'or configure passwordless sudo, then re-run.'
+          `Tailscale did NOT install (${why}). Install it manually with ` +
+            '`brew install --cask tailscale`. If you launched setup with sudo, the ' +
+            "network-extension approval can't surface — re-run `wundr computer-setup` WITHOUT sudo."
         );
+        return;
       }
+      this.logger.info('Tailscale installed.');
     } catch (error: unknown) {
       this.logger.warn(
         `Tailscale install failed: ${
@@ -548,30 +663,60 @@ export class RemoteAccessInstaller implements BaseInstaller {
       return;
     }
 
-    if (!interactive) {
-      this.logger.warn(
-        'Desktop sharing (Parsec/RustDesk) requires an interactive TCC grant ' +
-          '(Screen Recording + Accessibility) that macOS cannot script headlessly. ' +
-          'Skipped — grant it in System Settings > Privacy & Security, or push an MDM PPPC profile, then install the stack.'
-      );
-      return;
-    }
-
     const stack = cfg.stack ?? 'parsec';
-    try {
-      await runProcess('brew', ['install', '--cask', stack], {
+    const appName = stack === 'rustdesk' ? 'RustDesk' : 'Parsec';
+    const appPath = `/Applications/${appName}.app`;
+
+    // The brew cask install itself needs no TTY, so do it regardless of
+    // interactivity — only the TCC (Screen Recording + Accessibility) grant
+    // below is interactive-only. Previously the whole step was skipped when
+    // headless, which is why a non-TTY run never installed Parsec.
+    if (await fs.pathExists(appPath)) {
+      this.logger.info(`${appName} already installed.`);
+    } else {
+      this.logger.info(
+        `Installing ${appName}${
+          interactive ? ' (a macOS admin password prompt may appear)' : ''
+        }...`
+      );
+      const result = await runProcess('brew', ['install', '--cask', stack], {
         timeout: 10 * 60 * 1000,
         reject: false,
+        // Interactive: let the cask prompt for the admin password it needs.
+        stdin: interactive ? 'inherit' : 'ignore',
       });
+      // Verify the app actually landed — brew can exit non-zero (or get killed
+      // by the timeout) and we must NOT claim success when it didn't install.
+      if (!(await fs.pathExists(appPath))) {
+        const why = result.timedOut
+          ? 'it timed out waiting for an admin password'
+          : `brew exited ${result.exitCode}: ${String(result.stderr || '')
+              .split('\n')
+              .filter(Boolean)
+              .slice(-2)
+              .join(' ')
+              .trim()}`;
+        this.logger.warn(
+          `${appName} did NOT install (${why}). Install it manually with ` +
+            `\`brew install --cask ${stack}\`. If you launched setup with sudo, ` +
+            `the GUI installer can't surface — re-run \`wundr computer-setup\` ` +
+            `WITHOUT sudo.`
+        );
+        return;
+      }
+      this.logger.info(`Installed ${appName}.`);
+    }
+
+    if (interactive) {
       this.logger.info(
-        `Installed ${stack}. Grant Screen Recording + Accessibility in ` +
-          'System Settings > Privacy & Security for unattended remote control.'
+        `Grant ${appName} Screen Recording + Accessibility in System Settings > ` +
+          'Privacy & Security for unattended remote control.'
       );
-    } catch (error: unknown) {
+    } else {
       this.logger.warn(
-        `Could not install ${stack}: ${
-          error instanceof Error ? error.message : String(error)
-        }`
+        `${appName} is installed, but it still needs a Screen Recording + ` +
+          'Accessibility (TCC) grant that macOS cannot script headlessly — grant ' +
+          'it in System Settings > Privacy & Security, or push an MDM PPPC profile.'
       );
     }
   }
