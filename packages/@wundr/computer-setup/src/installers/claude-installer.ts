@@ -433,9 +433,11 @@ export class ClaudeInstaller implements BaseInstaller {
   }
 
   /**
-   * Put the freshly-installed `claude` on this process's PATH so subsequent
-   * steps in the same run (MCP servers, plugins) can find it. The native
-   * installer uses ~/.local/bin; older layouts used ~/.claude/local.
+   * Put the freshly-installed `claude` on PATH — both for THIS process (so the
+   * MCP/plugins steps below find it this run) AND persisted to the user's shell
+   * rc files (so `claude` resolves in NEW terminals; the native installer drops
+   * the binary in ~/.local/bin but does not touch the shell config). Older
+   * layouts used ~/.claude/local.
    */
   private ensureClaudeOnPath(): void {
     const home = this.homeDir;
@@ -446,6 +448,7 @@ export class ClaudeInstaller implements BaseInstaller {
     for (const dir of candidates) {
       try {
         if (!fsSync.existsSync(path.join(dir, 'claude'))) continue;
+        // 1) This process, so the very next steps (MCP/plugins) resolve claude.
         const parts = (process.env.PATH || '').split(path.delimiter);
         if (!parts.includes(dir)) {
           process.env.PATH = `${dir}${path.delimiter}${process.env.PATH || ''}`;
@@ -453,8 +456,55 @@ export class ClaudeInstaller implements BaseInstaller {
             `Added ${dir} to PATH so 'claude' resolves for MCP/plugins.`
           );
         }
+        // 2) The user's shells, so `claude` works in new terminals after setup.
+        this.persistDirOnShellPath(dir);
       } catch {
         // best-effort
+      }
+    }
+  }
+
+  /**
+   * Append `export PATH="<dir>:$PATH"` to the user's shell rc files, idempotently
+   * (marker-guarded). Always ensures ~/.zshrc (the macOS default interactive
+   * shell, where `command not found: claude` was reported); also updates
+   * ~/.zprofile / ~/.bash_profile when they already exist.
+   */
+  private persistDirOnShellPath(dir: string): void {
+    // Prefer a $HOME-relative, portable form for the exported line.
+    const rel = dir.startsWith(this.homeDir)
+      ? `$HOME${dir.slice(this.homeDir.length)}`
+      : dir;
+    const marker = `# wundr computer-setup: ${rel} on PATH`;
+    const block = `${marker}\nexport PATH="${rel}:$PATH"\n`;
+
+    const zshrc = path.join(this.homeDir, '.zshrc');
+    const rcFiles = [
+      zshrc,
+      path.join(this.homeDir, '.zprofile'),
+      path.join(this.homeDir, '.bash_profile'),
+    ];
+    for (const rc of rcFiles) {
+      try {
+        const exists = fsSync.existsSync(rc);
+        // Only create the file if it's ~/.zshrc (the shell the user is in);
+        // for the others, just update them when they already exist.
+        if (!exists && rc !== zshrc) continue;
+        const existing = exists ? fsSync.readFileSync(rc, 'utf8') : '';
+        // Skip if this dir is already exported (our marker or any equivalent
+        // line) — keeps re-runs from stacking duplicate entries.
+        if (existing.includes(marker) || existing.includes(`${rel}:$PATH`)) {
+          continue;
+        }
+        const sep = existing === '' || existing.endsWith('\n') ? '' : '\n';
+        fsSync.appendFileSync(rc, `${sep}${block}`);
+        logger.info(
+          `Persisted ${rel} to PATH in ${path.basename(
+            rc
+          )} (open a new terminal, or run \`source ~/${path.basename(rc)}\`).`
+        );
+      } catch {
+        // best-effort per file
       }
     }
   }

@@ -391,6 +391,11 @@ export class RemoteAccessInstaller implements BaseInstaller {
     const label = `com.adaptic.${stack}`;
     const agentsDir = path.join(os.homedir(), 'Library', 'LaunchAgents');
     const plistPath = path.join(agentsDir, `${label}.plist`);
+    // RunAtLoad launches the app once at login (after auto-login). Do NOT set
+    // KeepAlive: ProgramArguments is `open -a <App>`, and `open` exits the
+    // instant it has launched the app — with KeepAlive launchd would treat that
+    // immediate exit as a crash and relaunch `open` in a tight loop, which is
+    // why the app "keeps opening". RunAtLoad alone launches it exactly once.
     const plist = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -399,15 +404,20 @@ export class RemoteAccessInstaller implements BaseInstaller {
   <key>ProgramArguments</key>
   <array><string>/usr/bin/open</string><string>-a</string><string>${appName}</string></array>
   <key>RunAtLoad</key><true/>
-  <key>KeepAlive</key><true/>
 </dict>
 </plist>
 `;
     try {
       await fs.ensureDir(agentsDir);
       await fs.writeFile(plistPath, plist);
-      // Best-effort load; only meaningful with a GUI session attached.
+      // Reload idempotently: unload any previously-loaded version first (this
+      // also tears down an older KeepAlive-looping agent from a prior setup),
+      // then load the fresh definition. Only meaningful with a GUI session.
       if (interactive) {
+        await execa('launchctl', ['unload', plistPath], {
+          reject: false,
+          timeout: 15_000,
+        });
         await execa('launchctl', ['load', '-w', plistPath], {
           reject: false,
           timeout: 15_000,

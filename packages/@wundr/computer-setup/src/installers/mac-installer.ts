@@ -25,6 +25,37 @@ interface ExecaError extends Error {
   timedOut?: boolean;
 }
 
+/**
+ * Homebrew cask token -> /Applications bundle name (without ".app"). This is
+ * the single source of truth for which installed GUI apps get added to the
+ * Dock: configureDock() maps every cask the profile installs through this and
+ * adds the ones whose .app is actually present. Cask tokens NOT listed here
+ * (CLI-only formulae, fonts, drivers) have no dockable app and are skipped.
+ * Keep this in sync with getApplicationsForProfile().
+ */
+const CASK_APP_NAMES: Record<string, string> = {
+  'visual-studio-code': 'Visual Studio Code',
+  'sublime-text': 'Sublime Text',
+  'intellij-idea-ce': 'IntelliJ IDEA CE',
+  firefox: 'Firefox',
+  'google-chrome': 'Google Chrome',
+  docker: 'Docker',
+  postman: 'Postman',
+  tableplus: 'TablePlus',
+  'android-studio': 'Android Studio',
+  anaconda: 'Anaconda-Navigator',
+  'jupyter-notebook-viewer': 'Jupyter Notebook Viewer',
+  'microsoft-teams': 'Microsoft Teams',
+  discord: 'Discord',
+  zoom: 'zoom.us',
+  slack: 'Slack',
+  github: 'GitHub Desktop',
+  iterm2: 'iTerm',
+  rectangle: 'Rectangle',
+  raycast: 'Raycast',
+  'the-unarchiver': 'The Unarchiver',
+};
+
 export class MacInstaller implements BaseInstaller {
   name = 'mac-platform';
   private readonly logger = new Logger({ name: 'MacInstaller' });
@@ -167,7 +198,7 @@ export class MacInstaller implements BaseInstaller {
         required: false,
         dependencies: ['install-applications', 'install-essential-packages'],
         estimatedTime: 20,
-        installer: () => this.configureDock(),
+        installer: () => this.configureDock(profile),
       },
     ];
 
@@ -175,13 +206,15 @@ export class MacInstaller implements BaseInstaller {
   }
 
   /**
-   * Curate the macOS Dock with `dockutil`: add the dev apps we install (only
-   * those actually present) and remove default consumer clutter. Idempotent —
-   * each add is a remove-then-add, and removing an absent item is a no-op — so
+   * Curate the macOS Dock with `dockutil`: add EVERY GUI app this profile
+   * installs (only those actually present) and remove default consumer clutter.
+   * The add-list is derived from the profile's cask list via CASK_APP_NAMES, so
+   * any app we install lands in the Dock — no hardcoded subset to drift. Idempotent
+   * — each add is a remove-then-add, and removing an absent item is a no-op — so
    * it's safe to run on every setup. Runs as the (already non-root) user; the
    * Dock is per-user, so no sudo is needed.
    */
-  private async configureDock(): Promise<void> {
+  private async configureDock(profile: DeveloperProfile): Promise<void> {
     // dockutil is installed in installEssentialPackages; bail clearly if not.
     try {
       await which('dockutil');
@@ -193,18 +226,17 @@ export class MacInstaller implements BaseInstaller {
       return;
     }
 
-    // Apps to ADD (path -> Dock label), only if the .app is actually installed.
-    const toAdd: Array<{ path: string; label: string }> = [
-      { path: '/Applications/Google Chrome.app', label: 'Google Chrome' },
-      {
-        path: '/Applications/Visual Studio Code.app',
-        label: 'Visual Studio Code',
-      },
-      { path: '/Applications/iTerm.app', label: 'iTerm' },
-      { path: '/Applications/Slack.app', label: 'Slack' },
-      { path: '/Applications/GitHub Desktop.app', label: 'GitHub Desktop' },
-      { path: '/Applications/Obsidian.app', label: 'Obsidian' },
-    ];
+    // Apps to ADD: every cask this profile installs that maps to a dockable
+    // .app (CASK_APP_NAMES) — the actual .app-present check happens below.
+    const { casks } = this.getApplicationsForProfile(profile);
+    const toAdd: Array<{ path: string; label: string }> = [];
+    const seen = new Set<string>();
+    for (const cask of casks) {
+      const appName = CASK_APP_NAMES[cask];
+      if (!appName || seen.has(appName)) continue;
+      seen.add(appName);
+      toAdd.push({ path: `/Applications/${appName}.app`, label: appName });
+    }
 
     // Default Apple apps to REMOVE from the Dock (kept: Safari, Notes, System
     // Settings, Finder, Launchpad, App Store, Photos).
@@ -475,7 +507,8 @@ export class MacInstaller implements BaseInstaller {
       'iterm2',
       'rectangle', // Window manager
       'raycast', // Spotlight replacement
-      'obsidian', // Note-taking
+      // Note-taking / markdown is covered by VS Code (installed above) and the
+      // Claude/memory-bank docs system — no separate notes app installed.
       'the-unarchiver'
     );
 
