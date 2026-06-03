@@ -263,10 +263,26 @@ export class NodeInstaller implements BaseInstaller {
   }
 
   private async installGlobalPackages(packages: string[]): Promise<void> {
+    if (packages.length === 0) return;
+
+    // CRITICAL: install into the nvm-managed Node (user-writable prefix under
+    // ~/.nvm), NOT the system Node at /usr/local — bare `npm install -g` there
+    // needs sudo and fails with EACCES (mkdir /usr/local/lib/node_modules).
+    // Sourcing nvm + `nvm use default` makes `npm` resolve to the nvm node's
+    // npm. If nvm is absent we REFUSE rather than silently poison /usr/local.
+    const nvmPreamble =
+      `export NVM_DIR="${os.homedir()}/.nvm"\n` +
+      `if [ ! -s "$NVM_DIR/nvm.sh" ]; then echo "wundr: nvm not found at $NVM_DIR; refusing to use the system npm (/usr/local)"; exit 1; fi\n` +
+      `\\. "$NVM_DIR/nvm.sh"\n` +
+      `nvm use default >/dev/null 2>&1 || nvm use node >/dev/null 2>&1 || true\n`;
+
     for (const pkg of packages) {
       try {
-        // Use --force flag to handle existing packages
-        await execa('npm', ['install', '-g', pkg, '--force']);
+        await runShellScript(
+          `${nvmPreamble}npm install -g ${pkg} --no-fund --no-audit`,
+          { timeout: 5 * 60 * 1000 }
+        );
+        logger.info(`Installed global package: ${pkg}`);
       } catch (error) {
         logger.warn(
           `Failed to install global package ${pkg}: ${String(error)}`

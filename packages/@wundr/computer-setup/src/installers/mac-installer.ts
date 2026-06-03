@@ -1,6 +1,7 @@
 /**
  * macOS Platform Installer - macOS-specific tools and configurations
  */
+import * as crypto from 'crypto';
 import * as os from 'os';
 import * as path from 'path';
 
@@ -26,35 +27,65 @@ interface ExecaError extends Error {
 }
 
 /**
- * Homebrew cask token -> /Applications bundle name (without ".app"). This is
- * the single source of truth for which installed GUI apps get added to the
- * Dock: configureDock() maps every cask the profile installs through this and
- * adds the ones whose .app is actually present. Cask tokens NOT listed here
- * (CLI-only formulae, fonts, drivers) have no dockable app and are skipped.
- * Keep this in sync with getApplicationsForProfile().
+ * The CURATED Dock: the work apps we pin for an always-on agent host, in order.
+ * Only those whose .app is actually present are added (Tailscale/Parsec install
+ * in the remote-access step, so the Dock step is ordered AFTER it). This is a
+ * fixed list on purpose — NOT every installed app — so utilities like
+ * Rectangle/Raycast/iTerm/The Unarchiver stay installed but undocked.
  */
-const CASK_APP_NAMES: Record<string, string> = {
-  'visual-studio-code': 'Visual Studio Code',
-  'sublime-text': 'Sublime Text',
-  'intellij-idea-ce': 'IntelliJ IDEA CE',
-  firefox: 'Firefox',
-  'google-chrome': 'Google Chrome',
-  docker: 'Docker',
-  postman: 'Postman',
-  tableplus: 'TablePlus',
-  'android-studio': 'Android Studio',
-  anaconda: 'Anaconda-Navigator',
-  'jupyter-notebook-viewer': 'Jupyter Notebook Viewer',
-  'microsoft-teams': 'Microsoft Teams',
-  discord: 'Discord',
-  zoom: 'zoom.us',
-  slack: 'Slack',
-  github: 'GitHub Desktop',
-  iterm2: 'iTerm',
-  rectangle: 'Rectangle',
-  raycast: 'Raycast',
-  'the-unarchiver': 'The Unarchiver',
-};
+const DOCK_APPS: ReadonlyArray<string> = [
+  'Google Chrome',
+  'Visual Studio Code',
+  'Slack',
+  'WhatsApp',
+  'GitHub Desktop',
+  'Tailscale',
+  'Parsec',
+];
+
+/**
+ * Default Apple/consumer + utility apps to REMOVE from the Dock. Keeps Finder,
+ * Safari, System Settings, Launchpad-replacement etc. clean. The four utilities
+ * (Rectangle/Raycast/iTerm/The Unarchiver) are removed from the Dock but remain
+ * installed (user decision).
+ */
+const DOCK_REMOVE: ReadonlyArray<string> = [
+  // Apple consumer apps
+  'Maps',
+  'Contacts',
+  'Reminders',
+  'TV',
+  'Music',
+  'Podcasts',
+  'News',
+  'Stocks',
+  'Freeform',
+  'FaceTime',
+  'Mail',
+  'Messages',
+  'Phone',
+  'Keynote',
+  'Pages',
+  'Numbers',
+  'Calendar',
+  'Launchpad',
+  // Installed utilities — keep installed, undock
+  'Rectangle',
+  'Raycast',
+  'iTerm',
+  'The Unarchiver',
+];
+
+/**
+ * Apps that should auto-start at login on an always-on agent host. A per-app
+ * LaunchAgent (RunAtLoad, no KeepAlive) is written for each whose .app exists.
+ */
+const AUTO_START_APPS: ReadonlyArray<string> = [
+  'Tailscale',
+  'Parsec',
+  'Slack',
+  'WhatsApp',
+];
 
 export class MacInstaller implements BaseInstaller {
   name = 'mac-platform';
@@ -125,12 +156,26 @@ export class MacInstaller implements BaseInstaller {
   getSteps(profile: DeveloperProfile, _platform: SetupPlatform): SetupStep[] {
     const steps: SetupStep[] = [
       {
+        // KEYSTONE: must run first so Homebrew + every later privileged step run
+        // unattended via `sudo -n`. required:false — never aborts core setup.
+        id: 'configure-passwordless-sudo',
+        name: 'Configure Passwordless Sudo',
+        description:
+          'Grant the setup user NOPASSWD sudo (visudo-validated /etc/sudoers.d drop-in) so every later step runs unattended',
+        category: 'system',
+        required: false,
+        dependencies: [],
+        estimatedTime: 15,
+        validator: () => this.validatePasswordlessSudo(),
+        installer: () => this.configurePasswordlessSudo(),
+      },
+      {
         id: 'install-xcode-cli-tools',
         name: 'Install Xcode Command Line Tools',
         description: 'Install essential development tools and compilers',
         category: 'system',
         required: true,
-        dependencies: [],
+        dependencies: ['configure-passwordless-sudo'],
         estimatedTime: 300,
         validator: () => this.validateXcodeCommandLineTools(),
         installer: () => this.installXcodeCommandLineTools(),
@@ -141,7 +186,10 @@ export class MacInstaller implements BaseInstaller {
         description: 'Install Homebrew package manager',
         category: 'system',
         required: true,
-        dependencies: ['install-xcode-cli-tools'],
+        dependencies: [
+          'install-xcode-cli-tools',
+          'configure-passwordless-sudo',
+        ],
         estimatedTime: 120,
         validator: () => this.validateHomebrew(),
         installer: () => this.installHomebrew(),
@@ -191,12 +239,32 @@ export class MacInstaller implements BaseInstaller {
         installer: () => this.configureShell(profile),
       },
       {
-        id: 'configure-dock',
-        name: 'Configure Dock',
-        description: 'Add installed dev apps to the Dock and remove clutter',
+        // Owns ALL auto-start LaunchAgents (Tailscale/Parsec/Slack/WhatsApp);
+        // depends on the app installs + remote-access so every target exists.
+        id: 'configure-auto-start',
+        name: 'Configure Auto-Start Apps',
+        description:
+          'Auto-start Tailscale, Parsec, Slack and WhatsApp at login (per-app LaunchAgents)',
         category: 'configuration',
         required: false,
-        dependencies: ['install-applications', 'install-essential-packages'],
+        dependencies: ['install-applications', 'configure-remote-access'],
+        estimatedTime: 15,
+        installer: () => this.installAutoStartLoginItems(profile),
+      },
+      {
+        // Ordered LAST: depends on configure-remote-access so Tailscale/Parsec
+        // are installed before the Dock is built (missing dep ids are skipped).
+        id: 'configure-dock',
+        name: 'Configure Dock',
+        description: 'Pin the curated work apps to the Dock and remove clutter',
+        category: 'configuration',
+        required: false,
+        dependencies: [
+          'install-essential-packages',
+          'install-applications',
+          'configure-remote-access',
+          'configure-auto-start',
+        ],
         estimatedTime: 20,
         installer: () => this.configureDock(profile),
       },
@@ -206,15 +274,16 @@ export class MacInstaller implements BaseInstaller {
   }
 
   /**
-   * Curate the macOS Dock with `dockutil`: add EVERY GUI app this profile
-   * installs (only those actually present) and remove default consumer clutter.
-   * The add-list is derived from the profile's cask list via CASK_APP_NAMES, so
-   * any app we install lands in the Dock — no hardcoded subset to drift. Idempotent
-   * — each add is a remove-then-add, and removing an absent item is a no-op — so
-   * it's safe to run on every setup. Runs as the (already non-root) user; the
-   * Dock is per-user, so no sudo is needed.
+   * Curate the macOS Dock with `dockutil`: pin a fixed curated set of work apps
+   * (DOCK_APPS — only those actually present) and remove the Apple consumer
+   * clutter + installed utilities (DOCK_REMOVE). This is a CURATED list, not
+   * every installed app, so Rectangle/Raycast/iTerm/The Unarchiver stay
+   * installed but undocked. Idempotent (each add is a remove-then-add; removing
+   * an absent item is a no-op). Ordered LAST in the step graph (after
+   * configure-remote-access) so Tailscale/Parsec exist when it runs. Per-user,
+   * no sudo.
    */
-  private async configureDock(profile: DeveloperProfile): Promise<void> {
+  private async configureDock(_profile: DeveloperProfile): Promise<void> {
     // dockutil is installed in installEssentialPackages; bail clearly if not.
     try {
       await which('dockutil');
@@ -226,35 +295,6 @@ export class MacInstaller implements BaseInstaller {
       return;
     }
 
-    // Apps to ADD: every cask this profile installs that maps to a dockable
-    // .app (CASK_APP_NAMES) — the actual .app-present check happens below.
-    const { casks } = this.getApplicationsForProfile(profile);
-    const toAdd: Array<{ path: string; label: string }> = [];
-    const seen = new Set<string>();
-    for (const cask of casks) {
-      const appName = CASK_APP_NAMES[cask];
-      if (!appName || seen.has(appName)) continue;
-      seen.add(appName);
-      toAdd.push({ path: `/Applications/${appName}.app`, label: appName });
-    }
-
-    // Default Apple apps to REMOVE from the Dock (kept: Safari, Notes, System
-    // Settings, Finder, Launchpad, App Store, Photos).
-    const toRemove = [
-      'Maps',
-      'Contacts',
-      'Reminders',
-      'TV',
-      'Music',
-      'Podcasts',
-      'News',
-      'Stocks',
-      'Freeform',
-      'FaceTime',
-      'Mail',
-      'Messages',
-    ];
-
     const dockutil = async (args: string[]): Promise<number> => {
       const result = await execa('dockutil', args, {
         timeout: 30_000,
@@ -264,17 +304,19 @@ export class MacInstaller implements BaseInstaller {
       return result.exitCode ?? 1;
     };
 
-    // Remove clutter (no-op if the item isn't there). --no-restart: batch first.
-    for (const label of toRemove) {
+    // Remove clutter + undocked utilities (no-op if the item isn't there).
+    for (const label of DOCK_REMOVE) {
       await dockutil(['--remove', label, '--no-restart']);
     }
 
-    // Add our apps idempotently: remove any existing entry, then add fresh.
+    // Add the curated work apps idempotently (remove-then-add), preserving the
+    // DOCK_APPS order, only when the .app is actually present.
     let added = 0;
-    for (const app of toAdd) {
-      if (!(await fs.pathExists(app.path))) continue;
-      await dockutil(['--remove', app.label, '--no-restart']);
-      const code = await dockutil(['--add', app.path, '--no-restart']);
+    for (const appName of DOCK_APPS) {
+      const appPath = `/Applications/${appName}.app`;
+      if (!(await fs.pathExists(appPath))) continue;
+      await dockutil(['--remove', appName, '--no-restart']);
+      const code = await dockutil(['--add', appPath, '--no-restart']);
       if (code === 0) added++;
     }
 
@@ -285,8 +327,251 @@ export class MacInstaller implements BaseInstaller {
       // Dock will pick up changes on next launch even if killall fails.
     }
     this.logger.info(
-      `Dock configured: added ${added} app(s), removed ${toRemove.length} default item(s).`
+      `Dock configured: added ${added} app(s), removed ${DOCK_REMOVE.length} default/utility item(s).`
     );
+  }
+
+  /**
+   * Write a per-app LaunchAgent (RunAtLoad, NO KeepAlive) for each app in
+   * AUTO_START_APPS that is actually installed, so the always-on host auto-
+   * starts Tailscale/Parsec/Slack/WhatsApp at login (after auto-login). NO
+   * KeepAlive: `open -a` exits immediately, so KeepAlive would relaunch it in a
+   * tight loop. Idempotent unload+load. Per-user (~/Library/LaunchAgents), no
+   * sudo. Also removes the legacy single-app `com.adaptic.<stack>.plist` agents.
+   */
+  private async installAutoStartLoginItems(
+    _profile: DeveloperProfile
+  ): Promise<void> {
+    const agentsDir = path.join(os.homedir(), 'Library', 'LaunchAgents');
+    await fs.ensureDir(agentsDir);
+
+    // Tear down legacy looping/competing agents from older setups.
+    for (const legacy of ['com.adaptic.parsec', 'com.adaptic.rustdesk']) {
+      const p = path.join(agentsDir, `${legacy}.plist`);
+      if (await fs.pathExists(p)) {
+        await execa('launchctl', ['unload', p], {
+          reject: false,
+          timeout: 10_000,
+        });
+        try {
+          await fs.remove(p);
+        } catch {
+          /* best-effort */
+        }
+      }
+    }
+
+    const interactive = isInteractive();
+    let installed = 0;
+    for (const appName of AUTO_START_APPS) {
+      if (!(await fs.pathExists(`/Applications/${appName}.app`))) continue;
+      const slug = appName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const label = `com.adaptic.autostart.${slug}`;
+      const plistPath = path.join(agentsDir, `${label}.plist`);
+      const plist = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>${label}</string>
+  <key>ProgramArguments</key>
+  <array><string>/usr/bin/open</string><string>-a</string><string>${appName}</string></array>
+  <key>RunAtLoad</key><true/>
+</dict>
+</plist>
+`;
+      try {
+        await fs.writeFile(plistPath, plist);
+        if (interactive) {
+          await execa('launchctl', ['unload', plistPath], {
+            reject: false,
+            timeout: 15_000,
+          });
+          await execa('launchctl', ['load', '-w', plistPath], {
+            reject: false,
+            timeout: 15_000,
+          });
+        }
+        installed++;
+      } catch (error: unknown) {
+        this.logger.warn(
+          `Could not install auto-start agent for ${appName}: ${
+            error instanceof Error ? error.message : String(error)
+          }`
+        );
+      }
+    }
+    this.logger.info(
+      `Auto-start configured: ${installed} app LaunchAgent(s) (of ${AUTO_START_APPS.length} candidates) at login.`
+    );
+  }
+
+  /**
+   * Grant the setup user permanent passwordless sudo via a visudo-validated
+   * /etc/sudoers.d drop-in. Keystone first step: with this in place, Homebrew,
+   * pkg casks, systemsetup, pmset, launchctl, ARD and the agent itself all run
+   * unattended via `sudo -n`. SECURITY: this is full root with no password for
+   * the user/agent — intended ONLY for an isolated single-purpose agent box.
+   * Always validates with `visudo -cf` before installing (a broken drop-in
+   * disables sudo system-wide), installs atomically as root:wheel 0440, and
+   * proves it took effect on a cold timestamp. Idempotent + never aborts setup.
+   */
+  private async configurePasswordlessSudo(): Promise<void> {
+    if (process.env.WUNDR_NO_PASSWORDLESS_SUDO) {
+      this.logger.info(
+        'Passwordless sudo opt-out (WUNDR_NO_PASSWORDLESS_SUDO) — skipping.'
+      );
+      return;
+    }
+    const user = this.getInvokingUser();
+    if (!user) {
+      this.logger.warn(
+        'Could not resolve a non-root target user for passwordless sudo — ' +
+          'skipping. (Run as a normal admin user.)'
+      );
+      return;
+    }
+    if (await this.hasPasswordlessSudo()) {
+      this.logger.info(
+        `Passwordless sudo already active for ${user} — no changes needed.`
+      );
+      return;
+    }
+    if (!(await this.primeSudoOnce(user))) return;
+
+    const dropInPath = `/etc/sudoers.d/wundr-${user}`;
+    const line = `${user} ALL=(ALL) NOPASSWD: ALL\n`;
+    const tmpPath = path.join(
+      os.tmpdir(),
+      `wundr-sudoers-${process.pid}-${crypto.randomBytes(6).toString('hex')}`
+    );
+    try {
+      await fs.writeFile(tmpPath, line, { mode: 0o600 });
+      // Validate BEFORE it can influence sudo — an unvalidated write can lock
+      // the box out of sudo entirely.
+      const check = await execa('sudo', ['-n', 'visudo', '-cf', tmpPath], {
+        reject: false,
+        timeout: 15_000,
+      });
+      if (check.exitCode !== 0) {
+        this.logger.warn(
+          `Refusing to install passwordless-sudo drop-in: visudo validation ` +
+            `failed (${(check.stderr || check.stdout || '').trim()}).`
+        );
+        return;
+      }
+      // Atomic install with the exact mode+owner sudoers requires (it ignores
+      // the whole dir if any file is group/world-writable or mis-owned).
+      const placed = await execa(
+        'sudo',
+        [
+          '-n',
+          '/usr/bin/install',
+          '-m',
+          '0440',
+          '-o',
+          'root',
+          '-g',
+          'wheel',
+          tmpPath,
+          dropInPath,
+        ],
+        { reject: false, timeout: 15_000 }
+      );
+      if (placed.exitCode !== 0) {
+        this.logger.warn(
+          `Failed to install ${dropInPath} (${(placed.stderr || '').trim()}).`
+        );
+        return;
+      }
+      // Prove it on a COLD timestamp (sudo -k clears any cached grant first).
+      await execa('sudo', ['-k'], { reject: false, timeout: 5_000 });
+      const verified =
+        (
+          await execa('sudo', ['-n', 'true'], {
+            reject: false,
+            timeout: 5_000,
+          })
+        ).exitCode === 0;
+      this.logger.info(
+        verified
+          ? `Passwordless sudo configured for ${user} (0440 root:wheel at ${dropInPath}) — later steps run unattended.`
+          : `Wrote ${dropInPath} but passwordless sudo still inactive — check that /etc/sudoers has '@includedir /private/etc/sudoers.d'.`
+      );
+    } catch (error: unknown) {
+      this.logger.warn(
+        `Could not configure passwordless sudo: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    } finally {
+      try {
+        await fs.remove(tmpPath);
+      } catch {
+        /* best-effort cleanup of the candidate file */
+      }
+    }
+  }
+
+  /** Validator: true when `sudo -n` already runs without a password. */
+  private async validatePasswordlessSudo(): Promise<boolean> {
+    return this.hasPasswordlessSudo();
+  }
+
+  /** The invoking (non-root) user — $SUDO_USER under sudo, else the login. */
+  private getInvokingUser(): string | null {
+    const candidate =
+      (process.env.SUDO_USER && process.env.SUDO_USER !== 'root'
+        ? process.env.SUDO_USER
+        : undefined) ?? os.userInfo().username;
+    if (!candidate || candidate === 'root') return null;
+    return candidate;
+  }
+
+  /** True when `sudo -n` already runs without a password. */
+  private async hasPasswordlessSudo(): Promise<boolean> {
+    const r = await execa('sudo', ['-n', 'true'], {
+      reject: false,
+      stdin: 'ignore',
+      timeout: 5_000,
+    });
+    return r.exitCode === 0;
+  }
+
+  /** Obtain ONE elevation to write the drop-in (interactive prompt / cached). */
+  private async primeSudoOnce(user: string): Promise<boolean> {
+    if (isInteractive()) {
+      this.logger.warn(
+        `macOS password needed ONCE to grant ${user} passwordless sudo so the ` +
+          'rest of setup (Homebrew, Tailscale/Parsec, Remote Login, power) runs ' +
+          'unattended — type it at the prompt below.'
+      );
+      const r = await execa('sudo', ['-v'], {
+        stdin: 'inherit',
+        stdout: 'inherit',
+        stderr: 'inherit',
+        timeout: 60_000,
+        reject: false,
+      });
+      if (r.exitCode === 0) return true;
+      this.logger.warn(
+        `No sudo granted (${
+          r.timedOut ? 'no password in time' : 'cancelled'
+        }) — passwordless sudo not configured; later privileged steps will be skipped.`
+      );
+      return false;
+    }
+    const r = await execa('sudo', ['-n', '-v'], {
+      reject: false,
+      stdin: 'ignore',
+      timeout: 10_000,
+    });
+    if (r.exitCode === 0) return true;
+    this.logger.warn(
+      'Headless run with no cached/seeded sudo — cannot configure passwordless ' +
+        'sudo. Seed the first sudo once (MDM / admin-run first invocation / baked ' +
+        'image) and re-run; everything after will be unattended.'
+    );
+    return false;
   }
 
   private async installXcodeCommandLineTools(): Promise<void> {
@@ -315,13 +600,19 @@ export class MacInstaller implements BaseInstaller {
     }
 
     this.logger.info('Installing Homebrew...');
-    // runShellScript wraps this in a single `bash -c`. On a headless run
-    // NONINTERACTIVE=1 (set by nonInteractiveEnv) suppresses the "Press RETURN"
-    // prompt and a hard timeout prevents an indefinite hang; an interactive run
-    // keeps stdin attached so Homebrew can prompt for the sudo password.
+    // TTY-safe official form. `curl | bash` made install.sh's STDIN the curl
+    // PIPE (not the terminal), so Homebrew saw `[ ! -t 0 ]`, declared itself
+    // non-interactive, and aborted ("stdin is not a TTY ... Need sudo access").
+    // Command substitution `$(curl ...)` instead feeds the script TEXT to bash,
+    // leaving stdin = the inherited TTY (interactive) so Homebrew can prompt for
+    // (or, with our passwordless sudoers, silently use) sudo. NONINTERACTIVE=1 +
+    // CI=1 drop the "Press RETURN to continue" gate so a fleet run never blocks.
     await runShellScript(
-      'curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | bash',
-      { timeout: 15 * 60 * 1000 }
+      'NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"',
+      {
+        timeout: 15 * 60 * 1000,
+        env: nonInteractiveEnv({ NONINTERACTIVE: '1', CI: '1' }),
+      }
     );
 
     // Put brew on PATH for the remainder of this process so the very next
@@ -330,11 +621,35 @@ export class MacInstaller implements BaseInstaller {
       ? '/opt/homebrew'
       : '/usr/local';
     const brewBin = `${brewPrefix}/bin`;
-    if (!(process.env.PATH || '').includes(brewBin)) {
+    // 1) Make brew resolvable in THIS process immediately (cheap, always works).
+    if (!(process.env.PATH || '').split(path.delimiter).includes(brewBin)) {
       process.env.PATH = `${brewBin}:${brewPrefix}/sbin:${process.env.PATH || ''}`;
     }
-    process.env.HOMEBREW_PREFIX = brewPrefix;
     process.env.HOMEBREW_NO_ANALYTICS = '1';
+    // 2) Authoritatively import the full brew environment (HOMEBREW_PREFIX,
+    //    HOMEBREW_CELLAR, HOMEBREW_REPOSITORY, MANPATH, PATH) for the rest of the
+    //    process so every later `brew install`/`brew list` resolves. `brew
+    //    shellenv` prints `export KEY="value"` lines; parse and apply them.
+    try {
+      const { stdout } = await execa(`${brewBin}/brew`, ['shellenv'], {
+        timeout: 30_000,
+        env: nonInteractiveEnv(),
+      });
+      for (const line of stdout.split('\n')) {
+        const m = line.match(/^export\s+([A-Z_]+)="(.*)"$/);
+        if (!m) continue;
+        const [, key, rawVal] = m;
+        // shellenv emits PATH/MANPATH with literal $PATH suffixes — expand them.
+        process.env[key] = rawVal.replace(
+          /\$(\w+)/g,
+          (_, name) => process.env[name] ?? ''
+        );
+      }
+    } catch {
+      // Fall back to the manual PATH above plus an explicit prefix.
+      process.env.HOMEBREW_PREFIX = brewPrefix;
+    }
+    if (!process.env.HOMEBREW_PREFIX) process.env.HOMEBREW_PREFIX = brewPrefix;
   }
 
   private async installEssentialPackages(
@@ -502,6 +817,7 @@ export class MacInstaller implements BaseInstaller {
     // Common applications — installed on EVERY run, regardless of role/profile.
     casks.push(
       'slack', // team chat
+      'whatsapp', // messaging (app-stanza cask, no sudo)
       'github', // GitHub Desktop
       'google-chrome', // default browser for all roles
       'iterm2',
@@ -555,11 +871,28 @@ export class MacInstaller implements BaseInstaller {
       'defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerDrag -bool true',
       'defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerDrag -bool true',
 
-      // Hot corners - disable screensaver
+      // --- Always-on host: never blank, never screensaver, never lock ---------
+      // Per-currentHost screensaver idle timeout = 0 (never start). The modern
+      // screensaver domain is per-host, so a plain `defaults write` (no
+      // -currentHost) is IGNORED — must use -currentHost.
+      'defaults -currentHost write com.apple.screensaver idleTime -int 0',
+      // Also clear the legacy global-domain key in case an MDM/profile set it.
+      'defaults write com.apple.screensaver idleTime -int 0',
+      // Do NOT require a password after sleep/screensaver — combined with
+      // auto-login this keeps the Aqua session unlocked for ARD/Parsec/SSH.
+      'defaults write com.apple.screensaver askForPassword -int 0',
+      'defaults write com.apple.screensaver askForPasswordDelay -int 0',
+
+      // Hot corners: action 0 = no-op. NEVER use 5 (Start Screen Saver) or 13
+      // (Lock Screen) on an always-on host; pin the modifier to 0 too.
       'defaults write com.apple.dock wvous-tl-corner -int 0',
+      'defaults write com.apple.dock wvous-tl-modifier -int 0',
       'defaults write com.apple.dock wvous-tr-corner -int 0',
+      'defaults write com.apple.dock wvous-tr-modifier -int 0',
       'defaults write com.apple.dock wvous-bl-corner -int 0',
+      'defaults write com.apple.dock wvous-bl-modifier -int 0',
       'defaults write com.apple.dock wvous-br-corner -int 0',
+      'defaults write com.apple.dock wvous-br-modifier -int 0',
 
       // Dock settings
       'defaults write com.apple.dock autohide -bool true',
@@ -584,8 +917,10 @@ export class MacInstaller implements BaseInstaller {
       }
     }
 
-    // Restart affected services (best-effort; not running on a headless machine).
-    for (const service of ['Finder', 'Dock']) {
+    // Restart affected services (best-effort; not running on a headless
+    // machine). cfprefsd FIRST so the just-written -currentHost screensaver pref
+    // is flushed and not served stale to the saver agent.
+    for (const service of ['cfprefsd', 'Finder', 'Dock', 'SystemUIServer']) {
       try {
         await execa('killall', [service], { timeout: 10_000 });
       } catch {
