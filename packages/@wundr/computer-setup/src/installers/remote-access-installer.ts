@@ -20,9 +20,11 @@ import * as os from 'os';
 import * as path from 'path';
 
 import * as fs from 'fs-extra';
+import inquirer from 'inquirer';
 import which from 'which';
 
 import { isInteractive, runProcess } from '../lib/headless';
+import { resolveInvokingUser } from '../lib/privileges';
 import { Logger } from '../utils/logger';
 
 import type {
@@ -36,7 +38,13 @@ import type { BaseInstaller } from './index';
 export class RemoteAccessInstaller implements BaseInstaller {
   name = 'remote-access';
   private readonly logger = new Logger({ name: 'RemoteAccessInstaller' });
-  private sudoUnavailable = false;
+  /** Per-run capability flag (NOT a failure latch): set once by ensurePasswordlessSudo. */
+  private passwordlessSudo = false;
+
+  /** The classic kcpassword XOR cipher key loginwindow uses to decode /etc/kcpassword. */
+  private static readonly KCPASSWORD_KEY = [
+    0x7d, 0x89, 0x52, 0x23, 0xd2, 0xbc, 0xde, 0xa3, 0xd2, 0xcb, 0x90,
+  ] as const;
 
   isSupported(platform: SetupPlatform): boolean {
     return platform.os === 'darwin';
@@ -76,7 +84,14 @@ export class RemoteAccessInstaller implements BaseInstaller {
         category: 'system',
         // Never block the core setup if remote access can't be completed.
         required: false,
-        dependencies: ['install-homebrew'],
+        // After Homebrew (casks), the GUI app phase (so the apps it docks/auto-
+        // starts exist), and the passwordless-sudo keystone (so its sudo calls
+        // run unattended). Missing dep ids are skipped by the topo sort.
+        dependencies: [
+          'install-homebrew',
+          'install-applications',
+          'configure-passwordless-sudo',
+        ],
         estimatedTime: 180,
         validator: () => this.validate(),
         installer: () => this.install(_profile, _platform),
@@ -126,12 +141,11 @@ export class RemoteAccessInstaller implements BaseInstaller {
     // exported them into this process.
     this.ensureBrewOnPath();
 
-    // Prime sudo ONCE up front. The Tailscale and Parsec casks are pkg-based
-    // (brew shells out to `installer -pkg -target /` as root), and the host
-    // settings below need sudo too — caching it here means a single visible
-    // prompt covers every privileged step and brew won't prompt again
-    // mid-install. No-op when headless / non-interactive.
-    await this.primeSudo();
+    // Establish passwordless sudo up front (the keystone configure-passwordless-
+    // sudo step normally already wrote the NOPASSWD drop-in, so this is a silent
+    // `sudo -n` probe). pkg casks (Tailscale/Parsec) + every host setting below
+    // then run unattended via `sudo -n` — no per-command prompt, no latch.
+    await this.ensurePasswordlessSudo();
 
     await this.ensureTailscale();
     await this.tailscaleUp(cfg, interactive);
@@ -139,17 +153,19 @@ export class RemoteAccessInstaller implements BaseInstaller {
 
     if (mode === 'host') {
       // A headless host must ACCEPT connections: enable the SSH server (Remote
-      // Login) and native Screen Sharing / Remote Management, and stay awake.
-      // sudo was already primed above, so these apply from that one prompt.
+      // Login) and native Screen Sharing / Remote Management, stay awake, and
+      // auto-login after a reboot so a GUI session exists for Parsec/ARD.
       await this.enableRemoteLogin();
       await this.configurePowerManagement(cfg);
       await this.enableScreenSharing();
+      await this.configureAutoLogin(cfg);
     }
 
     await this.configureDesktopSharing(cfg, mode, interactive);
 
     if (mode === 'host') {
-      await this.installAutoStartAgent(cfg, interactive);
+      // Auto-start LaunchAgents (Tailscale/Parsec/Slack/WhatsApp) are owned by
+      // the mac-installer configure-auto-start step, which runs after this.
       // Open the System Settings panes + the app so the user just flicks the
       // remaining switches, rather than reading a checklist. Falls back to the
       // text checklist when headless.
@@ -181,33 +197,59 @@ export class RemoteAccessInstaller implements BaseInstaller {
   }
 
   /**
-   * Prompt for the sudo password ONCE, up front and visibly, so the privileged
-   * host steps below all run from a single password entry (sudo caches it).
-   * No-op when headless or when sudo is already known to be unavailable.
+   * Ensure passwordless sudo is active so every privileged host step below runs
+   * unattended via `sudo -n` with no prompt. The standard path is the
+   * /etc/sudoers.d/wundr-<user> NOPASSWD drop-in written by the keystone
+   * configure-passwordless-sudo step — when present this probe succeeds silently
+   * and the whole run is hands-off. Fallbacks: headless+no-sudo → skip (never
+   * block); interactive+no-sudo → ONE visible `sudo -v` to seed a timestamp.
+   * Unlike the old primeSudo, a miss here does NOT latch anything off — each
+   * privileged call still probes `sudo -n` independently.
    */
-  private async primeSudo(): Promise<void> {
-    if (this.sudoUnavailable || !isInteractive()) return;
+  private async ensurePasswordlessSudo(): Promise<void> {
+    // Non-interactive probe: never reads stdin, so it can't be poisoned by a
+    // prior stdin:'inherit' child and can't hang.
+    const probe = await execa('sudo', ['-n', 'true'], {
+      stdin: 'ignore',
+      timeout: 5_000,
+      reject: false,
+    });
+    if (probe.exitCode === 0) {
+      this.passwordlessSudo = true;
+      this.logger.info(
+        'Passwordless sudo is active — privileged host steps run unattended via `sudo -n`.'
+      );
+      return;
+    }
+    if (!isInteractive()) {
+      this.logger.warn(
+        'Passwordless sudo is NOT configured and no console is attached — Remote ' +
+          'Login, Screen Sharing, power and auto-login will be skipped. Provision ' +
+          '/etc/sudoers.d/wundr-<user> (NOPASSWD) for unattended setup.'
+      );
+      return;
+    }
+    // Interactive last resort: one visible prompt seeds a sudo timestamp the
+    // `sudo -n` calls below reuse. This is the ONLY stdin:'inherit' sudo.
     this.logger.warn(
-      'macOS password needed to install Parsec/Tailscale and enable Remote ' +
-        'Login, Screen Sharing and power settings — type it at the prompt below ' +
-        '(asked once for all of them), or wait to skip the privileged steps.'
+      'macOS password needed once to enable Remote Login, Screen Sharing, power ' +
+        'and auto-login (asked a single time); or configure passwordless sudo to ' +
+        'skip this entirely.'
     );
-    // 60s is ample for a human at the keyboard but bounds the dead-air if no one
-    // is present (the latch then cleanly skips the privileged steps).
-    const result = await execa('sudo', ['-v'], {
+    const seed = await execa('sudo', ['-v'], {
       stdin: 'inherit',
       stdout: 'inherit',
       stderr: 'inherit',
       timeout: 60_000,
       reject: false,
     });
-    if (result.exitCode !== 0) {
-      this.sudoUnavailable = true;
+    if (seed.exitCode === 0) {
+      this.passwordlessSudo = true;
+    } else {
       this.logger.warn(
         `No sudo access granted (${
-          result.timedOut ? 'no password entered in time' : 'prompt cancelled'
-        }) — privileged steps (Parsec/Tailscale install, Remote Login, Screen ` +
-          'Sharing, power) will be skipped. Re-run and enter your password to finish.'
+          seed.timedOut ? 'no password entered in time' : 'prompt cancelled'
+        }) — privileged host steps will be skipped.`
       );
     }
   }
@@ -247,15 +289,20 @@ export class RemoteAccessInstaller implements BaseInstaller {
     const args = listed
       ? ['reinstall', '--cask', '--force', token]
       : ['install', '--cask', token];
+    // pkg casks (tailscale-app, parsec) shell out to `sudo /usr/sbin/installer`.
+    // With passwordless sudo configured, that runs unattended — keep stdin
+    // detached so it can't be poisoned and never prompts. Only fall back to
+    // inheriting the TTY when we have NO passwordless sudo (so brew can prompt).
+    const unattended = this.passwordlessSudo;
     this.logger.info(
       `${listed ? 'Repairing' : 'Installing'} ${token} (\`brew ${args.join(
         ' '
-      )}\`${interactive ? '; a macOS admin password prompt may appear' : ''})...`
+      )}\`${unattended ? '' : '; a macOS admin password prompt may appear'})...`
     );
     return runProcess('brew', args, {
       timeout: interactive ? 10 * 60 * 1000 : 3 * 60 * 1000,
       reject: false,
-      stdin: interactive ? 'inherit' : 'ignore',
+      stdin: unattended ? 'ignore' : interactive ? 'inherit' : 'ignore',
     });
   }
 
@@ -284,39 +331,105 @@ export class RemoteAccessInstaller implements BaseInstaller {
     ]);
     const tailscaleApp = await fs.pathExists('/Applications/Tailscale.app');
     const appInstalled = await fs.pathExists(`/Applications/${appName}.app`);
-    const agent = await fs.pathExists(
-      path.join(
-        os.homedir(),
-        'Library',
-        'LaunchAgents',
-        `com.adaptic.${stack}.plist`
-      )
+
+    // Auto-start agents are owned by mac-installer (com.adaptic.autostart.<slug>).
+    const agentsDir = path.join(os.homedir(), 'Library', 'LaunchAgents');
+    const autostart = async (slug: string): Promise<boolean> =>
+      fs.pathExists(
+        path.join(agentsDir, `com.adaptic.autostart.${slug}.plist`)
+      );
+    const tsAgent = await autostart('tailscale');
+    const parsecAgent = await autostart(stack);
+    const slackAgent = await autostart('slack');
+    const whatsappAgent = await autostart('whatsapp');
+
+    // Passwordless sudo + auto-login + screensaver (read-only).
+    const sudoers = await fs.pathExists(
+      `/etc/sudoers.d/wundr-${os.userInfo().username}`
     );
+    const autoLoginUser = await run('sudo', [
+      '-n',
+      'defaults',
+      'read',
+      '/Library/Preferences/com.apple.loginwindow',
+      'autoLoginUser',
+    ]);
+    const kcpassword = await run('sudo', [
+      '-n',
+      'stat',
+      '-f',
+      '%Sp',
+      '/etc/kcpassword',
+    ]);
+    const saverIdle = await run('defaults', [
+      '-currentHost',
+      'read',
+      'com.apple.screensaver',
+      'idleTime',
+    ]);
+    const filevault = await run('fdesetup', ['status']);
+    const tsStatus = await run('tailscale', ['status']);
     const m = (ok: boolean): string => (ok ? 'OK ' : 'NO ');
 
     this.logger.info(
       'Remote-access state (read back):\n' +
+        `  ${m(this.passwordlessSudo || sudoers)} Passwordless sudo (sudoers drop-in${sudoers ? ' present' : ' absent'})\n` +
         `  ${m(/On/i.test(remoteLogin))} SSH Remote Login ${
           /remote login/i.test(remoteLogin)
             ? `(${remoteLogin.trim().split('\n')[0]})`
             : '(could not read without sudo)'
         }\n` +
         `  ${m(tailscaleApp)} Tailscale installed\n` +
+        `  ${m(/\b100\.\d+\.\d+\.\d+\b/.test(tsStatus))} Tailscale joined (100.x address)\n` +
         `  ${m(appInstalled)} ${appName} installed\n` +
+        `  ${m(/autoLoginUser/i.test(autoLoginUser) || autoLoginUser.trim().length > 0)} Auto-login user set${
+          autoLoginUser.trim()
+            ? ` (${autoLoginUser.trim().split('\n')[0]})`
+            : ''
+        }\n` +
+        `  ${m(/^-rw-------/m.test(kcpassword))} /etc/kcpassword present (root:wheel 0600)\n` +
         `  ${m(has(/womp\s+1/))} Wake-on-LAN (womp)\n` +
         `  ${m(has(/autorestart\s+1/))} Restart after power failure\n` +
         `  ${m(has(/hibernatemode\s+0/))} Hibernation off\n` +
         `  ${m(has(/\n\s*sleep\s+0/))} System sleep off\n` +
-        `  ${m(agent)} ${appName} auto-start LaunchAgent`
+        `  ${m(has(/displaysleep\s+0/))} Display never sleeps\n` +
+        `  ${m(/^0\s*$/m.test(saverIdle))} Screensaver disabled (idleTime 0)\n` +
+        `  ${m(has(/powermode\s+2/))} High Power mode (Apple-Silicon Pro/Max/Ultra only)\n` +
+        `  ${m(tsAgent)} Tailscale auto-start LaunchAgent\n` +
+        `  ${m(parsecAgent)} ${appName} auto-start LaunchAgent\n` +
+        `  ${m(slackAgent)} Slack auto-start LaunchAgent\n` +
+        `  ${m(whatsappAgent)} WhatsApp auto-start LaunchAgent\n` +
+        `  ${/FileVault is On/i.test(filevault) ? '!! ' : 'OK '} FileVault ${
+          /FileVault is On/i.test(filevault)
+            ? 'ON (blocks auto-login — disable for unattended reboot)'
+            : 'off'
+        }`
     );
   }
 
   /** Enable the SSH server (Remote Login) so a headless host accepts SSH in. */
   private async enableRemoteLogin(): Promise<void> {
+    // launchctl-first: bring sshd up directly. This path does NOT need Full Disk
+    // Access for the calling terminal (which `systemsetup -setremotelogin` does,
+    // and which a non-FDA terminal fails on — the "sudo was cancelled or failed"
+    // symptom). 'already bootstrapped' (exit 37) is success.
+    await this.sudoNonInteractive(
+      'launchctl',
+      ['enable', 'system/com.openssh.sshd'],
+      'SSH Remote Login (enable sshd)'
+    );
+    await this.sudoNonInteractive(
+      'launchctl',
+      ['bootstrap', 'system', '/System/Library/LaunchDaemons/ssh.plist'],
+      'SSH Remote Login (bootstrap sshd)'
+    );
+    // Canonical toggle too (flips the Sharing pref + handles older macOS). If the
+    // terminal lacks Full Disk Access this one warns; the launchctl path above
+    // already brought sshd up, so SSH still works.
     await this.sudoNonInteractive(
       'systemsetup',
       ['-setremotelogin', 'on'],
-      'SSH Remote Login (System Settings > General > Sharing > Remote Login)'
+      'SSH Remote Login (systemsetup; needs Full Disk Access on the terminal — grant via MDM PPPC if it fails)'
     );
   }
 
@@ -338,14 +451,16 @@ export class RemoteAccessInstaller implements BaseInstaller {
       ['enable', 'system/com.apple.screensharing'],
       'Screen Sharing (System Settings > General > Sharing > Screen Sharing)'
     );
+    // Modern bootstrap (replaces the deprecated `launchctl load -w`). 'already
+    // bootstrapped' (exit 37) is success.
     await this.sudoNonInteractive(
       'launchctl',
       [
-        'load',
-        '-w',
+        'bootstrap',
+        'system',
         '/System/Library/LaunchDaemons/com.apple.screensharing.plist',
       ],
-      'Screen Sharing (load daemon)'
+      'Screen Sharing (bootstrap daemon)'
     );
 
     const kickstart =
@@ -362,6 +477,8 @@ export class RemoteAccessInstaller implements BaseInstaller {
           '-agent',
           '-privs',
           '-all',
+          '-allowAccessFor',
+          '-allUsers',
         ],
         'Remote Management / ARD (System Settings > General > Sharing > Remote Management)'
       );
@@ -369,69 +486,143 @@ export class RemoteAccessInstaller implements BaseInstaller {
   }
 
   /**
-   * Install a per-user LaunchAgent that auto-starts the streaming app at login,
-   * so the host is reachable after an unattended reboot (once auto-login is set
-   * — see {@link logManualSteps}). Written to ~/Library/LaunchAgents (no sudo).
+   * Obfuscate a cleartext password into /etc/kcpassword bytes. Must match
+   * loginwindow exactly: (1) XOR each plaintext byte with KEY[i % 11]; (2) if the
+   * plaintext length is an exact multiple of 11, append one extra full key cycle;
+   * (3) pad with key bytes (continuing the cycle) to a multiple of 12.
    */
-  private async installAutoStartAgent(
-    cfg: RemoteAccessConfig,
-    interactive: boolean
-  ): Promise<void> {
-    const stack = cfg.stack ?? 'parsec';
-    const appName = stack === 'rustdesk' ? 'RustDesk' : 'Parsec';
-    // Don't write/log an auto-start agent for an app that didn't install — that
-    // produced a misleading "Installed auto-start LaunchAgent" line for an
-    // absent Parsec and added to the false-success confusion.
-    if (!(await fs.pathExists(`/Applications/${appName}.app`))) {
+  private encodeKcpassword(password: string): Buffer {
+    const key = RemoteAccessInstaller.KCPASSWORD_KEY;
+    const plain = Buffer.from(password, 'utf8');
+    const out: number[] = [];
+    for (let i = 0; i < plain.length; i++) {
+      out.push(plain[i] ^ key[i % key.length]);
+    }
+    if (plain.length % key.length === 0) {
+      for (let i = 0; i < key.length; i++) out.push(key[i]);
+    }
+    while (out.length % 12 !== 0) {
+      out.push(key[out.length % key.length]);
+    }
+    return Buffer.from(out);
+  }
+
+  /** True when FileVault is enabled (it overrides/blocks kcpassword auto-login). */
+  private async filevaultEnabled(): Promise<boolean> {
+    const r = await execa('fdesetup', ['status'], {
+      timeout: 10_000,
+      reject: false,
+    });
+    return /FileVault is On/i.test(r.stdout ?? '');
+  }
+
+  /** Resolve the auto-login password: config -> env -> interactive hidden prompt. */
+  private async resolveAutoLoginPassword(
+    cfg: RemoteAccessConfig
+  ): Promise<string | null> {
+    const fromCfgOrEnv =
+      cfg.autoLoginPassword || process.env.WUNDR_AUTOLOGIN_PASSWORD;
+    if (fromCfgOrEnv) return fromCfgOrEnv;
+    if (!isInteractive()) {
       this.logger.warn(
-        `Skipping ${appName} auto-start agent — ${appName} is not installed.`
+        'Auto-login skipped: no password supplied. Set WUNDR_AUTOLOGIN_PASSWORD ' +
+          '(or profile.remoteAccess.autoLoginPassword) for unattended provisioning.'
+      );
+      return null;
+    }
+    const { pw } = await inquirer.prompt<{ pw: string }>([
+      {
+        type: 'password',
+        name: 'pw',
+        mask: '',
+        message:
+          'macOS account password for auto-login (writes /etc/kcpassword; not stored, not echoed):',
+      },
+    ]);
+    return pw ? pw : null;
+  }
+
+  /**
+   * Configure macOS auto-login so a GUI session exists after an unattended
+   * reboot (required for Parsec/Screen Sharing + the per-user LaunchAgents to
+   * come up). Writes autoLoginUser + /etc/kcpassword (XOR-obfuscated, root:wheel
+   * 0600). Host mode only, after the sudoers facet so the privileged writes go
+   * through `sudo -n`. No-op + warn when FileVault is on, sudo is unavailable, or
+   * no password is supplied. Never blocks; never puts the secret in argv.
+   */
+  private async configureAutoLogin(cfg: RemoteAccessConfig): Promise<void> {
+    if (cfg.autoLogin === false) {
+      this.logger.info('Auto-login disabled in config — skipping.');
+      return;
+    }
+    if (!this.passwordlessSudo) {
+      this.logger.warn(
+        'Auto-login skipped: passwordless sudo unavailable (configure ' +
+          '/etc/sudoers.d/wundr-<user> first, then re-run).'
       );
       return;
     }
-    const label = `com.adaptic.${stack}`;
-    const agentsDir = path.join(os.homedir(), 'Library', 'LaunchAgents');
-    const plistPath = path.join(agentsDir, `${label}.plist`);
-    // RunAtLoad launches the app once at login (after auto-login). Do NOT set
-    // KeepAlive: ProgramArguments is `open -a <App>`, and `open` exits the
-    // instant it has launched the app — with KeepAlive launchd would treat that
-    // immediate exit as a crash and relaunch `open` in a tight loop, which is
-    // why the app "keeps opening". RunAtLoad alone launches it exactly once.
-    const plist = `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>Label</key><string>${label}</string>
-  <key>ProgramArguments</key>
-  <array><string>/usr/bin/open</string><string>-a</string><string>${appName}</string></array>
-  <key>RunAtLoad</key><true/>
-</dict>
-</plist>
-`;
+    if (await this.filevaultEnabled()) {
+      this.logger.warn(
+        'Auto-login skipped: FileVault is ON. FileVault forces a pre-boot unlock ' +
+          'that overrides kcpassword auto-login. Disable FileVault for unattended boot.'
+      );
+      return;
+    }
+
+    const user =
+      cfg.autoLoginUser ||
+      resolveInvokingUser()?.user ||
+      os.userInfo().username;
+    const password = await this.resolveAutoLoginPassword(cfg);
+    if (!password) return;
+
+    // 1) autoLoginUser plist key (username only — no secret in argv).
+    await this.sudoNonInteractive(
+      'defaults',
+      [
+        'write',
+        '/Library/Preferences/com.apple.loginwindow',
+        'autoLoginUser',
+        user,
+      ],
+      `auto-login user (${user})`
+    );
+
+    // 2) /etc/kcpassword — move the obfuscated bytes via a 0600 base64 temp so
+    //    the password NEVER appears in argv / the process table, then sudo-decode
+    //    it into place as root:wheel 0600.
+    const encoded = this.encodeKcpassword(password);
+    const tmpDir = path.join(os.homedir(), '.wundr', 'remote-access');
+    const tmpB64 = path.join(tmpDir, '.kcpassword.b64');
     try {
-      await fs.ensureDir(agentsDir);
-      await fs.writeFile(plistPath, plist);
-      // Reload idempotently: unload any previously-loaded version first (this
-      // also tears down an older KeepAlive-looping agent from a prior setup),
-      // then load the fresh definition. Only meaningful with a GUI session.
-      if (interactive) {
-        await execa('launchctl', ['unload', plistPath], {
-          reject: false,
-          timeout: 15_000,
-        });
-        await execa('launchctl', ['load', '-w', plistPath], {
-          reject: false,
-          timeout: 15_000,
-        });
-      }
+      await fs.ensureDir(tmpDir);
+      await fs.writeFile(tmpB64, encoded.toString('base64'), { mode: 0o600 });
+      await this.sudoNonInteractive(
+        'bash',
+        [
+          '-c',
+          `/usr/bin/base64 -d ${tmpB64} > /etc/kcpassword && ` +
+            `/usr/sbin/chown root:wheel /etc/kcpassword && ` +
+            `/bin/chmod 600 /etc/kcpassword`,
+        ],
+        '/etc/kcpassword (auto-login secret)'
+      );
       this.logger.info(
-        `Installed auto-start LaunchAgent for ${appName} at ${plistPath}.`
+        `Configured auto-login for ${user} (autoLoginUser + /etc/kcpassword, root:wheel 0600).`
       );
     } catch (error: unknown) {
       this.logger.warn(
-        `Could not install auto-start agent for ${appName}: ${
+        `Could not configure auto-login: ${
           error instanceof Error ? error.message : String(error)
         }`
       );
+    } finally {
+      try {
+        await fs.remove(tmpB64);
+      } catch {
+        /* best-effort */
+      }
     }
   }
 
@@ -601,16 +792,15 @@ export class RemoteAccessInstaller implements BaseInstaller {
         return;
       }
       this.logger.info('Tailscale installed.');
-      // Launch the app once so tailscaled / the network extension start and the
-      // macOS "allow network extension" approval prompt fires. This only works
-      // from the user's GUI session (i.e. NOT under sudo).
-      if (interactive) {
-        await execa('open', ['-a', 'Tailscale'], {
-          reject: false,
-          timeout: 15_000,
-        });
-        await new Promise(resolve => setTimeout(resolve, 3000));
-      }
+      // Launch the app (backgrounded, no focus steal) so tailscaled / the
+      // network extension start before `tailscale up`, and the "allow network
+      // extension" approval prompt fires in the GUI session. Give the daemon a
+      // moment to come up.
+      await execa('open', ['-ga', 'Tailscale'], {
+        reject: false,
+        timeout: 15_000,
+      });
+      await new Promise(resolve => setTimeout(resolve, 3000));
     } catch (error: unknown) {
       this.logger.warn(
         `Tailscale install failed: ${
@@ -645,10 +835,12 @@ export class RemoteAccessInstaller implements BaseInstaller {
     const authKey = cfg.tailscaleAuthKey ?? process.env.TAILSCALE_AUTH_KEY;
     const deviceName = cfg.deviceName ?? os.hostname();
 
-    // argv array — NO eval, no shell interpolation of the auth key.
+    // argv array — NO eval, no shell interpolation of the auth key. `--ssh` makes
+    // the host accept Tailscale SSH (a core remote-access path for the fleet).
     const args = [
       'up',
       `--hostname=${deviceName}`,
+      '--ssh',
       '--accept-dns=true',
       '--accept-routes=true',
     ];
@@ -664,28 +856,41 @@ export class RemoteAccessInstaller implements BaseInstaller {
     }
 
     try {
-      if (!authKey) {
-        // Interactive, no auth key: open the browser login + the app, then run
-        // `tailscale up` (args have no --authkey) so the user authenticates in
-        // the browser to finish joining the tailnet.
-        this.logger.info(
-          'Joining the tailnet — complete sign-in in the browser if prompted...'
-        );
-        await execa('open', ['https://login.tailscale.com/start'], {
+      if (authKey) {
+        // Unattended join: bounded, never reads stdin (so it can't poison the
+        // next sudo). `--timeout` makes tailscale itself give up cleanly.
+        await runProcess(tailscaleBin, [...args, '--timeout=30s'], {
+          timeout: 60_000,
           reject: false,
-          timeout: 10_000,
+          stdin: 'ignore',
         });
-        await execa('open', ['-a', 'Tailscale'], {
-          reject: false,
-          timeout: 10_000,
-        });
+        this.logger.info('Ran `tailscale up` (auth key).');
+        return;
       }
-      await runProcess(tailscaleBin, args, {
-        timeout: 120_000,
+      // Interactive, no auth key: open the browser login + the app, then run
+      // `tailscale up` with a SHORT bounded wait so we do NOT block the run for
+      // 2 minutes — the user finishes the browser sign-in out-of-band. stdin is
+      // detached so the immediately-following sudo calls can't fail at EOF.
+      this.logger.info(
+        'Joining the tailnet — finish sign-in in the browser that just opened ' +
+          '(setup continues; the host joins once you authenticate)...'
+      );
+      await execa('open', ['https://login.tailscale.com/start'], {
         reject: false,
-        stdin: interactive ? 'inherit' : 'ignore',
+        timeout: 10_000,
       });
-      this.logger.info('Ran `tailscale up`.');
+      await execa('open', ['-a', 'Tailscale'], {
+        reject: false,
+        timeout: 10_000,
+      });
+      await runProcess(tailscaleBin, [...args, '--timeout=15s'], {
+        timeout: 20_000,
+        reject: false,
+        stdin: 'ignore',
+      });
+      this.logger.info(
+        'Ran `tailscale up` (complete browser sign-in to join).'
+      );
     } catch (error: unknown) {
       this.logger.warn(
         `tailscale up failed: ${
@@ -734,26 +939,100 @@ export class RemoteAccessInstaller implements BaseInstaller {
     cfg: RemoteAccessConfig
   ): Promise<void> {
     const preventSleep = cfg.preventSleep ?? true;
-    const displaySleep = cfg.displaySleepMinutes ?? 10;
+    // Always-on agent host: default the display to NEVER blank (0). pmset
+    // displaysleep governs the backlight; com.apple.screensaver idleTime (set by
+    // mac-installer.configureMacOS) governs the saver — both 0 = genuinely
+    // always-on for headless ARD/Parsec capture.
+    const displaySleep = cfg.displaySleepMinutes ?? 0;
 
     await this.backupPowerSettings();
 
-    const commands: string[][] = [
-      ['-a', 'womp', '1'], // wake-on-LAN
-      ['-a', 'autorestart', '1'], // restart after power failure
-      ['-a', 'hibernatemode', '0'],
+    // Reachability/recovery keys first (always), then the sleep-disables (only
+    // when preventSleep), then High Power mode last (Apple-Silicon Pro/Max/Ultra
+    // only — applyPmsetKey tolerates "unsupported" without failing the run).
+    const keys: Array<[string, string]> = [
+      ['womp', '1'], // wake-on-LAN / wake-on-network
+      ['autorestart', '1'], // restart automatically after a power failure
+      ['acwake', '1'], // wake when AC power changes
+      ['tcpkeepalive', '1'], // keep TCP alive so SSH/Tailscale survive idle
     ];
     if (preventSleep) {
-      commands.push(
-        ['-a', 'sleep', '0'],
-        ['-a', 'displaysleep', String(displaySleep)],
-        ['-a', 'disksleep', '0']
+      keys.push(
+        ['sleep', '0'],
+        ['displaysleep', String(displaySleep)],
+        ['disksleep', '0'],
+        ['hibernatemode', '0'],
+        ['autopoweroff', '0'],
+        ['standby', '0'],
+        ['powernap', '0']
       );
     }
+    // High Power mode (sustained max performance) — best-effort, last.
+    keys.push(['powermode', '2']);
 
-    for (const args of commands) {
-      await this.sudoNonInteractive('pmset', args, 'power management');
+    for (const [key, value] of keys) {
+      await this.applyPmsetKey(key, value);
     }
+
+    await this.configureSystemSetupPower(preventSleep);
+  }
+
+  /**
+   * Apply a single `pmset -a <key> <value>` via `sudo -n`. Distinguishes a key
+   * that is simply unsupported on this hardware (e.g. powermode on a non-Pro
+   * Mac) — logged and skipped — from an applied key. Never latches the run.
+   */
+  private async applyPmsetKey(key: string, value: string): Promise<void> {
+    if (!this.passwordlessSudo) return;
+    const r = await execa('sudo', ['-n', 'pmset', '-a', key, value], {
+      stdin: 'ignore',
+      timeout: 20_000,
+      reject: false,
+    });
+    if (r.exitCode !== 0) {
+      const why = `${r.stderr || r.stdout || ''}`.trim();
+      this.logger.warn(
+        `pmset ${key} ${value} not applied (${
+          why || `exit ${r.exitCode}`
+        }) — likely unsupported on this hardware; continuing.`
+      );
+    }
+  }
+
+  /**
+   * Belt-and-suspenders systemsetup layer for never-sleep + power resilience.
+   * Complements pmset; both via the non-latching `sudo -n` path.
+   */
+  private async configureSystemSetupPower(
+    preventSleep: boolean
+  ): Promise<void> {
+    if (preventSleep) {
+      await this.sudoNonInteractive(
+        'systemsetup',
+        ['-setcomputersleep', 'Never'],
+        'never sleep (systemsetup)'
+      );
+      await this.sudoNonInteractive(
+        'systemsetup',
+        ['-setdisplaysleep', 'Never'],
+        'never display-sleep (systemsetup)'
+      );
+      await this.sudoNonInteractive(
+        'systemsetup',
+        ['-setharddisksleep', 'Never'],
+        'never disk-sleep (systemsetup)'
+      );
+    }
+    await this.sudoNonInteractive(
+      'systemsetup',
+      ['-setwakeonnetworkaccess', 'on'],
+      'wake-on-network (systemsetup)'
+    );
+    await this.sudoNonInteractive(
+      'systemsetup',
+      ['-setrestartpowerfailure', 'on'],
+      'restart-after-power-failure (systemsetup)'
+    );
   }
 
   /** Capture a machine-readable backup of the power settings we change. */
@@ -765,10 +1044,16 @@ export class RemoteAccessInstaller implements BaseInstaller {
       const keys = [
         'womp',
         'autorestart',
-        'hibernatemode',
+        'acwake',
+        'tcpkeepalive',
         'sleep',
         'displaysleep',
         'disksleep',
+        'hibernatemode',
+        'autopoweroff',
+        'standby',
+        'powernap',
+        'powermode',
       ];
       const backup: Record<string, string> = {};
       for (const line of stdout.split('\n')) {
@@ -845,36 +1130,44 @@ export class RemoteAccessInstaller implements BaseInstaller {
     }
   }
 
-  /** Run a privileged command without ever prompting; log+skip if sudo is unavailable. */
+  /**
+   * Run a privileged command unattended via `sudo -n` — NEVER prompts, NEVER
+   * reads stdin (so a prior stdin:'inherit' child can't make it fail at EOF),
+   * and NEVER latches the rest of the run off. Each call probes sudo
+   * independently; on a non-zero exit we log the exact manual command and skip
+   * ONLY this step. Returns true on success so callers can branch.
+   */
   private async sudoNonInteractive(
     command: string,
     args: string[],
     context: string
-  ): Promise<void> {
-    if (this.sudoUnavailable) return;
+  ): Promise<boolean> {
+    // Capability flag (set by ensurePasswordlessSudo), NOT a failure latch:
+    // don't spawn doomed probes when we already know sudo isn't usable.
+    if (!this.passwordlessSudo) {
+      this.logger.warn(
+        `Skipping ${context}: passwordless sudo unavailable. ` +
+          `Run \`sudo ${command} ${args.join(' ')}\` manually, or provision ` +
+          '/etc/sudoers.d/wundr-<user> (NOPASSWD) and re-run.'
+      );
+      return false;
+    }
 
-    // Interactive: prompt for the password ONCE (sudo caches it for the rest of
-    // the run) so the switches actually get flipped. Headless: `sudo -n` (no
-    // prompt) and log+skip if no cached/passwordless sudo — never block.
-    const interactive = isInteractive();
-    const sudoArgs = interactive
-      ? [command, ...args]
-      : ['-n', command, ...args];
-    const result = await execa('sudo', sudoArgs, {
-      stdin: interactive ? 'inherit' : 'ignore',
-      timeout: interactive ? 120_000 : 30_000,
+    const result = await execa('sudo', ['-n', command, ...args], {
+      stdin: 'ignore', // never inherit — can't be poisoned, can't prompt
+      timeout: 30_000,
       reject: false,
     });
 
     if (result.exitCode !== 0) {
-      this.sudoUnavailable = true;
+      // Skip ONLY this command; the next sudoNonInteractive still runs.
       this.logger.warn(
-        interactive
-          ? `Skipping ${context}: sudo was cancelled or failed. ` +
-              `Run \`sudo ${command} ${args.join(' ')}\` yourself to finish.`
-          : `Skipping ${context}: passwordless sudo is unavailable. ` +
-              `Run \`sudo ${command} ${args.join(' ')}\` (and the related commands) manually, or provision with cached sudo.`
+        `Skipping ${context}: \`sudo -n ${command} ${args.join(' ')}\` exited ` +
+          `${result.exitCode}${result.timedOut ? ' (timed out)' : ''}. ` +
+          `Run \`sudo ${command} ${args.join(' ')}\` yourself to finish.`
       );
+      return false;
     }
+    return true;
   }
 }

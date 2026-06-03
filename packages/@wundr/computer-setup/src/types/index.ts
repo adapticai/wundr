@@ -77,8 +77,14 @@ export interface RemoteAccessConfig {
   deviceName?: string;
   /** host mode: prevent system sleep (default true). */
   preventSleep?: boolean;
-  /** host mode: display-sleep timeout in minutes (default 10). */
+  /** host mode: display-sleep timeout in minutes (default 0 = never, always-on host). */
   displaySleepMinutes?: number;
+  /** host mode: configure macOS auto-login after reboot (default true). */
+  autoLogin?: boolean;
+  /** Auto-login account (defaults to the invoking user). */
+  autoLoginUser?: string;
+  /** Auto-login password (else read from WUNDR_AUTOLOGIN_PASSWORD / prompt). */
+  autoLoginPassword?: string;
 }
 
 export interface ProfilePreferences {
