@@ -495,9 +495,10 @@ export class RemoteAccessInstaller implements BaseInstaller {
           '-allUsers',
         ],
         'Remote Management / ARD (System Settings > General > Sharing > Remote Management)',
-        // `-restart -agent` restarts the ARD agent; it routinely needs >30s, so
-        // give it a generous bound rather than killing it mid-restart.
-        { timeoutMs: 120_000 }
+        // `-restart -agent` restarts ARDAgent (a long-lived child). detachOutput
+        // stops execa from blocking on the inherited stdout pipe; with that, the
+        // call returns in a few seconds, so 60s is plenty of headroom.
+        { timeoutMs: 60_000, detachOutput: true }
       );
     }
   }
@@ -1243,7 +1244,11 @@ export class RemoteAccessInstaller implements BaseInstaller {
     command: string,
     args: string[],
     context: string,
-    opts: { timeoutMs?: number; benignExitCodes?: number[] } = {}
+    opts: {
+      timeoutMs?: number;
+      benignExitCodes?: number[];
+      detachOutput?: boolean;
+    } = {}
   ): Promise<boolean> {
     // Capability flag (set by ensurePasswordlessSudo), NOT a failure latch:
     // don't spawn doomed probes when we already know sudo isn't usable.
@@ -1258,8 +1263,16 @@ export class RemoteAccessInstaller implements BaseInstaller {
 
     const result = await execa('sudo', ['-n', command, ...args], {
       stdin: 'ignore', // never inherit — can't be poisoned, can't prompt
-      // Some privileged ops are slow (ARD `kickstart -restart -agent` restarts
-      // the agent and routinely takes >30s); callers can widen the bound.
+      // detachOutput: send stdout/stderr to /dev/null instead of a pipe. CRITICAL
+      // for commands that spawn a long-lived daemon child (ARD `kickstart
+      // -restart -agent` restarts ARDAgent): that child INHERITS the stdout pipe,
+      // so a piped execa blocks on pipe-EOF — i.e. until the agent dies — and only
+      // returns at the timeout. That was the "kickstart exited undefined (timed
+      // out)" 120s hang. With output detached, execa returns when kickstart's own
+      // process exits (a few seconds), and the restarted agent keeps running.
+      ...(opts.detachOutput
+        ? { stdout: 'ignore' as const, stderr: 'ignore' as const }
+        : {}),
       timeout: opts.timeoutMs ?? 30_000,
       reject: false,
     });

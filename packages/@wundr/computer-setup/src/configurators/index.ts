@@ -444,6 +444,20 @@ Expire-Date: 2y
   async installVSCodeExtensions(): Promise<void> {
     logger.info('Installing VS Code extensions');
 
+    // Resolve the `code` CLI. A fresh Homebrew cask install does NOT add `code`
+    // to PATH (that normally needs VS Code's "Shell Command: Install 'code'
+    // command in PATH"), so a bare `code ...` fails "command not found" for every
+    // extension — the wall of warnings seen in the wild. Resolve the binary
+    // shipped inside the app bundle instead.
+    const codeBin = await this.resolveVSCodeCli();
+    if (!codeBin) {
+      logger.warn(
+        'Skipping VS Code extensions: the `code` CLI was not found (VS Code may ' +
+          'not be installed yet). Install VS Code, then re-run `wundr computer-setup`.'
+      );
+      return;
+    }
+
     const extensions = [
       'dbaeumer.vscode-eslint',
       'esbenp.prettier-vscode',
@@ -464,32 +478,62 @@ Expire-Date: 2y
       'usernamehw.errorlens',
     ];
 
+    let installed = 0;
     for (const ext of extensions) {
       try {
-        execSync(`code --install-extension ${ext}`, {
-          stdio: 'pipe',
-          timeout: 30000,
+        await execa(codeBin, ['--install-extension', ext, '--force'], {
+          timeout: 60_000,
+          stdin: 'ignore',
         });
-        logger.info(`Installed extension: ${ext}`);
+        installed++;
       } catch (error: unknown) {
-        // Check if already installed or actual error
-        const execError = error as {
-          stdout?: Buffer;
-          status?: number;
-          message?: string;
-        };
-        if (execError.stdout?.toString().includes('already installed')) {
-          logger.info(`Extension ${ext} already installed, skipping`);
-        } else if (execError.status === 134) {
-          // VS Code crash - this is a known VS Code bug, not fatal
-          logger.warn(
-            `VS Code crashed installing ${ext}, but may have succeeded`
-          );
-        } else {
-          logger.warn(`Failed to install extension: ${ext}`, execError.message);
+        const message = error instanceof Error ? error.message : String(error);
+        if (/already installed/i.test(message)) {
+          installed++;
+          continue;
         }
+        logger.warn(`Failed to install VS Code extension ${ext}: ${message}`);
       }
     }
+    logger.info(
+      `VS Code extensions: ${installed}/${extensions.length} installed (via ${codeBin}).`
+    );
+  }
+
+  /**
+   * Resolve a usable `code` CLI path. Tries PATH first, then the CLI shipped
+   * inside the app bundle (the Homebrew cask installs the app but not the PATH
+   * shim). When only the bundle copy exists, best-effort symlink it into
+   * ~/.local/bin (already on PATH via the Claude installer) so plain `code`
+   * works in future shells too. Returns null when VS Code isn't installed.
+   */
+  private async resolveVSCodeCli(): Promise<string | null> {
+    // 1) Already resolvable on PATH?
+    try {
+      const { stdout } = await execa('which', ['code'], { timeout: 5_000 });
+      if (stdout.trim()) return stdout.trim();
+    } catch {
+      // not on PATH — fall through to the bundle copy
+    }
+
+    // 2) The CLI shipped inside the app bundle.
+    const bundleCli =
+      '/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code';
+    if (!(await fs.pathExists(bundleCli))) return null;
+
+    // Best-effort: link it onto PATH so `code` works in normal shells later.
+    try {
+      const localBin = path.join(os.homedir(), '.local', 'bin');
+      const linkPath = path.join(localBin, 'code');
+      await fs.ensureDir(localBin);
+      if (!(await fs.pathExists(linkPath))) {
+        await fs.symlink(bundleCli, linkPath);
+        logger.info(`Linked \`code\` CLI onto PATH at ${linkPath}`);
+      }
+    } catch {
+      // non-fatal: we still install extensions via the bundle path directly
+    }
+    return bundleCli;
   }
 
   /**
