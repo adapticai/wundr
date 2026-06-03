@@ -85,6 +85,12 @@ export interface RemoteAccessConfig {
   autoLoginUser?: string;
   /** Auto-login password (else read from WUNDR_AUTOLOGIN_PASSWORD / prompt). */
   autoLoginPassword?: string;
+  /** Absolute path to the agent runtime binary to include in the TCC/PPPC profile. */
+  agentRuntimePath?: string;
+  /** Extra app bundle ids to include in the TCC/PPPC profile. */
+  tccExtraBundleIds?: string[];
+  /** Organization name stamped into the generated PPPC profile. */
+  mdmOrganization?: string;
 }
 
 export interface ProfilePreferences {

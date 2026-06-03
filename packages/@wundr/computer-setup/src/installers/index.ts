@@ -12,6 +12,7 @@ import { PythonInstaller } from './python-installer';
 import { OrchestratorDaemonInstaller } from './orchestrator-daemon-installer';
 import { RemoteAccessInstaller } from './remote-access-installer';
 import { ResourceManagerInstaller } from './resource-manager-installer';
+import { TccPppcInstaller } from './tcc-pppc-installer';
 import { WindowsInstaller } from './windows-installer';
 
 import type {
@@ -79,6 +80,9 @@ export class InstallerRegistry {
     // Runs as a standard, non-required phase; gated by profile.remoteAccess.enabled.
     if (this.platform.os === 'darwin') {
       this.register('remote-access', new RemoteAccessInstaller());
+      // Generates the MDM-deployable PPPC profile for TCC grants (Screen
+      // Recording / Accessibility / FDA / Apple Events).
+      this.register('tcc-pppc', new TccPppcInstaller());
     }
   }
 
@@ -418,5 +422,6 @@ export * from './mac-installer';
 export * from './linux-installer';
 export * from './windows-installer';
 export * from './orchestrator-daemon-installer';
+export * from './tcc-pppc-installer';
 export * from './resource-manager-installer';
 export * from './remote-access-installer';

@@ -431,6 +431,12 @@ export class ComputerSetupManager extends EventEmitter {
       if (remoteAccess) {
         steps.push(...remoteAccess.getSteps(profile, options.platform));
       }
+      // TCC/PPPC profile generation (Screen Recording / Accessibility / FDA /
+      // Apple Events) — depends on install-applications + configure-remote-access.
+      const tcc = this.installerRegistry.get('tcc-pppc');
+      if (tcc) {
+        steps.push(...tcc.getSteps(profile, options.platform));
+      }
     }
 
     // Sort steps by dependencies
