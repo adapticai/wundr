@@ -60,3 +60,25 @@ not repaired by `install`; verify by the real artifact on disk (`/Applications/*
 shim), never by `brew install` exit code. (3) Before claiming a published fix applies to a user's
 run, confirm the version they actually executed (banner / `--version`), and remember CI publish lags
 the push by minutes.
+
+### 2026-06-03 - Two shell-bootstrap footguns + staged implementation of a large change
+
+**Mistake / discoveries:** On fresh fleet Macs, `wundr computer-setup` failed two ways that both
+trace to shell/stdin semantics, not logic: (a) Homebrew install ran `curl … | bash`, so install.sh's
+stdin was the _pipe_ not the TTY → Homebrew declared itself non-interactive and aborted needing
+sudo; (b) global npm installs used bare `npm` which resolved to the _system_ Node at /usr/local
+(needs sudo → EACCES) instead of the nvm-managed Node the installer itself had set up.
+
+**Root cause:** `cmd | bash` makes bash's stdin the pipe; the official `bash -c "$(curl …)"` form
+feeds the script as _text_ and leaves stdin = the TTY. And `npm -g` writes to whatever Node is first
+on PATH — on these boxes the pre-existing /usr/local Node, not nvm's user-writable prefix.
+
+**Preventative rule:** (1) NEVER `curl … | bash` for an installer that needs a TTY/sudo — use
+`bash -c "$(curl …)"` (+ NONINTERACTIVE for unattended). (2) For `npm install -g`, source nvm +
+`nvm use default` first (or resolve the nvm npm) so globals land user-writable; refuse, don't fall
+back to /usr/local. (3) For a large multi-file change, drive analysis with a workflow but IMPLEMENT
+in dependency-ordered stages, `tsc` + commit per stage — it caught a TS7011
+(`.catch(() => undefined)` trips noImplicitAny here; use try/catch) and a cross-installer step-order
+bug early instead of at the end. Prove invariants cheaply offline (kcpassword multiple-of-12
+round-trip; topological sort order + acyclicity; `plutil -lint` the generated profile) rather than
+waiting for a real macOS reboot.
