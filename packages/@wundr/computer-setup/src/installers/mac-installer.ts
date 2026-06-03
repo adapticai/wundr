@@ -37,7 +37,6 @@ const DOCK_APPS: ReadonlyArray<string> = [
   'Google Chrome',
   'Visual Studio Code',
   'Slack',
-  'WhatsApp',
   'GitHub Desktop',
   'Tailscale',
   'Parsec',
@@ -58,6 +57,7 @@ const DOCK_REMOVE: ReadonlyArray<string> = [
   'Music',
   'Podcasts',
   'News',
+  'Books',
   'Stocks',
   'Freeform',
   'FaceTime',
@@ -74,18 +74,15 @@ const DOCK_REMOVE: ReadonlyArray<string> = [
   'Raycast',
   'iTerm',
   'The Unarchiver',
+  // No longer installed — undock it if an earlier run pinned it.
+  'WhatsApp',
 ];
 
 /**
  * Apps that should auto-start at login on an always-on agent host. A per-app
  * LaunchAgent (RunAtLoad, no KeepAlive) is written for each whose .app exists.
  */
-const AUTO_START_APPS: ReadonlyArray<string> = [
-  'Tailscale',
-  'Parsec',
-  'Slack',
-  'WhatsApp',
-];
+const AUTO_START_APPS: ReadonlyArray<string> = ['Tailscale', 'Parsec', 'Slack'];
 
 export class MacInstaller implements BaseInstaller {
   name = 'mac-platform';
@@ -239,12 +236,12 @@ export class MacInstaller implements BaseInstaller {
         installer: () => this.configureShell(profile),
       },
       {
-        // Owns ALL auto-start LaunchAgents (Tailscale/Parsec/Slack/WhatsApp);
+        // Owns ALL auto-start LaunchAgents (Tailscale/Parsec/Slack);
         // depends on the app installs + remote-access so every target exists.
         id: 'configure-auto-start',
         name: 'Configure Auto-Start Apps',
         description:
-          'Auto-start Tailscale, Parsec, Slack and WhatsApp at login (per-app LaunchAgents)',
+          'Auto-start Tailscale, Parsec and Slack at login (per-app LaunchAgents)',
         category: 'configuration',
         required: false,
         dependencies: ['install-applications', 'configure-remote-access'],
@@ -334,7 +331,7 @@ export class MacInstaller implements BaseInstaller {
   /**
    * Write a per-app LaunchAgent (RunAtLoad, NO KeepAlive) for each app in
    * AUTO_START_APPS that is actually installed, so the always-on host auto-
-   * starts Tailscale/Parsec/Slack/WhatsApp at login (after auto-login). NO
+   * starts Tailscale/Parsec/Slack at login (after auto-login). NO
    * KeepAlive: `open -a` exits immediately, so KeepAlive would relaunch it in a
    * tight loop. Idempotent unload+load. Per-user (~/Library/LaunchAgents), no
    * sudo. Also removes the legacy single-app `com.adaptic.<stack>.plist` agents.
@@ -817,7 +814,6 @@ export class MacInstaller implements BaseInstaller {
     // Common applications — installed on EVERY run, regardless of role/profile.
     casks.push(
       'slack', // team chat
-      'whatsapp', // messaging (app-stanza cask, no sudo)
       'github', // GitHub Desktop
       'google-chrome', // default browser for all roles
       'iterm2',

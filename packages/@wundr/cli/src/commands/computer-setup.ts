@@ -53,6 +53,15 @@ export function createComputerSetupCommand(): Command {
       '--no-remote-access',
       'Skip remote-access provisioning (Tailscale, SSH, power management, desktop sharing)'
     )
+    .option(
+      '--name <name>',
+      'Your full name (used for git config, SSH key comment and your profile)'
+    )
+    .option(
+      '--email <email>',
+      'Your email address (used for git config and your profile)'
+    )
+    .option('--company <company>', 'Your company / organization name')
     .action(async (options, command) => {
       // `--dry-run`, `--verbose` and `--interactive` are declared as GLOBAL
       // options on the root program, so they land in the parent's opts, not the
@@ -154,6 +163,13 @@ export async function runComputerSetup(options: any): Promise<void> {
     } else {
       profile = await manager.getDefaultProfile();
     }
+
+    // Whatever produced the profile above (a named --profile, the interactive
+    // wizard, or the non-interactive default) can leave the identity fields
+    // blank or set to a role placeholder. Collect any missing name / email /
+    // role / company so git, SSH and the MDM profile are personalised — prompts
+    // only in an interactive TTY, otherwise warns and continues.
+    await ensureProfileIdentity(profile, options, nonInteractive);
 
     // commander sets options.remoteAccess === false for --no-remote-access.
     if (profile && options.remoteAccess === false) {
@@ -316,6 +332,138 @@ export async function runComputerSetup(options: any): Promise<void> {
   }
 }
 
+/**
+ * The developer roles offered at the prompt. Shared by the full interactive
+ * wizard and the targeted identity prompt below so the two never drift.
+ */
+const ROLE_CHOICES = [
+  { name: 'Frontend Developer', value: 'frontend' },
+  { name: 'Backend Developer', value: 'backend' },
+  { name: 'Full Stack Developer', value: 'fullstack' },
+  { name: 'DevOps Engineer', value: 'devops' },
+  { name: 'Machine Learning Engineer', value: 'ml' },
+  { name: 'Mobile Developer', value: 'mobile' },
+];
+
+// The predefined/default profiles ship with the role label as the "name" and a
+// throwaway email; treat those as "no real identity provided" so we still ask.
+const PLACEHOLDER_NAMES = new Set(ROLE_CHOICES.map(c => c.name));
+const PLACEHOLDER_EMAILS = new Set(['', 'developer@example.com']);
+
+/**
+ * Make sure the resolved profile carries a real identity — name, email, role
+ * and company — before setup runs. Values passed via --name/--email/--company
+ * (or the WUNDR_USER_NAME/EMAIL/COMPANY env vars) take precedence; anything
+ * still missing or left as a role placeholder is prompted for in an interactive
+ * TTY, or reported and skipped when running unattended. Git config is kept in
+ * sync so the git/GitHub installers write the real name and email.
+ */
+async function ensureProfileIdentity(
+  profile: any,
+  options: any,
+  nonInteractive: boolean
+): Promise<void> {
+  if (!profile) return;
+
+  const clean = (v: unknown): string | undefined =>
+    typeof v === 'string' && v.trim().length > 0 ? v.trim() : undefined;
+
+  // Explicit flags / env vars count as "provided" and overwrite placeholders.
+  const flagName = clean(options.name) ?? clean(process.env.WUNDR_USER_NAME);
+  const flagEmail = clean(options.email) ?? clean(process.env.WUNDR_USER_EMAIL);
+  const flagCompany =
+    clean(options.company) ?? clean(process.env.WUNDR_USER_COMPANY);
+  if (flagName) profile.name = flagName;
+  if (flagEmail) profile.email = flagEmail;
+  if (flagCompany) profile.company = flagCompany;
+
+  const needName =
+    !clean(profile.name) || PLACEHOLDER_NAMES.has(String(profile.name).trim());
+  const needEmail =
+    !clean(profile.email) ||
+    PLACEHOLDER_EMAILS.has(String(profile.email).trim());
+  const needRole = !clean(profile.role);
+  const needCompany = !clean(profile.company);
+
+  if (needName || needEmail || needRole || needCompany) {
+    if (nonInteractive) {
+      const missing = [
+        needName && 'name',
+        needEmail && 'email',
+        needRole && 'role',
+        needCompany && 'company',
+      ]
+        .filter(Boolean)
+        .join(', ');
+      console.log(
+        chalk.yellow(
+          `\n⚠️  Missing profile details (${missing}). Pass --name, --email and ` +
+            `--company (and --profile for role) to personalise git, SSH and the ` +
+            `MDM profile. Continuing with defaults.\n`
+        )
+      );
+    } else {
+      console.log(
+        chalk.cyan(
+          '\n👤 A few details so we can personalise git, SSH and your profile:\n'
+        )
+      );
+      const questions: any[] = [];
+      if (needName) {
+        questions.push({
+          type: 'input',
+          name: 'name',
+          message: 'What is your full name?',
+          validate: (input: string) =>
+            input.trim().length > 0 || 'Name is required',
+        });
+      }
+      if (needEmail) {
+        questions.push({
+          type: 'input',
+          name: 'email',
+          message: 'What is your email?',
+          validate: (input: string) =>
+            /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.trim()) ||
+            'Enter a valid email address',
+        });
+      }
+      if (needRole) {
+        questions.push({
+          type: 'list',
+          name: 'role',
+          message: 'What is your role?',
+          choices: ROLE_CHOICES,
+        });
+      }
+      if (needCompany) {
+        questions.push({
+          type: 'input',
+          name: 'company',
+          message: 'What is your company name?',
+          validate: (input: string) =>
+            input.trim().length > 0 || 'Company name is required',
+        });
+      }
+      const answers = await inquirer.prompt(questions);
+      if (answers.name) profile.name = answers.name.trim();
+      if (answers.email) profile.email = answers.email.trim();
+      if (answers.role) profile.role = answers.role;
+      if (answers.company) profile.company = answers.company.trim();
+    }
+  }
+
+  // Keep git identity in sync so downstream installers write the real values.
+  if (profile.preferences?.gitConfig) {
+    if (clean(profile.name)) {
+      profile.preferences.gitConfig.userName = profile.name;
+    }
+    if (clean(profile.email)) {
+      profile.preferences.gitConfig.userEmail = profile.email;
+    }
+  }
+}
+
 async function createInteractiveProfile(): Promise<any> {
   console.log(chalk.cyan("\n👤 Let's create your developer profile\n"));
 
@@ -336,20 +484,19 @@ async function createInteractiveProfile(): Promise<any> {
       type: 'list',
       name: 'role',
       message: 'What is your role?',
-      choices: [
-        { name: 'Frontend Developer', value: 'frontend' },
-        { name: 'Backend Developer', value: 'backend' },
-        { name: 'Full Stack Developer', value: 'fullstack' },
-        { name: 'DevOps Engineer', value: 'devops' },
-        { name: 'Machine Learning Engineer', value: 'ml' },
-        { name: 'Mobile Developer', value: 'mobile' },
-      ],
+      choices: ROLE_CHOICES,
     },
     {
       type: 'input',
       name: 'team',
       message: 'What team are you joining? (optional)',
       default: '',
+    },
+    {
+      type: 'input',
+      name: 'company',
+      message: 'What is your company name?',
+      validate: input => input.trim().length > 0 || 'Company name is required',
     },
     {
       type: 'list',
@@ -422,6 +569,7 @@ async function createInteractiveProfile(): Promise<any> {
     email: answers.email,
     role: answers.role,
     team: answers.team,
+    company: answers.company,
     preferences: {
       shell: answers.shell,
       editor: answers.editor,
@@ -531,6 +679,7 @@ interface DeveloperProfile {
   email: string;
   role: string;
   team?: string;
+  company?: string;
   preferences: {
     shell: string;
     editor: string;

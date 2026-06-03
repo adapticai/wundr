@@ -153,7 +153,8 @@ export class TccPppcInstaller implements BaseInstaller {
   ): Promise<void> {
     if (profile.remoteAccess?.enabled === false) return;
 
-    const org = profile.remoteAccess?.mdmOrganization ?? 'Wundr';
+    const org =
+      profile.remoteAccess?.mdmOrganization ?? profile.company ?? 'Wundr';
     const apps = this.apps(profile);
 
     // Always generate the artifact — even headless — so an MDM admin can upload it.

@@ -164,7 +164,7 @@ export class RemoteAccessInstaller implements BaseInstaller {
     await this.configureDesktopSharing(cfg, mode, interactive);
 
     if (mode === 'host') {
-      // Auto-start LaunchAgents (Tailscale/Parsec/Slack/WhatsApp) are owned by
+      // Auto-start LaunchAgents (Tailscale/Parsec/Slack) are owned by
       // the mac-installer configure-auto-start step, which runs after this.
       // Open the System Settings panes + the app so the user just flicks the
       // remaining switches, rather than reading a checklist. Falls back to the
@@ -341,7 +341,6 @@ export class RemoteAccessInstaller implements BaseInstaller {
     const tsAgent = await autostart('tailscale');
     const parsecAgent = await autostart(stack);
     const slackAgent = await autostart('slack');
-    const whatsappAgent = await autostart('whatsapp');
 
     // Passwordless sudo + auto-login + screensaver (read-only).
     const sudoers = await fs.pathExists(
@@ -398,7 +397,6 @@ export class RemoteAccessInstaller implements BaseInstaller {
         `  ${m(tsAgent)} Tailscale auto-start LaunchAgent\n` +
         `  ${m(parsecAgent)} ${appName} auto-start LaunchAgent\n` +
         `  ${m(slackAgent)} Slack auto-start LaunchAgent\n` +
-        `  ${m(whatsappAgent)} WhatsApp auto-start LaunchAgent\n` +
         `  ${/FileVault is On/i.test(filevault) ? '!! ' : 'OK '} FileVault ${
           /FileVault is On/i.test(filevault)
             ? 'ON (blocks auto-login — disable for unattended reboot)'
