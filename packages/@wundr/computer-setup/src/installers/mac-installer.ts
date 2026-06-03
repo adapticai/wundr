@@ -38,6 +38,7 @@ const DOCK_APPS: ReadonlyArray<string> = [
   'Visual Studio Code',
   'Slack',
   'GitHub Desktop',
+  'Docker',
   'Tailscale',
   'Parsec',
 ];
@@ -281,13 +282,32 @@ export class MacInstaller implements BaseInstaller {
    * no sudo.
    */
   private async configureDock(_profile: DeveloperProfile): Promise<void> {
-    // dockutil is installed in installEssentialPackages; bail clearly if not.
-    try {
-      await which('dockutil');
-    } catch {
+    // dockutil is installed in installEssentialPackages, but on a fresh machine
+    // that step can race/fail — so SELF-HEAL by installing it here rather than
+    // silently skipping the whole Dock (the "icons never got added" symptom).
+    const hasDockutil = async (): Promise<boolean> => {
+      try {
+        await which('dockutil');
+        return true;
+      } catch {
+        return false;
+      }
+    };
+    if (!(await hasDockutil())) {
+      this.logger.info(
+        'dockutil missing — installing it so the Dock can be set...'
+      );
+      await execa('brew', ['install', 'dockutil'], {
+        timeout: 3 * 60 * 1000,
+        reject: false,
+        stdin: 'ignore',
+        env: nonInteractiveEnv(),
+      });
+    }
+    if (!(await hasDockutil())) {
       this.logger.warn(
-        'dockutil not found — skipping Dock configuration. (Install it with ' +
-          '`brew install dockutil` and re-run.)'
+        'dockutil could not be installed — skipping Dock configuration. ' +
+          'Install it with `brew install dockutil` and re-run.'
       );
       return;
     }
@@ -308,24 +328,33 @@ export class MacInstaller implements BaseInstaller {
 
     // Add the curated work apps idempotently (remove-then-add), preserving the
     // DOCK_APPS order, only when the .app is actually present.
-    let added = 0;
+    const docked: string[] = [];
+    const missing: string[] = [];
     for (const appName of DOCK_APPS) {
       const appPath = `/Applications/${appName}.app`;
-      if (!(await fs.pathExists(appPath))) continue;
+      if (!(await fs.pathExists(appPath))) {
+        missing.push(appName);
+        continue;
+      }
       await dockutil(['--remove', appName, '--no-restart']);
       const code = await dockutil(['--add', appPath, '--no-restart']);
-      if (code === 0) added++;
+      if (code === 0) docked.push(appName);
+      else missing.push(`${appName} (dockutil failed)`);
     }
 
     // Apply everything with a single Dock restart.
-    try {
-      await execa('killall', ['Dock'], { timeout: 10_000, reject: false });
-    } catch {
-      // Dock will pick up changes on next launch even if killall fails.
-    }
+    await execa('killall', ['Dock'], { timeout: 10_000, reject: false });
+
     this.logger.info(
-      `Dock configured: added ${added} app(s), removed ${DOCK_REMOVE.length} default/utility item(s).`
+      `Dock configured: pinned ${docked.length} app(s) [${docked.join(', ')}], ` +
+        `removed ${DOCK_REMOVE.length} default/utility item(s).`
     );
+    if (missing.length) {
+      this.logger.warn(
+        `Dock: could not pin ${missing.join(', ')} (app not installed yet). ` +
+          'Re-run after the app installs.'
+      );
+    }
   }
 
   /**
@@ -358,8 +387,9 @@ export class MacInstaller implements BaseInstaller {
       }
     }
 
-    const interactive = isInteractive();
+    const uid = os.userInfo().uid;
     let installed = 0;
+    let loaded = 0;
     for (const appName of AUTO_START_APPS) {
       if (!(await fs.pathExists(`/Applications/${appName}.app`))) continue;
       const slug = appName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
@@ -378,17 +408,36 @@ export class MacInstaller implements BaseInstaller {
 `;
       try {
         await fs.writeFile(plistPath, plist);
-        if (interactive) {
-          await execa('launchctl', ['unload', plistPath], {
+        // Load into the GUI domain so the app starts NOW *and* persists across
+        // logins. `bootstrap gui/<uid>` is the modern, HEADLESS-safe loader — the
+        // old `launchctl load -w` was gated on an interactive TTY, so a piped /
+        // headless fleet run wrote the plist but NEVER activated it (apps only
+        // appeared after a manual login). bootout first for idempotency. If no
+        // GUI session exists yet (pure SSH, no console), bootstrap is a no-op and
+        // RunAtLoad still fires at the next auto-login.
+        const domain = `gui/${uid}`;
+        await execa('launchctl', ['bootout', `${domain}/${label}`], {
+          reject: false,
+          timeout: 15_000,
+        });
+        const boot = await execa(
+          'launchctl',
+          ['bootstrap', domain, plistPath],
+          {
             reject: false,
             timeout: 15_000,
-          });
-          await execa('launchctl', ['load', '-w', plistPath], {
-            reject: false,
-            timeout: 15_000,
-          });
-        }
+          }
+        );
+        const loadedNow = boot.exitCode === 0;
+        if (loadedNow) loaded++;
         installed++;
+        this.logger.info(
+          `  Auto-start ${appName}: agent written${
+            loadedNow
+              ? ' + loaded into the current session'
+              : ' (will launch at next login)'
+          }.`
+        );
       } catch (error: unknown) {
         this.logger.warn(
           `Could not install auto-start agent for ${appName}: ${
@@ -398,7 +447,7 @@ export class MacInstaller implements BaseInstaller {
       }
     }
     this.logger.info(
-      `Auto-start configured: ${installed} app LaunchAgent(s) (of ${AUTO_START_APPS.length} candidates) at login.`
+      `Auto-start configured: ${installed}/${AUTO_START_APPS.length} app LaunchAgent(s) written (${loaded} live now); all RunAtLoad after auto-login.`
     );
   }
 
@@ -721,46 +770,91 @@ export class MacInstaller implements BaseInstaller {
   private async installApplications(profile: DeveloperProfile): Promise<void> {
     const applications = this.getApplicationsForProfile(profile);
 
-    // Install cask applications
+    // Install cask applications. reject:false everywhere so we can VERIFY each
+    // landed (brew can exit non-zero, time out, or no-op on a stale receipt while
+    // the .app never appears) and retry with `reinstall --cask --force` — the old
+    // loop swallowed failures as warnings and moved on, which is how fresh
+    // machines ended up missing VS Code / Docker with no hard signal.
     const totalApps = applications.casks.length;
+    const failedCasks: string[] = [];
     for (let i = 0; i < totalApps; i++) {
       const app = applications.casks[i];
-      try {
-        this.logger.info(`Installing ${app} (${i + 1}/${totalApps})...`);
-
-        // Check if already installed first
-        try {
-          const { stdout } = await execa('brew', ['list', '--cask', app], {
-            timeout: 10000,
-          });
-          if (stdout) {
-            this.logger.info(`${app} already installed, skipping`);
-            continue;
-          }
-        } catch {
-          // Not installed, proceed with installation
-        }
-
-        // Install with timeout of 5 minutes per app
-        await execa('brew', ['install', '--cask', app], { timeout: 300000 });
-        this.logger.info(`Installed ${app}`);
-      } catch (error: unknown) {
-        const execaErr = error as ExecaError;
-        if (
-          execaErr.stderr?.includes('already an App at') ||
-          execaErr.stderr?.includes('is already installed')
-        ) {
-          this.logger.info(`${app} already installed, skipping`);
-        } else if (execaErr.timedOut) {
-          this.logger.warn(
-            `${app} installation timed out after 5 minutes, skipping`
-          );
-        } else {
-          const errorMessage =
-            error instanceof Error ? error.message : String(error);
-          this.logger.warn(`Failed to install ${app}: ${errorMessage}`);
-        }
+      // Already present? (brew receipt exists)
+      const listed =
+        (
+          await execa('brew', ['list', '--cask', app], {
+            timeout: 20_000,
+            reject: false,
+          })
+        ).exitCode === 0;
+      if (listed) {
+        this.logger.info(
+          `${app} already installed, skipping (${i + 1}/${totalApps})`
+        );
+        continue;
       }
+
+      this.logger.info(`Installing ${app} (${i + 1}/${totalApps})...`);
+      const opts = {
+        timeout: 12 * 60 * 1000, // Docker Desktop etc. are large downloads
+        reject: false,
+        stdin: 'ignore' as const,
+        env: nonInteractiveEnv(),
+      };
+      let result = await execa('brew', ['install', '--cask', app], opts);
+      // Verify via the receipt; if the install didn't take, repair-reinstall once
+      // (fixes the stale-Caskroom-receipt no-op that leaves the .app missing).
+      let ok =
+        (
+          await execa('brew', ['list', '--cask', app], {
+            timeout: 20_000,
+            reject: false,
+          })
+        ).exitCode === 0;
+      if (!ok) {
+        this.logger.warn(
+          `${app} did not install cleanly (brew exited ${result.exitCode}${
+            result.timedOut ? ', timed out' : ''
+          }) — retrying with \`reinstall --cask --force\`...`
+        );
+        result = await execa(
+          'brew',
+          ['reinstall', '--cask', '--force', app],
+          opts
+        );
+        ok =
+          (
+            await execa('brew', ['list', '--cask', app], {
+              timeout: 20_000,
+              reject: false,
+            })
+          ).exitCode === 0;
+      }
+      if (ok) {
+        this.logger.info(`Installed ${app}`);
+      } else {
+        failedCasks.push(app);
+        const tail = String(result.stderr || result.stdout || '')
+          .split('\n')
+          .filter(Boolean)
+          .slice(-2)
+          .join(' ')
+          .trim();
+        this.logger.warn(
+          `FAILED to install ${app}${tail ? `: ${tail}` : ''}. Install it ` +
+            `manually with \`brew install --cask ${app}\`.`
+        );
+      }
+    }
+    if (failedCasks.length) {
+      this.logger.warn(
+        `Applications step: ${failedCasks.length} cask(s) did NOT install — ${failedCasks.join(', ')}. ` +
+          'Re-run computer-setup or install them manually.'
+      );
+    } else {
+      this.logger.info(
+        `Applications step: all ${totalApps} cask app(s) present.`
+      );
     }
 
     // Install Mac App Store applications
@@ -836,6 +930,10 @@ export class MacInstaller implements BaseInstaller {
       'iterm2',
       'rectangle', // Window manager
       'raycast', // Spotlight replacement
+      // Docker Desktop on EVERY profile (the per-role list only added it for
+      // backend/devops, so fullstack never got it). Canonical cask is
+      // `docker-desktop`; it's an App artifact (no sudo / pkg prompt).
+      'docker-desktop',
       // Note-taking / markdown is covered by VS Code (installed above) and the
       // Claude/memory-bank docs system — no separate notes app installed.
       'the-unarchiver'

@@ -380,6 +380,13 @@ export class RemoteAccessInstaller implements BaseInstaller {
     const filevault = await run('fdesetup', ['status']);
     const tsStatus = await run('tailscale', ['status']);
     const m = (ok: boolean): string => (ok ? 'OK ' : 'NO ');
+    // The auto-start LaunchAgents are created by the LATER 'Configure Auto-Start
+    // Apps' step, so during THIS read-back they're legitimately absent on a fresh
+    // machine. Show that as "pending", not a scary "NO" failure.
+    const agentLine = (ok: boolean, label: string): string =>
+      ok
+        ? `  OK  ${label}\n`
+        : `  ··  ${label} (pending — created by the next 'Configure Auto-Start Apps' step)\n`;
 
     this.logger.info(
       'Remote-access state (read back):\n' +
@@ -406,9 +413,9 @@ export class RemoteAccessInstaller implements BaseInstaller {
         `  ${m(/^0\s*$/m.test(saverIdle))} Screensaver disabled (idleTime 0)\n` +
         `  ${m(/screenLock is off/i.test(screenLock))} Lock screen off (sysadminctl)\n` +
         `  ${m(has(/powermode\s+2/))} High Power mode (Apple-Silicon Pro/Max/Ultra only)\n` +
-        `  ${m(tsAgent)} Tailscale auto-start LaunchAgent\n` +
-        `  ${m(parsecAgent)} ${appName} auto-start LaunchAgent\n` +
-        `  ${m(slackAgent)} Slack auto-start LaunchAgent\n` +
+        agentLine(tsAgent, 'Tailscale auto-start LaunchAgent') +
+        agentLine(parsecAgent, `${appName} auto-start LaunchAgent`) +
+        agentLine(slackAgent, 'Slack auto-start LaunchAgent') +
         `  ${/FileVault is On/i.test(filevault) ? '!! ' : 'OK '} FileVault ${
           /FileVault is On/i.test(filevault)
             ? 'ON (blocks auto-login — disable for unattended reboot)'
@@ -480,6 +487,14 @@ export class RemoteAccessInstaller implements BaseInstaller {
     const kickstart =
       '/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart';
     if (await fs.pathExists(kickstart)) {
+      // Split into two calls. The CONFIGURE call (no `-restart`) is deterministic
+      // and fast — it activates Remote Management and grants all users full
+      // access. The separate `-restart -agent` call is the variable/slow one
+      // (it waits on ARDAgent to come back up and was seen hanging to the 60s
+      // bound on some runs while finishing in 5s on others). We run it
+      // best-effort with detachOutput + a short bound + benignTimeout, so a slow
+      // agent restart NEVER blocks the run or prints a scary failure — the agent
+      // also reloads the just-written config on next launch / reboot regardless.
       await this.sudoNonInteractive(
         kickstart,
         [
@@ -487,18 +502,24 @@ export class RemoteAccessInstaller implements BaseInstaller {
           '-configure',
           '-access',
           '-on',
-          '-restart',
-          '-agent',
           '-privs',
           '-all',
           '-allowAccessFor',
           '-allUsers',
         ],
-        'Remote Management / ARD (System Settings > General > Sharing > Remote Management)',
-        // `-restart -agent` restarts ARDAgent (a long-lived child). detachOutput
-        // stops execa from blocking on the inherited stdout pipe; with that, the
-        // call returns in a few seconds, so 60s is plenty of headroom.
-        { timeoutMs: 60_000, detachOutput: true }
+        'Remote Management / ARD activate + configure (System Settings > General > Sharing > Remote Management)',
+        // `kickstart` is genuinely flaky on Sequoia — it can return in seconds or
+        // block indefinitely on remotemanagementd regardless of -restart. Native
+        // Screen Sharing (enabled above via launchctl, port 5900) is the reliable
+        // remote path, so ARD is best-effort: benignTimeout means a slow kickstart
+        // never blocks the run or prints a scary "run this yourself" warning.
+        { timeoutMs: 30_000, detachOutput: true, benignTimeout: true }
+      );
+      await this.sudoNonInteractive(
+        kickstart,
+        ['-restart', '-agent'],
+        'Remote Management / ARD agent restart (applies the config live; also applied on next reboot)',
+        { timeoutMs: 20_000, detachOutput: true, benignTimeout: true }
       );
     }
   }
@@ -1248,6 +1269,7 @@ export class RemoteAccessInstaller implements BaseInstaller {
       timeoutMs?: number;
       benignExitCodes?: number[];
       detachOutput?: boolean;
+      benignTimeout?: boolean;
     } = {}
   ): Promise<boolean> {
     // Capability flag (set by ensurePasswordlessSudo), NOT a failure latch:
@@ -1282,6 +1304,17 @@ export class RemoteAccessInstaller implements BaseInstaller {
     // the state we want, not a failure worth a scary "run this yourself" warning.
     const benign = new Set(opts.benignExitCodes ?? []);
     if (result.exitCode === 0 || benign.has(result.exitCode ?? -1)) {
+      return true;
+    }
+
+    // benignTimeout: for a best-effort step where a slow command is expected and
+    // acceptable (e.g. the ARD agent restart, which also applies on next reboot).
+    // A timeout here is not a failure — note it at info level and move on.
+    if (result.timedOut && opts.benignTimeout) {
+      this.logger.info(
+        `${context}: still completing in the background (did not finish within ` +
+          `${Math.round((opts.timeoutMs ?? 30_000) / 1000)}s) — continuing.`
+      );
       return true;
     }
 

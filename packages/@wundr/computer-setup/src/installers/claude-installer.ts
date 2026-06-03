@@ -394,13 +394,19 @@ export class ClaudeInstaller implements BaseInstaller {
 
     // If Claude is already installed, ensure it is on the native installer and return.
     try {
-      execSync('claude --version', { stdio: 'pipe' });
+      execSync('claude --version', { stdio: 'pipe', timeout: 15000 });
       logger.info('Claude CLI already installed');
       try {
         // Migrate to the native installer; older CLIs lack this command — ignore.
-        execSync('claude install', { stdio: 'pipe', timeout: 300000 });
+        // stdio:'ignore' is CRITICAL: `claude install` can wait on stdin for a
+        // confirmation AND it spawns a child that inherits the stdout pipe — with
+        // stdio:'pipe' that made execSync block on pipe-EOF until the 5-min
+        // timeout (the "stuck at Install Claude CLI" hang). Detaching stdio +
+        // a tighter bound makes this best-effort migration return promptly.
+        execSync('claude install', { stdio: 'ignore', timeout: 90000 });
+        logger.info('Claude CLI migrated to the native installer');
       } catch {
-        // Older CLI without `claude install`; nothing to migrate.
+        // Older CLI without `claude install`, or migration timed out — non-fatal.
       }
       return;
     } catch {
