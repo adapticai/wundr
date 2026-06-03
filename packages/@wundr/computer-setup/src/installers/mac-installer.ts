@@ -767,6 +767,66 @@ export class MacInstaller implements BaseInstaller {
     }
   }
 
+  /**
+   * Resolve the .app bundle name(s) a cask installs, from brew's own metadata
+   * (`brew info --cask --json=v2`). e.g. `visual-studio-code` -> ["Visual Studio
+   * Code.app"], `docker-desktop` -> ["Docker.app"]. Empty when brew can't be
+   * queried or the cask installs no .app (pkg/binary casks).
+   */
+  private async caskAppNames(token: string): Promise<string[]> {
+    try {
+      const { stdout, exitCode } = await execa(
+        'brew',
+        ['info', '--cask', '--json=v2', token],
+        { timeout: 30_000, reject: false, env: nonInteractiveEnv() }
+      );
+      if (exitCode !== 0) return [];
+      const data = JSON.parse(stdout) as {
+        casks?: Array<{ artifacts?: Array<Record<string, unknown>> }>;
+      };
+      const artifacts = data.casks?.[0]?.artifacts ?? [];
+      const apps: string[] = [];
+      for (const art of artifacts) {
+        const appField = (art as { app?: unknown }).app;
+        if (Array.isArray(appField)) {
+          for (const name of appField) {
+            if (typeof name === 'string') apps.push(name);
+          }
+        }
+      }
+      return apps;
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * True only when the cask's actual .app bundle is present on disk — NOT merely
+   * when a brew receipt exists (a receipt survives the app being deleted/moved,
+   * which made the old `brew list --cask` check report a missing app as
+   * "installed"). Falls back to the receipt only for casks that install no .app.
+   */
+  private async caskInstalled(token: string): Promise<boolean> {
+    const apps = await this.caskAppNames(token);
+    if (apps.length > 0) {
+      for (const name of apps) {
+        if (await fs.pathExists(`/Applications/${name}`)) return true;
+        if (
+          await fs.pathExists(path.join(os.homedir(), 'Applications', name))
+        ) {
+          return true;
+        }
+      }
+      return false; // brew knows the .app name and it is NOT on disk
+    }
+    // No .app artifact (pkg/binary cask) or brew unavailable — receipt fallback.
+    const r = await execa('brew', ['list', '--cask', token], {
+      timeout: 20_000,
+      reject: false,
+    });
+    return r.exitCode === 0;
+  }
+
   private async installApplications(profile: DeveloperProfile): Promise<void> {
     const applications = this.getApplicationsForProfile(profile);
 
@@ -779,15 +839,12 @@ export class MacInstaller implements BaseInstaller {
     const failedCasks: string[] = [];
     for (let i = 0; i < totalApps; i++) {
       const app = applications.casks[i];
-      // Already present? (brew receipt exists)
-      const listed =
-        (
-          await execa('brew', ['list', '--cask', app], {
-            timeout: 20_000,
-            reject: false,
-          })
-        ).exitCode === 0;
-      if (listed) {
+      // AUTHORITATIVE check: is the actual .app on disk? A brew receipt can
+      // linger after the .app is deleted/moved, so trusting `brew list --cask`
+      // reported "already installed, skipping" for an app that WASN'T there —
+      // the "says VS Code is installed but I can't find it" bug. caskInstalled()
+      // resolves the real .app bundle name from brew and checks /Applications.
+      if (await this.caskInstalled(app)) {
         this.logger.info(
           `${app} already installed, skipping (${i + 1}/${totalApps})`
         );
@@ -802,33 +859,22 @@ export class MacInstaller implements BaseInstaller {
         env: nonInteractiveEnv(),
       };
       let result = await execa('brew', ['install', '--cask', app], opts);
-      // Verify via the receipt; if the install didn't take, repair-reinstall once
-      // (fixes the stale-Caskroom-receipt no-op that leaves the .app missing).
-      let ok =
-        (
-          await execa('brew', ['list', '--cask', app], {
-            timeout: 20_000,
-            reject: false,
-          })
-        ).exitCode === 0;
+      // Verify the .app actually LANDED (not just that a receipt exists). A stale
+      // Caskroom receipt makes plain `install` a no-op while the app stays
+      // missing, so reinstall --force re-lays the bundle.
+      let ok = await this.caskInstalled(app);
       if (!ok) {
         this.logger.warn(
-          `${app} did not install cleanly (brew exited ${result.exitCode}${
+          `${app} not present after install (brew exited ${result.exitCode}${
             result.timedOut ? ', timed out' : ''
-          }) — retrying with \`reinstall --cask --force\`...`
+          }) — repairing with \`reinstall --cask --force\`...`
         );
         result = await execa(
           'brew',
           ['reinstall', '--cask', '--force', app],
           opts
         );
-        ok =
-          (
-            await execa('brew', ['list', '--cask', app], {
-              timeout: 20_000,
-              reject: false,
-            })
-          ).exitCode === 0;
+        ok = await this.caskInstalled(app);
       }
       if (ok) {
         this.logger.info(`Installed ${app}`);
