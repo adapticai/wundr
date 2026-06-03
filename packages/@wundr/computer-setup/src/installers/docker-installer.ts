@@ -223,15 +223,20 @@ export class DockerInstaller implements BaseInstaller {
         return;
       }
 
-      // Try Homebrew first as it's simpler
+      // Try Homebrew first as it's simpler. The brew path is install-or-repair
+      // (see installDockerDesktopViaBrew) — a plain `brew install --cask docker`
+      // breaks when a stale Caskroom receipt exists. Fall back to the DMG when
+      // brew is missing OR the cask install couldn't lay down Docker.app.
+      let brewInstalled = false;
       try {
         await which('brew');
-        logger.info('Installing Docker Desktop via Homebrew...');
-        await execa('brew', ['install', '--cask', 'docker']);
+        brewInstalled = await this.installDockerDesktopViaBrew();
       } catch {
-        // Fallback to direct DMG installation
+        // brew not available — DMG fallback below.
+      }
+      if (!brewInstalled && !(await this.isDockerDesktopInstalled())) {
         logger.info(
-          'Homebrew not available, installing Docker Desktop via DMG...'
+          'Installing Docker Desktop via direct DMG download (brew unavailable or cask install failed)...'
         );
         await this.installDockerDesktopDMG(platform);
       }
@@ -250,6 +255,60 @@ export class DockerInstaller implements BaseInstaller {
         `Docker installation failed: ${error instanceof Error ? error.message : String(error)}`
       );
     }
+  }
+
+  /**
+   * Install OR repair the Docker Desktop Homebrew cask.
+   *
+   * The canonical cask token is `docker-desktop`. The legacy `docker` token is a
+   * deprecated alias that also collides with the `docker` CLI *formula*, and on a
+   * machine with a stale Caskroom receipt `brew install --cask docker` fails with
+   * "The cask 'docker-desktop' cannot be upgraded as-is. ... run brew reinstall
+   * --cask --force docker-desktop" — the exact error seen in the field. Docker
+   * Desktop is a pkg-style cask (brew tracks the receipt, not the .app), so:
+   *  - when already listed, repair with `reinstall --cask --force` (re-lays the
+   *    bundle and reconciles the receipt);
+   *  - otherwise, fresh `install --cask`.
+   * Returns true only when Docker.app is actually present afterwards, so a
+   * swallowed brew failure never masquerades as success.
+   */
+  private async installDockerDesktopViaBrew(): Promise<boolean> {
+    const token = 'docker-desktop';
+    const listed =
+      (
+        await execa('brew', ['list', '--cask', token], {
+          reject: false,
+          timeout: 30_000,
+        })
+      ).exitCode === 0;
+    const args = listed
+      ? ['reinstall', '--cask', '--force', token]
+      : ['install', '--cask', token];
+    logger.info(
+      `${listed ? 'Repairing' : 'Installing'} Docker Desktop via Homebrew (brew ${args.join(' ')})...`
+    );
+    const result = await execa('brew', args, {
+      reject: false,
+      stdin: 'ignore',
+      timeout: 12 * 60 * 1000,
+      env: { ...process.env, HOMEBREW_NO_AUTO_UPDATE: '1' },
+    });
+    if (!(await this.isDockerDesktopInstalled())) {
+      const tail = String(result.stderr || result.stdout || '')
+        .split('\n')
+        .filter(Boolean)
+        .slice(-2)
+        .join(' ')
+        .trim();
+      logger.warn(
+        `Docker Desktop did NOT install via Homebrew (brew exited ${result.exitCode}${
+          tail ? `: ${tail}` : ''
+        }). Falling back to a direct DMG install.`
+      );
+      return false;
+    }
+    logger.info('Docker Desktop installed via Homebrew.');
+    return true;
   }
 
   private async isDockerDesktopInstalled(): Promise<boolean> {

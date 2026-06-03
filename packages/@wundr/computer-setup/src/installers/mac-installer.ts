@@ -787,7 +787,7 @@ export class MacInstaller implements BaseInstaller {
         break;
       case 'backend':
       case 'devops':
-        casks.push('docker', 'postman', 'tableplus');
+        casks.push('docker-desktop', 'postman', 'tableplus');
         break;
       case 'mobile':
         casks.push('android-studio', 'simulator');

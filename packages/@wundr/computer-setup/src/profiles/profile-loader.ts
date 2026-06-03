@@ -287,7 +287,10 @@ const BACKEND_PROFILE: ProfileDefinition = {
     ),
     // Containers
     tool('docker', 'Docker', 'container', true, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'brew install --cask docker' },
+      darwin: {
+        supported: true,
+        installCommand: 'brew install --cask docker-desktop',
+      },
       linux: {
         supported: true,
         installCommand: 'brew install docker',
@@ -504,7 +507,10 @@ const DEVOPS_PROFILE: ProfileDefinition = {
     ),
     // Containers
     tool('docker', 'Docker', 'container', true, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'brew install --cask docker' },
+      darwin: {
+        supported: true,
+        installCommand: 'brew install --cask docker-desktop',
+      },
       linux: {
         supported: true,
         installCommand: 'brew install docker',
@@ -777,7 +783,10 @@ const DATA_SCIENCE_PROFILE: ProfileDefinition = {
     ),
     // Containers (for reproducible environments)
     tool('docker', 'Docker', 'container', true, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'brew install --cask docker' },
+      darwin: {
+        supported: true,
+        installCommand: 'brew install --cask docker-desktop',
+      },
       linux: {
         supported: true,
         installCommand: 'brew install docker',

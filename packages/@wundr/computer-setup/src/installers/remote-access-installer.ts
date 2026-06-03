@@ -40,6 +40,12 @@ export class RemoteAccessInstaller implements BaseInstaller {
   private readonly logger = new Logger({ name: 'RemoteAccessInstaller' });
   /** Per-run capability flag (NOT a failure latch): set once by ensurePasswordlessSudo. */
   private passwordlessSudo = false;
+  /**
+   * Memoized account password for the run. `undefined` = not yet resolved;
+   * `null` = resolved but unavailable. Shared by auto-login (kcpassword) and
+   * lock-screen disabling so an interactive user is prompted at most once.
+   */
+  private cachedAutoLoginPassword?: string | null;
 
   /** The classic kcpassword XOR cipher key loginwindow uses to decode /etc/kcpassword. */
   private static readonly KCPASSWORD_KEY = [
@@ -159,6 +165,10 @@ export class RemoteAccessInstaller implements BaseInstaller {
       await this.configurePowerManagement(cfg);
       await this.enableScreenSharing();
       await this.configureAutoLogin(cfg);
+      // Turn the lock screen off so the auto-logged-in Aqua session stays
+      // reachable without a password prompt (modern macOS ignores the legacy
+      // askForPassword default — see disableScreenLock).
+      await this.disableScreenLock(cfg);
     }
 
     await this.configureDesktopSharing(cfg, mode, interactive);
@@ -366,6 +376,7 @@ export class RemoteAccessInstaller implements BaseInstaller {
       'com.apple.screensaver',
       'idleTime',
     ]);
+    const screenLock = await run('sysadminctl', ['-screenLock', 'status']);
     const filevault = await run('fdesetup', ['status']);
     const tsStatus = await run('tailscale', ['status']);
     const m = (ok: boolean): string => (ok ? 'OK ' : 'NO ');
@@ -393,6 +404,7 @@ export class RemoteAccessInstaller implements BaseInstaller {
         `  ${m(has(/\n\s*sleep\s+0/))} System sleep off\n` +
         `  ${m(has(/displaysleep\s+0/))} Display never sleeps\n` +
         `  ${m(/^0\s*$/m.test(saverIdle))} Screensaver disabled (idleTime 0)\n` +
+        `  ${m(/screenLock is off/i.test(screenLock))} Lock screen off (sysadminctl)\n` +
         `  ${m(has(/powermode\s+2/))} High Power mode (Apple-Silicon Pro/Max/Ultra only)\n` +
         `  ${m(tsAgent)} Tailscale auto-start LaunchAgent\n` +
         `  ${m(parsecAgent)} ${appName} auto-start LaunchAgent\n` +
@@ -514,18 +526,30 @@ export class RemoteAccessInstaller implements BaseInstaller {
     return /FileVault is On/i.test(r.stdout ?? '');
   }
 
-  /** Resolve the auto-login password: config -> env -> interactive hidden prompt. */
+  /**
+   * Resolve the macOS account password once per run: config -> env -> interactive
+   * hidden prompt. Memoized (cachedAutoLoginPassword) because both auto-login and
+   * lock-screen disabling need it — an interactive user must only be asked once.
+   */
   private async resolveAutoLoginPassword(
     cfg: RemoteAccessConfig
   ): Promise<string | null> {
+    if (this.cachedAutoLoginPassword !== undefined) {
+      return this.cachedAutoLoginPassword;
+    }
     const fromCfgOrEnv =
       cfg.autoLoginPassword || process.env.WUNDR_AUTOLOGIN_PASSWORD;
-    if (fromCfgOrEnv) return fromCfgOrEnv;
+    if (fromCfgOrEnv) {
+      this.cachedAutoLoginPassword = fromCfgOrEnv;
+      return fromCfgOrEnv;
+    }
     if (!isInteractive()) {
       this.logger.warn(
-        'Auto-login skipped: no password supplied. Set WUNDR_AUTOLOGIN_PASSWORD ' +
-          '(or profile.remoteAccess.autoLoginPassword) for unattended provisioning.'
+        'No account password supplied — auto-login and lock-screen-off will be ' +
+          'skipped. Set WUNDR_AUTOLOGIN_PASSWORD (or ' +
+          'profile.remoteAccess.autoLoginPassword) for unattended provisioning.'
       );
+      this.cachedAutoLoginPassword = null;
       return null;
     }
     const { pw } = await inquirer.prompt<{ pw: string }>([
@@ -534,10 +558,66 @@ export class RemoteAccessInstaller implements BaseInstaller {
         name: 'pw',
         mask: '',
         message:
-          'macOS account password for auto-login (writes /etc/kcpassword; not stored, not echoed):',
+          'macOS account password (enables auto-login + turns the lock screen off; not stored, not echoed):',
       },
     ]);
-    return pw ? pw : null;
+    this.cachedAutoLoginPassword = pw ? pw : null;
+    return this.cachedAutoLoginPassword;
+  }
+
+  /**
+   * Turn the macOS lock screen OFF so an unattended host is never stuck behind a
+   * password prompt that blocks ARD / Screen Sharing / Parsec capture.
+   *
+   * On Sonoma/Sequoia the legacy `defaults write com.apple.screensaver
+   * askForPassword 0` is IGNORED (the key no longer exists), so the only reliable
+   * lever is `sysadminctl -screenLock off`, which acts on the current user and
+   * needs that user's account password. We feed the password via stdin
+   * (`-password -`) so it never lands in argv / the process table — same care the
+   * kcpassword path takes. mac-installer.configureMacOS still writes the legacy
+   * askForPassword/screensaver defaults as belt-and-suspenders for older macOS.
+   * Best-effort: never blocks; reads the state back to confirm.
+   */
+  private async disableScreenLock(cfg: RemoteAccessConfig): Promise<void> {
+    const readStatus = async (): Promise<string> => {
+      const r = await execa('sysadminctl', ['-screenLock', 'status'], {
+        reject: false,
+        timeout: 10_000,
+      });
+      // sysadminctl prints its status to stderr, not stdout.
+      return `${r.stdout ?? ''}\n${r.stderr ?? ''}`;
+    };
+
+    if (/screenLock is off/i.test(await readStatus())) {
+      this.logger.info('Lock screen already off — no change needed.');
+      return;
+    }
+
+    const password = await this.resolveAutoLoginPassword(cfg);
+    if (!password) {
+      this.logger.warn(
+        'Lock screen NOT disabled: no account password available. Disable it ' +
+          'manually (System Settings > Lock Screen > "Require password after ' +
+          'screen saver begins" = Never) or set WUNDR_AUTOLOGIN_PASSWORD.'
+      );
+      return;
+    }
+
+    const result = await execa(
+      'sysadminctl',
+      ['-screenLock', 'off', '-password', '-'],
+      { input: password, reject: false, timeout: 20_000 }
+    );
+
+    if (/screenLock is off/i.test(await readStatus())) {
+      this.logger.info('Lock screen disabled (sysadminctl -screenLock off).');
+    } else {
+      this.logger.warn(
+        `Could not turn the lock screen off (sysadminctl exited ${result.exitCode}). ` +
+          'Disable it manually: System Settings > Lock Screen > "Require password ' +
+          'after screen saver begins" = Never.'
+      );
+    }
   }
 
   /**
