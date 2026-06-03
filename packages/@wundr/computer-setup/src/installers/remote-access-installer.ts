@@ -431,7 +431,9 @@ export class RemoteAccessInstaller implements BaseInstaller {
     await this.sudoNonInteractive(
       'launchctl',
       ['bootstrap', 'system', '/System/Library/LaunchDaemons/ssh.plist'],
-      'SSH Remote Login (bootstrap sshd)'
+      'SSH Remote Login (bootstrap sshd)',
+      // 5 (EIO) / 37 both mean "already loaded" — that's success, not failure.
+      { benignExitCodes: [5, 37] }
     );
     // Canonical toggle too (flips the Sharing pref + handles older macOS). If the
     // terminal lacks Full Disk Access this one warns; the launchctl path above
@@ -470,7 +472,9 @@ export class RemoteAccessInstaller implements BaseInstaller {
         'system',
         '/System/Library/LaunchDaemons/com.apple.screensharing.plist',
       ],
-      'Screen Sharing (bootstrap daemon)'
+      'Screen Sharing (bootstrap daemon)',
+      // 5 (EIO) / 37 both mean "already loaded" — that's success, not failure.
+      { benignExitCodes: [5, 37] }
     );
 
     const kickstart =
@@ -490,7 +494,10 @@ export class RemoteAccessInstaller implements BaseInstaller {
           '-allowAccessFor',
           '-allUsers',
         ],
-        'Remote Management / ARD (System Settings > General > Sharing > Remote Management)'
+        'Remote Management / ARD (System Settings > General > Sharing > Remote Management)',
+        // `-restart -agent` restarts the ARD agent; it routinely needs >30s, so
+        // give it a generous bound rather than killing it mid-restart.
+        { timeoutMs: 120_000 }
       );
     }
   }
@@ -656,7 +663,7 @@ export class RemoteAccessInstaller implements BaseInstaller {
     if (!password) return;
 
     // 1) autoLoginUser plist key (username only — no secret in argv).
-    await this.sudoNonInteractive(
+    const userOk = await this.sudoNonInteractive(
       'defaults',
       [
         'write',
@@ -669,26 +676,40 @@ export class RemoteAccessInstaller implements BaseInstaller {
 
     // 2) /etc/kcpassword — move the obfuscated bytes via a 0600 base64 temp so
     //    the password NEVER appears in argv / the process table, then sudo-decode
-    //    it into place as root:wheel 0600.
+    //    it into place as root:wheel 0600. NOTE: macOS `base64` rejects a
+    //    POSITIONAL input file (exit 64, EX_USAGE) — it must be `-d -i <file>`
+    //    (or stdin). The old positional form failed on every fresh machine, so
+    //    auto-login silently never got its password.
     const encoded = this.encodeKcpassword(password);
     const tmpDir = path.join(os.homedir(), '.wundr', 'remote-access');
     const tmpB64 = path.join(tmpDir, '.kcpassword.b64');
     try {
       await fs.ensureDir(tmpDir);
       await fs.writeFile(tmpB64, encoded.toString('base64'), { mode: 0o600 });
-      await this.sudoNonInteractive(
+      const kcOk = await this.sudoNonInteractive(
         'bash',
         [
           '-c',
-          `/usr/bin/base64 -d ${tmpB64} > /etc/kcpassword && ` +
+          `/usr/bin/base64 -d -i ${tmpB64} > /etc/kcpassword && ` +
             `/usr/sbin/chown root:wheel /etc/kcpassword && ` +
             `/bin/chmod 600 /etc/kcpassword`,
         ],
         '/etc/kcpassword (auto-login secret)'
       );
-      this.logger.info(
-        `Configured auto-login for ${user} (autoLoginUser + /etc/kcpassword, root:wheel 0600).`
-      );
+      // Only claim success when BOTH privileged writes actually landed — the old
+      // code logged "Configured auto-login" unconditionally even when the
+      // kcpassword write was skipped/failed, masking a broken auto-login.
+      if (userOk && kcOk) {
+        this.logger.info(
+          `Configured auto-login for ${user} (autoLoginUser + /etc/kcpassword, root:wheel 0600).`
+        );
+      } else {
+        this.logger.warn(
+          `Auto-login NOT fully configured (autoLoginUser ${userOk ? 'ok' : 'FAILED'}, ` +
+            `/etc/kcpassword ${kcOk ? 'ok' : 'FAILED'}). Ensure passwordless sudo is ` +
+            'in place (re-run after the keystone step) and try again.'
+        );
+      }
     } catch (error: unknown) {
       this.logger.warn(
         `Could not configure auto-login: ${
@@ -737,22 +758,23 @@ export class RemoteAccessInstaller implements BaseInstaller {
     // resolve on macOS 13–15 (the legacy `com.apple.preference.security?...`
     // anchors are fragile on Sequoia). System Settings is single-window, so open
     // them with a short stagger; the user can also use the Privacy sidebar.
+    //
+    // ONLY the two genuinely-unscriptable TCC grants for the third-party streamer
+    // (Parsec/RustDesk) are opened here. Everything else the old code opened a
+    // pane for is now applied programmatically: Automatic Login is written by
+    // configureAutoLogin (autoLoginUser + /etc/kcpassword), the lock screen by
+    // disableScreenLock, and SSH comes up via `launchctl bootstrap` (which does
+    // NOT need the terminal's Full Disk Access). So we no longer send the user to
+    // panes the script already handled — that was the "opens but doesn't update"
+    // confusion.
     const panes: Array<[string, string]> = [
       [
-        'Screen Recording',
+        `Screen Recording (for ${appName})`,
         'x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_ScreenCapture',
       ],
       [
-        'Accessibility',
+        `Accessibility (for ${appName})`,
         'x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_Accessibility',
-      ],
-      [
-        'Full Disk Access',
-        'x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_AllFiles',
-      ],
-      [
-        'Login Items / Automatic Login (Users & Groups)',
-        'x-apple.systempreferences:com.apple.LoginItems-Settings.extension',
       ],
     ];
     for (const [label, url] of panes) {
@@ -799,16 +821,18 @@ export class RemoteAccessInstaller implements BaseInstaller {
     const stack = cfg.stack ?? 'parsec';
     const appName = stack === 'rustdesk' ? 'RustDesk' : 'Parsec';
     this.logger.warn(
-      'Manual macOS steps remaining (security-gated — do once per machine, or push an MDM PPPC profile):\n' +
+      `What the script CANNOT do for you (macOS hard-blocks these — ${appName}/TCC only):\n` +
         `  1. Privacy & Security > Screen Recording AND Accessibility > enable ${appName} ` +
-        `(${appName}, being third-party, is black/uncontrollable without this; macOS cannot grant TCC by script). ` +
-        'Native Screen Sharing was enabled for you and is exempt from this grant.\n' +
+        `(${appName} is third-party, so it stays black/uncontrollable until you grant these two; ` +
+        'macOS forbids any script from writing the TCC database without an MDM PPPC profile).\n' +
         `  2. Open ${appName} once and sign in, enabling Host / Unattended Access ` +
         '(first-run GUI sign-in cannot be scripted).\n' +
-        '  3. Users & Groups > Login Options > Automatic login > your user ' +
-        '(so a GUI session exists after an unattended reboot — needs the cleartext password; not scriptable).\n' +
-        '  4. If Remote Login/systemsetup reported a Full Disk Access error: ' +
-        'Privacy & Security > Full Disk Access > enable your terminal/SSH client.'
+        '\nEverything else was applied for you and needs NO clicks: native Screen Sharing + ' +
+        'Remote Management (ARD), SSH Remote Login, automatic login after reboot, lock screen ' +
+        'off, and never-sleep power. You can already remote in via Screen Sharing/VNC and SSH ' +
+        `with your username + password — ${appName} is only needed if you specifically want it. ` +
+        'For a fully hands-off fleet, deploy the generated MDM PPPC profile to grant the two ' +
+        `${appName} permissions silently.`
     );
   }
 
@@ -1218,7 +1242,8 @@ export class RemoteAccessInstaller implements BaseInstaller {
   private async sudoNonInteractive(
     command: string,
     args: string[],
-    context: string
+    context: string,
+    opts: { timeoutMs?: number; benignExitCodes?: number[] } = {}
   ): Promise<boolean> {
     // Capability flag (set by ensurePasswordlessSudo), NOT a failure latch:
     // don't spawn doomed probes when we already know sudo isn't usable.
@@ -1233,19 +1258,26 @@ export class RemoteAccessInstaller implements BaseInstaller {
 
     const result = await execa('sudo', ['-n', command, ...args], {
       stdin: 'ignore', // never inherit — can't be poisoned, can't prompt
-      timeout: 30_000,
+      // Some privileged ops are slow (ARD `kickstart -restart -agent` restarts
+      // the agent and routinely takes >30s); callers can widen the bound.
+      timeout: opts.timeoutMs ?? 30_000,
       reject: false,
     });
 
-    if (result.exitCode !== 0) {
-      // Skip ONLY this command; the next sudoNonInteractive still runs.
-      this.logger.warn(
-        `Skipping ${context}: \`sudo -n ${command} ${args.join(' ')}\` exited ` +
-          `${result.exitCode}${result.timedOut ? ' (timed out)' : ''}. ` +
-          `Run \`sudo ${command} ${args.join(' ')}\` yourself to finish.`
-      );
-      return false;
+    // Treat caller-declared benign exits as success — e.g. `launchctl bootstrap`
+    // returns 5 (EIO) / 37 when the daemon is ALREADY loaded, which is exactly
+    // the state we want, not a failure worth a scary "run this yourself" warning.
+    const benign = new Set(opts.benignExitCodes ?? []);
+    if (result.exitCode === 0 || benign.has(result.exitCode ?? -1)) {
+      return true;
     }
-    return true;
+
+    // Skip ONLY this command; the next sudoNonInteractive still runs.
+    this.logger.warn(
+      `Skipping ${context}: \`sudo -n ${command} ${args.join(' ')}\` exited ` +
+        `${result.exitCode}${result.timedOut ? ' (timed out)' : ''}. ` +
+        `Run \`sudo ${command} ${args.join(' ')}\` yourself to finish.`
+    );
+    return false;
   }
 }

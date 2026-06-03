@@ -427,9 +427,9 @@ export class MacInstaller implements BaseInstaller {
       );
       return;
     }
-    if (await this.hasPasswordlessSudo()) {
+    if (await this.hasPersistentNopasswd()) {
       this.logger.info(
-        `Passwordless sudo already active for ${user} — no changes needed.`
+        `Passwordless sudo drop-in already present for ${user} — no changes needed.`
       );
       return;
     }
@@ -509,9 +509,9 @@ export class MacInstaller implements BaseInstaller {
     }
   }
 
-  /** Validator: true when `sudo -n` already runs without a password. */
+  /** Validator: true only when the PERSISTENT NOPASSWD rule is in place. */
   private async validatePasswordlessSudo(): Promise<boolean> {
-    return this.hasPasswordlessSudo();
+    return this.hasPersistentNopasswd();
   }
 
   /** The invoking (non-root) user — $SUDO_USER under sudo, else the login. */
@@ -524,14 +524,31 @@ export class MacInstaller implements BaseInstaller {
     return candidate;
   }
 
-  /** True when `sudo -n` already runs without a password. */
-  private async hasPasswordlessSudo(): Promise<boolean> {
-    const r = await execa('sudo', ['-n', 'true'], {
+  /**
+   * True when a PERSISTENT NOPASSWD sudoers rule exists for the user — NOT merely
+   * a cached sudo timestamp.
+   *
+   * This is the crux of running under `sudo wundr`: the outer sudo leaves a live
+   * credential timestamp, so a naive `sudo -n true` returns 0 even though no
+   * NOPASSWD drop-in is installed. That fooled the keystone into reporting
+   * "already active" and skipping the install — then the per-tty timestamp
+   * expired/mismatched mid-run and every later `sudo -n` (Remote Login, Screen
+   * Sharing, ARD kickstart, kcpassword) failed, so those settings silently never
+   * applied. `sudo -n -l` lists the actual sudoers rules; the NOPASSWD line only
+   * appears when the persistent drop-in is genuinely in place. With no rule AND
+   * no timestamp it exits non-zero, which we also (correctly) treat as "not
+   * configured" so the installer proceeds to write the drop-in.
+   */
+  private async hasPersistentNopasswd(): Promise<boolean> {
+    const r = await execa('sudo', ['-n', '-l'], {
       reject: false,
       stdin: 'ignore',
       timeout: 5_000,
     });
-    return r.exitCode === 0;
+    return (
+      r.exitCode === 0 &&
+      /NOPASSWD/i.test(`${r.stdout ?? ''}\n${r.stderr ?? ''}`)
+    );
   }
 
   /** Obtain ONE elevation to write the drop-in (interactive prompt / cached). */
