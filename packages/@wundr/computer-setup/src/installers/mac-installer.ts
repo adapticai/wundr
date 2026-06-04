@@ -266,9 +266,98 @@ export class MacInstaller implements BaseInstaller {
         estimatedTime: 20,
         installer: () => this.configureDock(profile),
       },
+      {
+        // FINAL step: read what is ACTUALLY on disk and print a present/MISSING
+        // report, so a silently-skipped install can never hide again.
+        id: 'verify-installation',
+        name: 'Verify Installation',
+        description:
+          'Report which required apps, tools and auto-start agents are actually present',
+        category: 'configuration',
+        required: false,
+        dependencies: ['install-applications', 'configure-dock'],
+        estimatedTime: 10,
+        installer: () => this.verifyInstallation(profile),
+      },
     ];
 
     return steps;
+  }
+
+  /**
+   * Read what is ACTUALLY on disk and log a present/MISSING report for the GUI
+   * apps, key CLIs and auto-start agents. Pure read-back; never installs. This is
+   * the safety net for "it said installed but I can't find it" — the run ends
+   * with an explicit, honest inventory.
+   */
+  private async verifyInstallation(_profile: DeveloperProfile): Promise<void> {
+    const mark = (ok: boolean): string => (ok ? 'OK     ' : 'MISSING');
+    const lines: string[] = [];
+    const missing: string[] = [];
+
+    const appPresent = async (appName: string): Promise<boolean> =>
+      (await fs.pathExists(`/Applications/${appName}.app`)) ||
+      fs.pathExists(path.join(os.homedir(), 'Applications', `${appName}.app`));
+
+    lines.push('GUI apps:');
+    for (const appName of DOCK_APPS) {
+      const present = await appPresent(appName);
+      lines.push(`  ${mark(present)}  ${appName}.app`);
+      if (!present) missing.push(`${appName}.app`);
+    }
+
+    lines.push('Command-line tools:');
+    const tools: Array<[string, string]> = [
+      ['Homebrew (brew)', 'brew'],
+      ['git', 'git'],
+      ['node', 'node'],
+      ['gh', 'gh'],
+      ['docker (CLI)', 'docker'],
+      ['claude', 'claude'],
+      ['code (VS Code CLI)', 'code'],
+    ];
+    for (const [label, bin] of tools) {
+      let present = false;
+      try {
+        await which(bin);
+        present = true;
+      } catch {
+        if (bin === 'code') {
+          present = await fs.pathExists(
+            '/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code'
+          );
+        }
+      }
+      lines.push(`  ${mark(present)}  ${label}`);
+      if (!present) missing.push(label);
+    }
+
+    lines.push('Auto-start LaunchAgents (RunAtLoad after auto-login):');
+    const agentsDir = path.join(os.homedir(), 'Library', 'LaunchAgents');
+    for (const appName of AUTO_START_APPS) {
+      const slug = appName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const present = await fs.pathExists(
+        path.join(agentsDir, `com.adaptic.autostart.${slug}.plist`)
+      );
+      lines.push(`  ${mark(present)}  auto-start: ${appName}`);
+      if (!present) missing.push(`auto-start:${appName}`);
+    }
+
+    this.logger.info(
+      'Installation verification — what is ACTUALLY on disk:\n' +
+        lines.join('\n')
+    );
+    if (missing.length) {
+      this.logger.warn(
+        `Verification: ${missing.length} item(s) MISSING — ${missing.join(', ')}. ` +
+          'Re-run `wundr computer-setup`; it now detects genuinely-absent apps ' +
+          '(by real .app presence) and (re)installs them.'
+      );
+    } else {
+      this.logger.info(
+        'Verification: all required apps, CLIs and auto-start agents are present. ✅'
+      );
+    }
   }
 
   /**

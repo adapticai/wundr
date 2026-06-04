@@ -631,12 +631,13 @@ colorscheme gruvbox
 
     const shell = profile.preferences?.shell || 'bash';
     const rcFile = this.getShellRcFile(shell);
+    const rcPath = path.join(os.homedir(), rcFile);
 
-    const config = `
-# Wundr Computer Setup Configuration
-# Generated: ${new Date().toISOString()}
-
-# Environment variables
+    // NOTE: no `alias wundr="npx wundr"`. That alias SHADOWED the real installed
+    // `wundr` binary with `npx wundr`, which resolves a stale npx-cached version
+    // — the source of "I installed 1.0.x but --version shows an old one". The CLI
+    // is on PATH after install; let the binary win.
+    const body = `# Environment variables
 export EDITOR="${profile.preferences?.editor || 'vim'}"
 export WUNDR_PROFILE="${profile.name}"
 
@@ -646,7 +647,6 @@ alias gs="git status"
 alias gc="git commit"
 alias gp="git push"
 alias gl="git pull"
-alias wundr="npx wundr"
 
 # Node.js configuration
 export NVM_DIR="$HOME/.nvm"
@@ -666,21 +666,75 @@ function mkcd() {
 
 function serve() {
   python -m http.server \${1:-8000}
-}
-`;
+}`;
 
-    const rcPath = path.join(os.homedir(), rcFile);
-
-    // Backup existing file
+    // Backup once.
     if (await fs.pathExists(rcPath)) {
       const backupPath = path.join(this.backupDir, `${rcFile}.${Date.now()}`);
       await fs.copy(rcPath, backupPath);
     }
 
-    // Append configuration
-    await fs.appendFile(rcPath, config);
+    // Purge any stale `alias wundr="npx wundr"` lines left by older runs (the
+    // old code appended the whole block — alias included — on EVERY run, so rc
+    // files accumulated dozens of them).
+    await this.removeWundrNpxAlias(rcPath);
+
+    // Idempotent managed block (replace in place, never append duplicates).
+    await this.writeManagedBlock(rcPath, 'wundr-computer-setup-shell', body);
 
     this.recordConfigChange(rcPath, ['Shell configuration']);
+  }
+
+  /** Remove every `alias wundr="npx wundr"` line — it shadows the real binary. */
+  private async removeWundrNpxAlias(filePath: string): Promise<void> {
+    try {
+      if (!(await fs.pathExists(filePath))) return;
+      const content = await fs.readFile(filePath, 'utf8');
+      const cleaned = content
+        .split('\n')
+        .filter(line => !/^\s*alias\s+wundr\s*=\s*['"]?npx\s+wundr/.test(line))
+        .join('\n');
+      if (cleaned !== content) {
+        await fs.writeFile(filePath, cleaned);
+        logger.info(
+          `Removed stale \`alias wundr="npx wundr"\` from ${path.basename(filePath)}`
+        );
+      }
+    } catch {
+      // best-effort cleanup
+    }
+  }
+
+  /**
+   * Idempotently write a marker-delimited block: replace the existing block in
+   * place if present, else append once. Prevents the rc-file duplication the old
+   * append-every-run code caused.
+   */
+  private async writeManagedBlock(
+    filePath: string,
+    marker: string,
+    body: string
+  ): Promise<void> {
+    const begin = `# >>> ${marker} >>>`;
+    const end = `# <<< ${marker} <<<`;
+    const block = `${begin}\n${body.trim()}\n${end}\n`;
+
+    let existing = '';
+    if (await fs.pathExists(filePath)) {
+      existing = await fs.readFile(filePath, 'utf8');
+    }
+    if (existing.includes(begin) && existing.includes(end)) {
+      const escape = (value: string): string =>
+        value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const pattern = new RegExp(
+        `${escape(begin)}[\\s\\S]*?${escape(end)}\\n?`
+      );
+      await fs.writeFile(filePath, existing.replace(pattern, block));
+      return;
+    }
+    const separator =
+      existing.length > 0 && !existing.endsWith('\n') ? '\n' : '';
+    await fs.writeFile(filePath, `${existing}${separator}${block}`);
   }
 
   /**
