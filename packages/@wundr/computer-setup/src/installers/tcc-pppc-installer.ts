@@ -162,23 +162,26 @@ export class TccPppcInstaller implements BaseInstaller {
 
     this.logger.warn(
       'TCC permissions (Screen Recording, Accessibility, Full Disk Access, Apple Events) ' +
-        'CANNOT be granted by any script on macOS 15 — TCC.db is SIP-protected and tccd ' +
-        'rejects out-of-band writes for these services. The ONLY unattended/fleet path is ' +
-        'an MDM-delivered PPPC profile. A ready-to-deploy profile was written to:\n' +
+        'CANNOT be granted by any local script on macOS 15. Verified on a real Sequoia mac: ' +
+        'TCC.db is SIP-protected (even `sudo sqlite3` gets "authorization denied"), `tccutil` ' +
+        'can only RESET (not grant), and Apple REMOVED the installer ("profiles tool no longer ' +
+        'supports installs"). A ready-to-deploy PPPC profile was written to:\n' +
         `    ${file}\n` +
-        '  • Upload it to your MDM (Jamf/Kandji/Mosyle) as a PPPC payload to grant it ' +
-        'silently across the fleet.\n' +
-        '  • On an MDM-enrolled/supervised mac you can also run:\n' +
-        `      sudo profiles install -type configuration -path "${file}"\n` +
-        '  • NOTE: a MANUAL `profiles install` is NOT honoured for ScreenCapture/' +
-        'Accessibility/SystemPolicyAllFiles unless the mac is MDM-enrolled/supervised; ' +
-        'those services REQUIRE MDM delivery. For a non-MDM machine, use the System ' +
-        'Settings panes the remote-access step opens.'
+        'Two ways to actually grant these:\n' +
+        '  • FLEET (zero-touch, silent, permanent): enroll the macs in MDM (Jamf/Kandji/Mosyle, ' +
+        'or self-hosted nanomdm/micromdm) and push this .mobileconfig as a PPPC payload.\n' +
+        '  • PER-MACHINE (one click): launch the app — when it asks to record the screen / ' +
+        'control your Mac, click Allow (the remote-access step opens the exact panes + launches it).\n' +
+        'A double-clicked profile is NOT honoured for ScreenCapture/Accessibility/AllFiles on a ' +
+        'non-MDM mac — those REQUIRE MDM. Note: native Screen Sharing + SSH already give you remote ' +
+        'login (username + password) with NO TCC grant; Parsec is the only thing needing these.'
     );
 
-    // Only attempt a local `profiles install` when interactive AND MDM-enrolled.
+    // Surface the profile in System Settings > Profiles for review (the only
+    // non-MDM way to add a profile now that `profiles install` is gone). Honoured
+    // for non-PPPC payloads + once the mac is later MDM-enrolled; harmless else.
     if (isInteractive() && (await this.isMdmEnrolled())) {
-      await this.attemptManualInstall(file);
+      await this.openProfileForReview(file);
     }
 
     await this.detectGrantState(apps);
@@ -194,26 +197,15 @@ export class TccPppcInstaller implements BaseInstaller {
     return /MDM enrollment:\s*Yes/i.test(`${r.stdout ?? ''}${r.stderr ?? ''}`);
   }
 
-  private async attemptManualInstall(file: string): Promise<void> {
+  private async openProfileForReview(file: string): Promise<void> {
+    // `profiles install` was removed in modern macOS; `open`-ing the .mobileconfig
+    // surfaces it under System Settings > General > Device Management for the user
+    // to approve. (On a non-MDM mac the PPPC services still won't honour it, but
+    // this is the only local install path that exists now.)
     this.logger.info(
-      'MDM-enrolled mac detected — installing the PPPC profile...'
+      'MDM-enrolled mac — opening the PPPC profile in System Settings for review...'
     );
-    const r = await execa(
-      'sudo',
-      ['profiles', 'install', '-type', 'configuration', '-path', file],
-      { reject: false, timeout: 60_000, stdin: 'inherit' }
-    );
-    if (r.exitCode !== 0) {
-      this.logger.warn(
-        `profiles install exited ${r.exitCode}: ${String(r.stderr ?? '')
-          .split('\n')
-          .filter(Boolean)
-          .slice(-2)
-          .join(' ')}. Upload the profile via MDM instead.`
-      );
-    } else {
-      this.logger.info('PPPC profile installed via `profiles`.');
-    }
+    await execa('open', [file], { reject: false, timeout: 15_000 });
   }
 
   /**
