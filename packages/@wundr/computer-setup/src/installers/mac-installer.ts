@@ -88,6 +88,8 @@ const AUTO_START_APPS: ReadonlyArray<string> = ['Tailscale', 'Parsec', 'Slack'];
 export class MacInstaller implements BaseInstaller {
   name = 'mac-platform';
   private readonly logger = new Logger({ name: 'MacInstaller' });
+  /** Set once `brew update` has run this session — see {@link refreshBrewMetadata}. */
+  private brewMetadataRefreshed = false;
 
   isSupported(platform: SetupPlatform): boolean {
     return platform.os === 'darwin';
@@ -916,6 +918,40 @@ export class MacInstaller implements BaseInstaller {
     return r.exitCode === 0;
   }
 
+  /**
+   * True when brew refused an operation because its tap metadata is stale.
+   * We run setup with `HOMEBREW_NO_AUTO_UPDATE=1` for speed/determinism, so on a
+   * machine whose brew hasn't refreshed in >24h a cask install can fail with
+   * "You have disabled automatic updates and have not updated today ... run
+   * `brew update` and tried again." — brew telling us exactly how to recover.
+   */
+  private static isStaleBrewMetadata(text: string): boolean {
+    return /have not updated today|disabled automatic updates|brew update/i.test(
+      text
+    );
+  }
+
+  /**
+   * Run `brew update` at most once per setup (bounded + non-fatal). Returns true
+   * only the first time so the caller can retry the failed op on fresh metadata;
+   * subsequent calls are no-ops (we already refreshed — retrying brew update
+   * won't change anything and would just waste time).
+   */
+  private async refreshBrewMetadata(): Promise<boolean> {
+    if (this.brewMetadataRefreshed) return false;
+    this.brewMetadataRefreshed = true;
+    this.logger.info(
+      'A cask refused to install on stale metadata — running `brew update` once, then retrying...'
+    );
+    await execa('brew', ['update'], {
+      timeout: 5 * 60 * 1000,
+      reject: false,
+      stdin: 'ignore',
+      env: nonInteractiveEnv(),
+    });
+    return true;
+  }
+
   private async installApplications(profile: DeveloperProfile): Promise<void> {
     const applications = this.getApplicationsForProfile(profile);
 
@@ -947,7 +983,14 @@ export class MacInstaller implements BaseInstaller {
         stdin: 'ignore' as const,
         env: nonInteractiveEnv(),
       };
-      let result = await execa('brew', ['install', '--cask', app], opts);
+      // `--adopt` lets brew take ownership of an app bundle that is already on
+      // disk (installed manually or by a prior run with no/stale receipt)
+      // instead of aborting with "It seems there is already an App at ...".
+      let result = await execa(
+        'brew',
+        ['install', '--cask', '--adopt', app],
+        opts
+      );
       // Verify the .app actually LANDED (not just that a receipt exists). A stale
       // Caskroom receipt makes plain `install` a no-op while the app stays
       // missing, so reinstall --force re-lays the bundle.
@@ -964,6 +1007,30 @@ export class MacInstaller implements BaseInstaller {
           opts
         );
         ok = await this.caskInstalled(app);
+      }
+      // Brew refused on stale tap metadata (we run with HOMEBREW_NO_AUTO_UPDATE).
+      // Do exactly what brew asks: `brew update` once, then retry this cask.
+      if (
+        !ok &&
+        MacInstaller.isStaleBrewMetadata(
+          String(result.stderr || result.stdout || '')
+        ) &&
+        (await this.refreshBrewMetadata())
+      ) {
+        result = await execa(
+          'brew',
+          ['install', '--cask', '--adopt', app],
+          opts
+        );
+        ok = await this.caskInstalled(app);
+        if (!ok) {
+          result = await execa(
+            'brew',
+            ['reinstall', '--cask', '--force', app],
+            opts
+          );
+          ok = await this.caskInstalled(app);
+        }
       }
       if (ok) {
         this.logger.info(`Installed ${app}`);

@@ -579,7 +579,16 @@ export class ClaudeInstaller implements BaseInstaller {
 
     const installMCP = (name: string, command: string) => {
       try {
-        execSync(command, { stdio: 'pipe', timeout: 30000 });
+        // `claude mcp add … npx <pkg>` validates the server by launching it, so
+        // a cold `npx` download of a large package (ruflo, playwright) routinely
+        // blew past the old 30s ceiling → `spawnSync /bin/sh ETIMEDOUT`. Give it
+        // 2 min, and detach stdin (`ignore`) so a validation prompt can never
+        // block the headless run.
+        execSync(command, {
+          stdio: ['ignore', 'pipe', 'pipe'],
+          timeout: 120000,
+          env: { ...process.env, CI: '1' },
+        });
         logger.info(`Installed ${name}`);
       } catch (error: unknown) {
         const errorObj = error as {
