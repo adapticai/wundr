@@ -207,3 +207,392 @@ commit: fix: replace label+asChild pattern with direct onClick for icon upload
 files:
   - packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceSlug]/admin/settings/general/page.tsx
 
+[2026-04-03]
+branch: master
+commit: feat: rebrand claude-flow to ruflo, add agent skills, extend computer-setup
+files:
+  - .claude-flow/metrics/agent-metrics.json
+  - .claude-flow/metrics/performance.json
+  - .claude-flow/metrics/task-metrics.json
+  - .claude/agents/analysis/code-analyzer.md
+  - .claude/agents/devops/debug-refactor.md
+  - .claude/agents/devops/deployment-monitor.md
+  - .claude/agents/devops/log-analyzer.md
+  - .claude/agents/github/code-review-swarm.md
+  - .claude/agents/github/github-modes.md
+  - .claude/agents/github/issue-tracker.md
+  - .claude/agents/github/multi-repo-swarm.md
+  - .claude/agents/github/pr-manager.md
+  - .claude/agents/github/project-board-sync.md
+  - .claude/agents/github/release-manager.md
+  - .claude/agents/github/release-swarm.md
+  - .claude/agents/github/repo-architect.md
+  - .claude/agents/github/swarm-issue.md
+  - .claude/agents/github/swarm-pr.md
+  - .claude/agents/github/sync-coordinator.md
+  - .claude/agents/github/workflow-automation.md
+  - .claude/agents/hive-mind/collective-intelligence-coordinator.md
+  - .claude/agents/hive-mind/swarm-memory-manager.md
+  - .claude/agents/optimization/README.md
+  - .claude/agents/optimization/benchmark-suite.md
+  - .claude/agents/optimization/load-balancer.md
+  - .claude/agents/optimization/performance-monitor.md
+  - .claude/agents/optimization/resource-allocator.md
+  - .claude/agents/optimization/topology-optimizer.md
+  - .claude/agents/session-managers/README.md
+  - .claude/agents/sub-agents/legal/README.md
+
+[2026-05-30]
+branch: fix/computer-setup-headless-xcode-and-consolidation
+commit: fix(computer-setup): make Xcode CLT install + bootstrap steps headless-safe (P1)
+files:
+  - packages/@wundr/cli/src/commands/computer-setup.ts
+  - packages/@wundr/computer-setup/package.json
+  - packages/@wundr/computer-setup/src/installers/git-installer.ts
+  - packages/@wundr/computer-setup/src/installers/homebrew-installer.ts
+  - packages/@wundr/computer-setup/src/installers/mac-installer.ts
+  - packages/@wundr/computer-setup/src/installers/node-installer.ts
+  - packages/@wundr/computer-setup/src/lib/__tests__/headless.test.ts
+  - packages/@wundr/computer-setup/src/lib/headless.ts
+  - packages/@wundr/environment/scripts/install/macos.sh
+  - tasks/active/TASK-computer-setup-headless-overhaul.md
+
+[2026-05-30]
+branch: fix/computer-setup-headless-xcode-and-consolidation
+commit: fix(computer-setup): stop clobbering maestro's global Claude config (P3)
+files:
+  - packages/@wundr/computer-setup/src/installers/claude-installer.ts
+  - packages/@wundr/computer-setup/src/lib/__tests__/claude-config.test.ts
+  - packages/@wundr/computer-setup/src/lib/claude-config.ts
+
+[2026-05-30]
+branch: fix/computer-setup-headless-xcode-and-consolidation
+commit: feat(computer-setup): incorporate remote-setup as a first-class install phase (P4)
+files:
+  - packages/@wundr/cli/src/commands/computer-setup.ts
+  - packages/@wundr/computer-setup/src/installers/__tests__/remote-access-installer.test.ts
+  - packages/@wundr/computer-setup/src/installers/index.ts
+  - packages/@wundr/computer-setup/src/installers/remote-access-installer.ts
+  - packages/@wundr/computer-setup/src/types/index.ts
+
+[2026-05-30]
+branch: fix/computer-setup-headless-xcode-and-consolidation
+commit: fix(computer-setup): backstop step timeout + correct skip-logic; harden dev runner
+files:
+  - packages/@wundr/computer-setup/src/manager/index.ts
+  - scripts/dev-computer-setup.sh
+
+[2026-05-30]
+branch: fix/computer-setup-headless-xcode-and-consolidation
+commit: docs(tasks): record computer-setup audit review + phase status
+files:
+  - tasks/active/TASK-computer-setup-headless-overhaul.md
+  - tasks/reviews/REVIEW-computer-setup-audit.md
+
+[2026-05-30]
+branch: fix/computer-setup-headless-xcode-and-consolidation
+commit: refactor(computer-setup): consolidate to a single setup orchestrator (P2)
+files:
+  - packages/@wundr/cli/src/commands/computer-setup-commands.ts
+  - packages/@wundr/cli/src/commands/computer-setup.ts
+  - packages/@wundr/cli/src/commands/setup.ts
+  - packages/@wundr/cli/src/types/modules.d.ts
+  - packages/@wundr/computer-setup/dev.ts
+  - packages/@wundr/computer-setup/src/core/index.ts
+  - packages/@wundr/computer-setup/src/core/operation-runner.ts
+  - packages/@wundr/computer-setup/src/core/profile-manager.ts
+  - packages/@wundr/computer-setup/src/core/unified-orchestrator.ts
+  - packages/@wundr/computer-setup/src/index.ts
+  - packages/@wundr/computer-setup/src/installers/index.ts
+  - packages/@wundr/computer-setup/src/installers/real-setup-orchestrator.ts
+  - packages/@wundr/computer-setup/src/orchestrator/index.ts
+
+[2026-05-30]
+branch: fix/computer-setup-headless-xcode-and-consolidation
+commit: docs(tasks): mark full orchestrator consolidation (P2) complete
+files:
+  - tasks/active/TASK-computer-setup-headless-overhaul.md
+  - tasks/reviews/REVIEW-computer-setup-audit.md
+
+[2026-05-30]
+branch: fix/computer-setup-headless-xcode-and-consolidation
+commit: docs(tasks): mark full orchestrator consolidation (P2) complete
+files:
+  - packages/@wundr/cli/src/commands/computer-setup.ts
+  - packages/@wundr/computer-setup/src/installers/claude-installer.ts
+  - packages/@wundr/computer-setup/src/installers/node-installer.ts
+  - packages/@wundr/computer-setup/src/manager/index.ts
+
+[2026-05-30]
+branch: fix/computer-setup-headless-xcode-and-consolidation
+commit: fix(computer-setup): real-run hardening — dry-run, native claude, plugins, remote-access phase, npm prefix
+files:
+  - packages/@wundr/cli/src/commands/computer-setup.ts
+  - packages/@wundr/computer-setup/src/installers/claude-installer.ts
+  - packages/@wundr/computer-setup/src/installers/node-installer.ts
+  - packages/@wundr/computer-setup/src/manager/index.ts
+
+[2026-05-31]
+branch: master
+commit: fix(ci): repair invalid YAML in npm-publish-auto workflow
+files:
+  - .github/workflows/npm-publish-auto.yml
+
+[2026-05-31]
+branch: master
+commit: fix(ci): make auto-publish actually publish every sub-package
+files:
+  - .github/workflows/npm-publish-auto.yml
+
+[2026-05-31]
+branch: master
+commit: fix(ci): publish with --ignore-scripts so prepublishOnly rebuilds don't fail publishes
+files:
+  - .github/workflows/npm-publish-auto.yml
+
+[2026-05-31]
+branch: master
+commit: fix(ci): retry transient npm publish errors (E409) so all packages publish
+files:
+  - .github/workflows/npm-publish-auto.yml
+
+[2026-05-31]
+branch: master
+commit: feat(ci): auto-publish stable `latest` to npm on every master merge
+files:
+  - .github/workflows/npm-publish-auto.yml
+  - .github/workflows/release-automation.yml
+  - .github/workflows/release.yml
+  - package.json
+
+[2026-05-31]
+branch: master
+commit: fix(ci): build (emit) each package's dist in the publish job before npm publish
+files:
+  - .github/workflows/npm-publish-auto.yml
+
+[2026-05-31]
+branch: master
+commit: fix(computer-setup): don't clobber git identity with empty profile name/email
+files:
+  - packages/@wundr/computer-setup/src/configurators/index.ts
+
+[2026-05-31]
+branch: master
+commit: fix(ci): install deps in publish job so per-package tsc uses workspace TS
+files:
+  - .github/workflows/npm-publish-auto.yml
+
+[2026-05-31]
+branch: master
+commit: fix(ci): generate Prisma client before publishing neolith packages
+files:
+  - .github/workflows/npm-publish-auto.yml
+
+[2026-05-31]
+branch: master
+commit: fix(ci): pre-build @neolith/database so @neolith/core resolves its types
+files:
+  - .github/workflows/npm-publish-auto.yml
+
+[2026-06-01]
+branch: master
+commit: fix(computer-setup): never run as root + fix Homebrew install on fresh Macs
+files:
+  - packages/@wundr/cli/src/commands/computer-setup.ts
+  - packages/@wundr/computer-setup/src/index.ts
+  - packages/@wundr/computer-setup/src/installers/homebrew-installer.ts
+  - packages/@wundr/computer-setup/src/installers/mac-installer.ts
+  - packages/@wundr/computer-setup/src/lib/__tests__/headless.test.ts
+  - packages/@wundr/computer-setup/src/lib/headless.ts
+  - packages/@wundr/computer-setup/src/lib/privileges.ts
+  - packages/@wundr/computer-setup/src/manager/index.ts
+
+[2026-06-01]
+branch: master
+commit: fix(cli): drop stale ambient module shim that shadowed computer-setup's types
+files:
+  - packages/@wundr/cli/src/commands/computer-setup.ts
+  - packages/@wundr/cli/src/types/modules.d.ts
+  - packages/@wundr/computer-setup/src/index.ts
+
+[2026-06-01]
+branch: master
+commit: fix(cli): resolve @wundr.io/computer-setup via tsconfig paths (not node_modules)
+files:
+  - packages/@wundr/cli/tsconfig.json
+
+[2026-06-01]
+branch: master
+commit: fix(ci): pre-build computer-setup for the CLI + make publish idempotent
+files:
+  - .github/workflows/npm-publish-auto.yml
+
+[2026-06-01]
+branch: master
+commit: feat(computer-setup): complete remote-access host provisioning (SSH, screen sharing, auto-start)
+files:
+  - packages/@wundr/computer-setup/src/installers/remote-access-installer.ts
+
+[2026-06-01]
+branch: master
+commit: fix(computer-setup): repair npm cache ownership, stop Tailscale hang, fix host detection
+files:
+  - packages/@wundr/computer-setup/src/installers/remote-access-installer.ts
+  - packages/@wundr/computer-setup/src/lib/privileges.ts
+
+[2026-06-01]
+branch: master
+commit: fix(computer-setup): add freshly-installed claude to PATH so MCP servers + plugins don't skip
+files:
+  - packages/@wundr/computer-setup/src/installers/claude-installer.ts
+
+[2026-06-01]
+branch: master
+commit: fix(computer-setup): make GPG signing real (was a no-op stub)
+files:
+  - packages/@wundr/computer-setup/src/configurators/index.ts
+
+[2026-06-01]
+branch: master
+commit: feat(computer-setup): always install Slack, GitHub Desktop, and Google Chrome
+files:
+  - packages/@wundr/computer-setup/src/installers/mac-installer.ts
+
+[2026-06-01]
+branch: master
+commit: feat(computer-setup): interactive remote-access — prompt for sudo + open Settings panes
+files:
+  - packages/@wundr/computer-setup/src/installers/remote-access-installer.ts
+
+[2026-06-02]
+branch: master
+commit: docs(tasks): record verification-gap lesson (don't claim success on a skipped path)
+files:
+  - tasks/lessons.md
+
+[2026-06-02]
+branch: master
+commit: feat(computer-setup): curate the macOS Dock (add dev apps, remove clutter)
+files:
+  - packages/@wundr/computer-setup/src/installers/mac-installer.ts
+
+[2026-06-02]
+branch: master
+commit: fix(computer-setup): stop reporting false success for Parsec/Tailscale; prime sudo once; read back host state
+files:
+  - packages/@wundr/cli/src/commands/computer-setup.ts
+  - packages/@wundr/computer-setup/src/installers/mac-installer.ts
+  - packages/@wundr/computer-setup/src/installers/remote-access-installer.ts
+
+[2026-06-02]
+branch: master
+commit: fix(computer-setup): actually install Parsec/Tailscale (force-reinstall pkg casks), launch Tailscale + foreground Settings panes
+files:
+  - packages/@wundr/computer-setup/src/installers/remote-access-installer.ts
+  - tasks/lessons.md
+
+[2026-06-02]
+branch: master
+commit: fix(computer-setup): Dock all installed apps, drop Obsidian, stop Parsec relaunch loop, persist claude on PATH
+files:
+  - packages/@wundr/computer-setup/src/installers/claude-installer.ts
+  - packages/@wundr/computer-setup/src/installers/mac-installer.ts
+  - packages/@wundr/computer-setup/src/installers/remote-access-installer.ts
+
+[2026-06-03]
+branch: master
+commit: fix(computer-setup): fix Homebrew/npm install blockers, passwordless-sudo keystone, curated Dock, WhatsApp, 4-app auto-start
+files:
+  - packages/@wundr/computer-setup/src/installers/mac-installer.ts
+  - packages/@wundr/computer-setup/src/installers/node-installer.ts
+
+[2026-06-03]
+branch: master
+commit: feat(computer-setup): unattended remote-access — passwordless sudo model, auto-login, perpetual power, Tailscale SSH
+files:
+  - packages/@wundr/computer-setup/src/installers/remote-access-installer.ts
+  - packages/@wundr/computer-setup/src/types/index.ts
+
+[2026-06-03]
+branch: master
+commit: feat(computer-setup): generate MDM-deployable TCC/PPPC profile for full app permissions
+files:
+  - packages/@wundr/computer-setup/src/installers/index.ts
+  - packages/@wundr/computer-setup/src/installers/tcc-pppc-installer.ts
+  - packages/@wundr/computer-setup/src/manager/index.ts
+  - packages/@wundr/computer-setup/src/types/index.ts
+
+[2026-06-03]
+branch: master
+commit: docs(lessons): curl|bash TTY + npm-via-nvm footguns; staged-implementation discipline
+files:
+  - tasks/lessons.md
+
+[2026-06-03]
+branch: master
+commit: feat(computer-setup): curate Dock, drop WhatsApp install, prompt for missing identity
+files:
+  - packages/@wundr/cli/src/commands/computer-setup.ts
+  - packages/@wundr/computer-setup/src/installers/mac-installer.ts
+  - packages/@wundr/computer-setup/src/installers/remote-access-installer.ts
+  - packages/@wundr/computer-setup/src/installers/tcc-pppc-installer.ts
+
+[2026-06-04]
+branch: master
+commit: fix(computer-setup): lock-screen-off on Sequoia + docker-desktop cask repair
+files:
+  - packages/@wundr/computer-setup/src/installers/docker-installer.ts
+  - packages/@wundr/computer-setup/src/installers/mac-installer.ts
+  - packages/@wundr/computer-setup/src/installers/remote-access-installer.ts
+  - packages/@wundr/computer-setup/src/profiles/profile-loader.ts
+
+[2026-06-04]
+branch: master
+commit: fix(computer-setup): make host settings actually APPLY under `sudo wundr`
+files:
+  - packages/@wundr/computer-setup/src/installers/mac-installer.ts
+  - packages/@wundr/computer-setup/src/installers/remote-access-installer.ts
+
+[2026-06-04]
+branch: master
+commit: fix(computer-setup): unhang ARD kickstart + resolve `code` CLI for extensions
+files:
+  - packages/@wundr/computer-setup/src/configurators/index.ts
+  - packages/@wundr/computer-setup/src/installers/remote-access-installer.ts
+
+[2026-06-04]
+branch: master
+commit: fix(computer-setup): fresh-machine reliability — Docker, casks, Dock, auto-start
+files:
+  - packages/@wundr/computer-setup/src/installers/claude-installer.ts
+  - packages/@wundr/computer-setup/src/installers/mac-installer.ts
+  - packages/@wundr/computer-setup/src/installers/remote-access-installer.ts
+
+[2026-06-04]
+branch: master
+commit: fix(computer-setup): detect cask apps by real .app presence, not brew receipt
+files:
+  - packages/@wundr/computer-setup/src/installers/mac-installer.ts
+
+[2026-06-04]
+branch: master
+commit: feat(computer-setup): drop npx-wundr alias + final on-disk verification step
+files:
+  - packages/@wundr/computer-setup/src/configurators/index.ts
+  - packages/@wundr/computer-setup/src/installers/mac-installer.ts
+
+[2026-06-04]
+branch: master
+commit: fix(computer-setup): correct dead TCC guidance + add grant-tcc.sh helper
+files:
+  - packages/@wundr/computer-setup/src/installers/tcc-pppc-installer.ts
+  - scripts/remote-setup/grant-tcc.sh
+
+[2026-06-12]
+branch: master
+commit: fix(computer-setup): recover stale-brew cask installs + unhang MCP add
+files:
+  - packages/@wundr/computer-setup/src/installers/claude-installer.ts
+  - packages/@wundr/computer-setup/src/installers/mac-installer.ts
+

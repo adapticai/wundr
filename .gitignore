@@ -169,3 +169,11 @@ packages/@wundr/neolith/apps/web/.env.sh
 
 # Local Netlify folder
 .netlify
+
+# Agent/tool scratch — per-run metrics, locks, browser snapshots, local vector db.
+.claude-flow/
+**/.claude-flow/
+.claude/scheduled_tasks.lock
+.playwright-mcp/
+agentdb.rvf
+agentdb.rvf.lock
